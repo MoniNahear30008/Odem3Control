@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OdemControl": {
+      "commandName": "Project",
+      "commandLineArgs": "debug"
+    }
+  }
+}
