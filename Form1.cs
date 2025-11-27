@@ -33,12 +33,17 @@ namespace OdemControl
             {"Tx3_20_29",5050},
             {"Tx3_30_39",5050},
         };
+        bool loggingEnabled = false;
+        private StreamWriter logFile;
 
         public Form1(String mode)
         {
             InitializeComponent();
 
-            debugMode.Visible = mode == "debug";
+            debugMode.Visible = mode.Contains("-d");
+            loggingEnabled = mode.Contains("-l");
+            if (loggingEnabled)
+                OpenLogFile();
 
             IPAddredd.Text = _ipAddress;
             IPPort.Text = _port.ToString();
@@ -67,6 +72,7 @@ namespace OdemControl
             confFiles.Add("2kWin", new List<uint>());
             confFiles.Add("128Bins_Final", new List<uint>());
             confFiles.Add("blackmanHarris_DEC", new List<uint>());
+            confFiles.Add("AWG", new List<uint>());
 
             wfFiles.Add("waveformX", new List<uint>());
             wfFiles.Add("waveformY", new List<uint>());
@@ -164,9 +170,15 @@ namespace OdemControl
             confState = (int)confStates.IDLE;
             cofigdevice();
             if (confState == (int)confStates.DONE)
+            {
+                LogMessage("Configuring: Done");
                 streamBox.Enabled = true;
+            }
             else
+            {
+                LogMessage("Configuring: Error");
                 streamBox.Enabled = false;
+            }
         }
         public static byte[] GetBytesBigEndian(uint value)
         {
@@ -196,7 +208,7 @@ namespace OdemControl
             StreamReader reader;
             List<string> lc;
             // Get general parameters
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.General_Params.txt");
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + "General_Params.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -205,6 +217,26 @@ namespace OdemControl
             reader = new StreamReader(stream);
             string content = reader.ReadToEnd();
             lc = content.Split("\r\n").ToList();
+            lc.RemoveAt(lc.Count() - 1);
+            foreach (string n in lc)
+            {
+                string[] parts = n.Split(',');
+                if (parts.Length != 2)
+                {
+                    MessageBox.Show("Failed to read general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                string pname = parts[0].Trim();
+                uint pval = uint.Parse(parts[1]);
+                if (deviceParameters.ContainsKey(pname))
+                    deviceParameters[pname] = pval;
+                else
+                {
+                    MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+            }
 
             // Get common file
             string commonFile = "blackmanHarris_DEC";
@@ -230,6 +262,53 @@ namespace OdemControl
                 lc.RemoveAt(lc.Count() - 1);
                 foreach (string n in lc)
                     confFiles[f].Add(uint.Parse(n));
+            }
+        }
+    
+        private void OpenLogFile()
+        {
+            if (loggingEnabled)
+            {
+                string path = @"C:\Lidwave";
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+//                string logFileName = path + "\\OdemLog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+                string logFileName = path + "\\OdemLog_.txt";
+                try
+                {
+                    logFile = new StreamWriter(logFileName, false);
+                    logFile.WriteLine("App Start @" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    logFile.AutoFlush = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to create log file: " + ex.Message, "Logging Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    loggingEnabled = false;
+                }
+            }
+        }
+        private void LogMessage(string message)
+        {
+            if (loggingEnabled && logFile != null)
+            {
+                if (message.StartsWith("Reg write") & (message.Length > 80))
+                {
+                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - Reg Write:");
+                    message = message.Substring(11);
+                    while (message.Length > 96)
+                    {
+                        logFile.WriteLine("                  " + message.Substring(0,96));
+                        message = message.Substring(96);
+                    }
+                    if (message.Length > 0)
+                        logFile.WriteLine("                  " + message);
+
+                }
+                else
+                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
             }
         }
     }

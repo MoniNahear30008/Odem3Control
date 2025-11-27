@@ -58,6 +58,7 @@
             sensitivityHigh = new RadioButton();
             SensitivityNormal = new RadioButton();
             label3 = new Label();
+            KeepAlive = new CheckBox();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -386,11 +387,24 @@
             label3.TabIndex = 11;
             label3.Text = "Port";
             // 
+            // KeepAlive
+            // 
+            KeepAlive.AutoSize = true;
+            KeepAlive.Checked = true;
+            KeepAlive.CheckState = CheckState.Checked;
+            KeepAlive.Location = new Point(16, 36);
+            KeepAlive.Name = "KeepAlive";
+            KeepAlive.Size = new Size(78, 19);
+            KeepAlive.TabIndex = 12;
+            KeepAlive.Text = "KeepAlive";
+            KeepAlive.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(592, 400);
+            Controls.Add(KeepAlive);
             Controls.Add(label3);
             Controls.Add(IPPort);
             Controls.Add(IPAddredd);
@@ -449,5 +463,6 @@
         private DataGridView ModeParams;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
+        private CheckBox KeepAlive;
     }
 }

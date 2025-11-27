@@ -16,5 +16,19 @@ namespace OdemControl
             InitializeComponent();
             this.mainfrm = mainfrm;
         }
+
+        private void startDebug_Click(object sender, EventArgs e)
+        {
+            if (pw.Text == "evawdil")
+            {
+                pwBox.Visible = false;
+                dbgControl.Visible = true;
+            }
+            else
+            {
+                pw.Text = "";
+                MessageBox.Show("Incorrect Password");
+            }
+        }
     }
 }

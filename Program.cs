@@ -9,13 +9,13 @@ namespace OdemControl
         static void Main(string[] args)
         {
             string arg = "";
-            if (args.Length > 0)
-                arg = args[0];
+            foreach (string a in args)
+                arg += a + " ";
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1(arg));
+            Application.Run(new Form1(arg.ToLower()));
         }
     }
 }

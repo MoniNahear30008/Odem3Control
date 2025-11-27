@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections;
+using System.Net.Sockets;
 using System.Text;
 
 namespace OdemControl
@@ -16,6 +17,7 @@ namespace OdemControl
         {
             if (isConnected)
             {
+                LogMessage("Disconnecting from device...");
                 isConnected = false;
                 client.Close();
                 connect.Text = "Connect";
@@ -36,8 +38,13 @@ namespace OdemControl
                         isConnected = true;
                         stream = client?.GetStream();
                         client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-                        SetKeepAlive(client.Client, 5000, 1000); // 5s idle, 1s interval
-                        _ = Task.Run(ReceiveListener);
+                        if (KeepAlive.Checked)
+                        {
+                            SetKeepAlive(client.Client, 5000, 1000); // 5s idle, 1s interval
+                            LogMessage("Connected to device with KeepAlive");
+                        }
+                        else
+                            LogMessage("Connected to device without KeepAlive");
                     }
                 }
 
@@ -111,23 +118,134 @@ namespace OdemControl
             return true;
 
         }
-        private bool SendAndReceive(string command)
+        private byte[] SerWriteRegBuf(uint add, List<uint> vals)
         {
-            using var client = new TcpClient(_ipAddress, 24871);
-            NetworkStream stream = client.GetStream();
-            stream.ReadTimeout = 3000; // 3 seconds
+            List<byte> data = new List<byte>();
+            data.Add(0x01);         // Write command
+            data.Add(0x00);         // Reserved
+            data.AddRange(GetBytesBigEndian(add));
+            data.AddRange(GetBytesBigEndian((uint)vals.Count));
+            foreach (uint v in vals)
+                data.AddRange(GetBytesBigEndian(v));
+            if (loggingEnabled)
+            {
+                string tx = "01 00 ";
+                foreach (byte b in data.Skip(2))
+                    tx += b.ToString("X2") + " ";
+                LogMessage("Reg write: " + tx);
+            }
+            return data.ToArray();
+        }
+
+        private string WriteRegWaitResp(uint add, List<uint> vals)
+        {
+            byte[] TxBuf = SerWriteRegBuf(add, vals);
+            if (!isConnected) return "";
+            stream.ReadTimeout = 10000;
+            stream.Write(TxBuf);
 
             try
             {
-                byte[] buffer = new byte[256];
-                int count = stream.Read(buffer, 0, buffer.Length);  // times out
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 1))
+                {
+                    LogMessage("Reg write pass");
+                    return "";
+                }
+                else
+                {
+                    LogMessage("Reg write fail");
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    if (loggingEnabled)
+                        LogMessage("Reg write response: " + s);
+                    return s;
+                }
             }
             catch (IOException)
             {
-                MessageBox.Show("No response from device.", "Communication Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                return "Device not reponding";
             }
-            return true;
+        }
+
+        private string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
+        {
+            if (!isConnected) return "";
+
+            byte[] regadd = GetBytesBigEndian(reg).ToArray();
+            List<byte> data = new List<byte>();
+            data.Add(0x07);         // command ID
+            data.Add(0x00);         // Bus
+            data.Add(0x70);         // Mux
+            data.Add((byte)ch);     // Mux channel
+            data.Add((byte)dev);    // Device
+            data.Add((byte)option); // I2C device register
+            data.AddRange(GetBytesBigEndian((uint)vals.Count));  // Number of values
+            switch (option & 0x30)
+            {
+                case 0x10:                  // 8 bits register address
+                    data.Add(regadd[3]);    
+                    break;
+
+                case 0x20:                  // 16 bits register address
+                    data.Add(regadd[2]);
+                    data.Add(regadd[3]);
+                    break;
+
+                default:
+                    MessageBox.Show("Invalid I2C register address option");
+                    return "Invalid I2C register address option";
+            }
+            switch (option & 0xC)
+            {
+                case 0x0:                  // 8 bits value
+                    foreach (uint v in vals)
+                        data.Add((byte)v);
+                    break;
+
+                case 0x4:                  // 16 bits value
+                    foreach (uint v in vals)
+                    {
+                        data.Add((byte)(v>> 8));
+                        data.Add((byte)v);
+                    }
+                    break;
+
+                default:
+                    MessageBox.Show("Invalid I2C data size option");
+                    return "Invalid I2C data size option";
+            }
+
+            if (loggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("I2C write: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 10000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 7))
+                    return "";
+                else
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+            }
+            catch (IOException)
+            {
+                return "Device not reponding";
+            }
         }
     }
 }

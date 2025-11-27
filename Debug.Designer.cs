@@ -33,6 +33,15 @@
             textBox1 = new TextBox();
             button2 = new Button();
             button3 = new Button();
+            dbgControl = new TabControl();
+            tabPage1 = new TabPage();
+            tabPage2 = new TabPage();
+            pwBox = new GroupBox();
+            startDebug = new Button();
+            pw = new TextBox();
+            dbgControl.SuspendLayout();
+            tabPage1.SuspendLayout();
+            pwBox.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -40,60 +49,132 @@
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 18F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Red;
-            label1.Location = new Point(313, 363);
+            label1.Location = new Point(311, 210);
             label1.Name = "label1";
-            label1.Size = new Size(285, 41);
+            label1.Size = new Size(227, 32);
             label1.TabIndex = 0;
             label1.Text = "Under construction";
             // 
             // button1
             // 
-            button1.Location = new Point(43, 39);
+            button1.Location = new Point(20, 18);
+            button1.Margin = new Padding(3, 2, 3, 2);
             button1.Name = "button1";
-            button1.Size = new Size(142, 50);
+            button1.Size = new Size(124, 38);
             button1.TabIndex = 2;
             button1.Text = "CFAR multiplication";
             button1.UseVisualStyleBackColor = true;
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(203, 51);
+            textBox1.Location = new Point(160, 27);
+            textBox1.Margin = new Padding(3, 2, 3, 2);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(125, 27);
+            textBox1.Size = new Size(110, 23);
             textBox1.TabIndex = 3;
             // 
             // button2
             // 
-            button2.Location = new Point(45, 116);
+            button2.Location = new Point(22, 71);
+            button2.Margin = new Padding(3, 2, 3, 2);
             button2.Name = "button2";
-            button2.Size = new Size(140, 46);
+            button2.Size = new Size(122, 34);
             button2.TabIndex = 4;
             button2.Text = "Optotune";
             button2.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            button3.Location = new Point(45, 195);
+            button3.Location = new Point(34, 119);
+            button3.Margin = new Padding(3, 2, 3, 2);
             button3.Name = "button3";
-            button3.Size = new Size(140, 46);
+            button3.Size = new Size(122, 34);
             button3.TabIndex = 4;
             button3.Text = "Vectors";
             button3.UseVisualStyleBackColor = true;
             // 
+            // dbgControl
+            // 
+            dbgControl.Controls.Add(tabPage1);
+            dbgControl.Controls.Add(tabPage2);
+            dbgControl.Dock = DockStyle.Fill;
+            dbgControl.Location = new Point(0, 0);
+            dbgControl.Name = "dbgControl";
+            dbgControl.SelectedIndex = 0;
+            dbgControl.Size = new Size(850, 415);
+            dbgControl.TabIndex = 5;
+            dbgControl.Visible = false;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(button1);
+            tabPage1.Controls.Add(label1);
+            tabPage1.Controls.Add(button3);
+            tabPage1.Controls.Add(textBox1);
+            tabPage1.Controls.Add(button2);
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(842, 387);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Location = new Point(4, 24);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(842, 387);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "tabPage2";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // pwBox
+            // 
+            pwBox.Controls.Add(startDebug);
+            pwBox.Controls.Add(pw);
+            pwBox.Location = new Point(315, 110);
+            pwBox.Name = "pwBox";
+            pwBox.Size = new Size(200, 100);
+            pwBox.TabIndex = 6;
+            pwBox.TabStop = false;
+            pwBox.Text = "Password";
+            // 
+            // startDebug
+            // 
+            startDebug.Location = new Point(37, 51);
+            startDebug.Name = "startDebug";
+            startDebug.Size = new Size(117, 37);
+            startDebug.TabIndex = 1;
+            startDebug.Text = "Enter Debug Mode";
+            startDebug.UseVisualStyleBackColor = true;
+            startDebug.Click += startDebug_Click;
+            // 
+            // pw
+            // 
+            pw.Location = new Point(20, 22);
+            pw.Name = "pw";
+            pw.PasswordChar = '*';
+            pw.Size = new Size(159, 23);
+            pw.TabIndex = 0;
+            // 
             // Debug
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(971, 553);
-            Controls.Add(button3);
-            Controls.Add(button2);
-            Controls.Add(textBox1);
-            Controls.Add(button1);
-            Controls.Add(label1);
+            ClientSize = new Size(850, 415);
+            Controls.Add(pwBox);
+            Controls.Add(dbgControl);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "Debug";
             Text = "Debug";
+            dbgControl.ResumeLayout(false);
+            tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
+            pwBox.ResumeLayout(false);
+            pwBox.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -103,5 +184,11 @@
         private TextBox textBox1;
         private Button button2;
         private Button button3;
+        private TabControl dbgControl;
+        private TabPage tabPage1;
+        private TabPage tabPage2;
+        private GroupBox pwBox;
+        private Button startDebug;
+        private TextBox pw;
     }
 }

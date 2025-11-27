@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OdemControl")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14e058b62be61799eb42b8e754deee5fa633c450")]
 [assembly: System.Reflection.AssemblyProductAttribute("OdemControl")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OdemControl")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
