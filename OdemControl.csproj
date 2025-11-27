@@ -51,6 +51,7 @@
     <None Remove="Devices\SN0057\badGoodIndxs_High.txt" />
     <None Remove="Devices\SN0057\badGoodIndxs_Low.txt" />
     <None Remove="Devices\SN0057\General_Params.csv" />
+    <None Remove="Optotune\Mode1\scan_parameters.json" />
     <None Remove="Optotune\Mode4\waveformX.csv" />
     <None Remove="Optotune\Mode4\waveformY.csv" />
     <None Remove="Optotune\Mode3\waveformX.csv" />
@@ -96,6 +97,7 @@
     <EmbeddedResource Include="Devices\SN0057\badGoodIndxs_High.txt" />
     <EmbeddedResource Include="Devices\SN0057\badGoodIndxs_Low.txt" />
     <EmbeddedResource Include="Devices\SN0057\General_Params.csv" />
+    <EmbeddedResource Include="Optotune\Mode1\scan_parameters.json" />
     <EmbeddedResource Include="Optotune\Mode4\waveformX.csv" />
     <EmbeddedResource Include="Optotune\Mode4\waveformY.csv" />
     <EmbeddedResource Include="Optotune\Mode3\waveformX.csv" />

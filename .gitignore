@@ -2,14 +2,15 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+/bin/*.*
+/obj/*.*
 /bin/Debug/net10.0-windows/OdemControl.dll
 /bin/Debug/net10.0-windows/OdemControl.exe
 /bin/Debug/net10.0-windows/OdemControl.pdb
-/obj/Debug/net10.0-windows/ref/OdemControl.dll
-/obj/Debug/net10.0-windows/refint/OdemControl.dll
+*.dll
 /obj/Debug/net10.0-windows/apphost.exe
 /obj/Debug/net10.0-windows/OdemControl.AssemblyInfo.cs
 /obj/Debug/net10.0-windows/OdemControl.AssemblyInfoInputs.cache
 /obj/Debug/net10.0-windows/OdemControl.csproj.GenerateResource.cache
-/obj/Debug/net10.0-windows/OdemControl.dll
 /obj/Debug/net10.0-windows/OdemControl.pdb
+*.md
