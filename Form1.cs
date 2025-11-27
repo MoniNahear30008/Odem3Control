@@ -34,6 +34,7 @@ namespace OdemControl
             {"Tx3_30_39",5050},
         };
         bool loggingEnabled = false;
+        bool dataLoggingEnabled = false;
         private StreamWriter logFile;
 
         public Form1(String mode)
@@ -42,6 +43,7 @@ namespace OdemControl
 
             debugMode.Visible = mode.Contains("-d");
             loggingEnabled = mode.Contains("-l");
+            dataLoggingEnabled = mode.Contains("-le");
             if (loggingEnabled)
                 OpenLogFile();
 
@@ -264,7 +266,7 @@ namespace OdemControl
                     confFiles[f].Add(uint.Parse(n));
             }
         }
-    
+
         private void OpenLogFile()
         {
             if (loggingEnabled)
@@ -275,7 +277,7 @@ namespace OdemControl
                 {
                     Directory.CreateDirectory(path);
                 }
-//                string logFileName = path + "\\OdemLog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+                //                string logFileName = path + "\\OdemLog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
                 string logFileName = path + "\\OdemLog_.txt";
                 try
                 {
@@ -300,7 +302,7 @@ namespace OdemControl
                     message = message.Substring(11);
                     while (message.Length > 96)
                     {
-                        logFile.WriteLine("                  " + message.Substring(0,96));
+                        logFile.WriteLine("                  " + message.Substring(0, 96));
                         message = message.Substring(96);
                     }
                     if (message.Length > 0)
@@ -310,6 +312,57 @@ namespace OdemControl
                 else
                     logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
             }
+        }
+
+        private void checkT_Click(object sender, EventArgs e)
+        {
+            readTemp();
+        }
+        private void readTemp()
+        {
+            double R1 = 5.6;
+            double R2 = 2;
+            double R3 = 47;
+            string err = "";
+            List<uint> temp;
+            if (tLaser.Checked)
+                err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
+            else
+                err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
+            if (err == "")
+            {
+                if (tLaser.Checked)
+                {
+                    double Vtempout = ((double)temp[0] / 4095 * 2.5);
+                    double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
+                    double t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
+                    cTemp.Text = t.ToString("0.00") + " °c";
+                    cTemp.ForeColor = Color.Black;
+                }
+                else
+                {
+                    R1 = 6.81;
+                    R2 = 2.7;
+                    R3 = 68;
+                    double Vtempout = ((double)temp[0] / 4095 * 2.5);
+                    double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
+                    double t = 1 / ((1 / 298.15) + (1 / 3380) * Math.Log(Rth / 10)) - 273.15;
+                    cTemp.Text = t.ToString("0.00") + " °c";
+
+                    if ((t >= 47) && (t <= 59))
+                        cTemp.ForeColor = Color.Lime;
+                    else
+                        cTemp.ForeColor = Color.Red;
+
+                }
+
+            }
+
+        }
+
+        private void connect_Click(object sender, EventArgs e)
+        {
+            ConnectToDevice();
         }
     }
 
@@ -374,7 +427,7 @@ namespace OdemControl
         SET_CHIRP_WAVEFORM,
         SET_CHIRP_GAIN,
         SET_PM_CONTROL,
-        SET_DRIVER_BOARD,
+        LOAD_SSH_DRIVER,
         SET_LO,
         SET_TX_SOA1,
         SET_TX_SOA2,

@@ -16,7 +16,7 @@ namespace OdemControl
                 switch (confState)
                 {
                     case (int)confStates.IDLE:
-                        confState = (int)confStates.SEND_CAPTURE_DELAY;
+                        confState++;
                         break;
 
                     case (int)confStates.SEND_CAPTURE_DELAY:
@@ -28,7 +28,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending Capture Delay:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.RESET_DSP;
+                        confState++;
                         break;
 
                     case (int)confStates.RESET_DSP:
@@ -40,7 +40,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending Reset DSP:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_SENSITIVITY;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_SENSITIVITY:
@@ -52,7 +52,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending Set Senitivity:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_RANGE;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_RANGE:  // CFAR multiplication
@@ -64,7 +64,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending Set Range:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_RETRO_LEVEL;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_RETRO_LEVEL:
@@ -76,7 +76,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending Set Relro:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_CHIRP_WAVEFORM;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_CHIRP_WAVEFORM:
@@ -92,7 +92,9 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_PM_CONTROL;
+                        confState++;
+                        break;
+                     case (int)confStates.SET_PM_CONTROL:
                         LogMessage("Configuring: SET_PM1_CONTROL");
                         Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1C, new List<uint> { 0 });
                         if (Error.Length > 0)
@@ -109,11 +111,11 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_DRIVER_BOARD;
+                        confState++;
                         break;
 
-                    case (int)confStates.SET_DRIVER_BOARD:
-                        confState = (int)confStates.SET_LO;
+                    case (int)confStates.LOAD_SSH_DRIVER:
+                        confState++;
                         break;
 
                     case (int)confStates.SET_LO:
@@ -125,7 +127,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX_SOA1;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX_SOA1:
@@ -137,7 +139,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX_SOA2;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX_SOA2:
@@ -149,7 +151,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX3_0_9;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX3_0_9:
@@ -161,7 +163,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX3_10_19;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX3_10_19:
@@ -173,7 +175,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX3_20_29;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX3_20_29:
@@ -185,7 +187,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_TX3_30_39;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_TX3_30_39:
@@ -197,7 +199,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_1;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_1:
@@ -209,7 +211,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_2;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_2:
@@ -221,7 +223,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending badGoodIndxs_Low:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_3;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_3:
@@ -233,7 +235,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending 128Bins_Final:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_4;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_4:
@@ -245,7 +247,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending 128Bins_Final:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_5;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_5:
@@ -257,7 +259,7 @@ namespace OdemControl
                             MessageBox.Show("Error sending blackmanHarris_DEC:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_VECTOR_6;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_VECTOR_6:
@@ -269,27 +271,39 @@ namespace OdemControl
                             MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState = (int)confStates.SET_OPTOTUNE_X;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_OPTOTUNE_X:
-                        confState = (int)confStates.SET_OPTOTUNE_Y;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_OPTOTUNE_Y:
-                        confState = (int)confStates.SET_MIRROR_FREQUENCY;
+                        confState++;
                         break;
 
                     case (int)confStates.SET_MIRROR_FREQUENCY:
-                        confState = (int)confStates.SET_NUMBER_OF_POINTS;
+                        LogMessage("Configuring: SET_MIRROR_FREQUENCY");
+                        uint iFreq = BitConverter.SingleToUInt32Bits((float)scanModes[modes[appSetting.scanModeNum]].mirror);
+                        Error = SPIWriteRegWaitResp(0x68, 0x04, iFreq);
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
                         break;
 
                     case (int)confStates.SET_NUMBER_OF_POINTS:
-                        confState = (int)confStates.RUN_OPTOTUNE_CALIBRATION;
+                        confState++;
                         break;
 
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
-                        confState = (int)confStates.DONE;
+                        confState++;
+                        break;
+
+                    case (int)confStates.DONE:
                         break;
 
                     default:

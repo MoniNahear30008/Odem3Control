@@ -1,0 +1,115 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Page-1" id="sPgnTyXzNGgiLIqIRsUl">
+    <mxGraphModel dx="1426" dy="841" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-17" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="120" width="180" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-15" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="120" width="160" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-2" value="PC" style="text;strokeColor=none;fillColor=none;html=1;fontSize=24;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="160" y="80" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-4" value="ODEM" style="text;strokeColor=none;fillColor=none;html=1;fontSize=24;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="514" y="79" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-5" value="Control App" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="137" width="90" height="113" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-6" value="LidarView" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="281" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-7" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="494" y="140" width="156" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-8" value="FS" style="text;strokeColor=none;fillColor=none;html=1;fontSize=15;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="514" y="120" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-10" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="514" y="170" width="120" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-11" value="Linux" style="text;strokeColor=none;fillColor=none;html=1;fontSize=15;fontStyle=0;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="514" y="150" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-12" value="App" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="527.5" y="180" width="93" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-13" value="SSH Driver" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="528.5" y="286" width="93" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-14" value="FPGA" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="177" width="49" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-19" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="dhiNTENde1CSuZ2S8pbO-13" target="dhiNTENde1CSuZ2S8pbO-6">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="560" y="360" as="sourcePoint" />
+            <mxPoint x="610" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-20" value="Stream (UDP)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=17;fontStyle=1" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-19">
+          <mxGeometry x="0.1396" y="1" relative="1" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-21" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="160" as="sourcePoint" />
+            <mxPoint x="497" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-22" value="FIle save (STP)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-21">
+          <mxGeometry x="-0.2299" y="4" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-23" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="233" as="sourcePoint" />
+            <mxPoint x="527.5" y="233.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-24" value="Command (TCP)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-23">
+          <mxGeometry x="-0.2299" y="4" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-25" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="307" y="200.5" as="sourcePoint" />
+            <mxPoint x="494" y="200.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-27" value="Text" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-25">
+          <mxGeometry x="0.0053" y="1" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-28" value="Load SSH Driver" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-25">
+          <mxGeometry x="-0.0053" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-29" value="" style="endArrow=classic;html=1;rounded=0;exitX=-0.043;exitY=0.633;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="dhiNTENde1CSuZ2S8pbO-14" target="dhiNTENde1CSuZ2S8pbO-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="560" y="360" as="sourcePoint" />
+            <mxPoint x="610" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-30" value="Pixels&lt;div&gt;pack&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="dhiNTENde1CSuZ2S8pbO-29">
+          <mxGeometry x="-0.167" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dhiNTENde1CSuZ2S8pbO-31" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="dhiNTENde1CSuZ2S8pbO-12" target="dhiNTENde1CSuZ2S8pbO-13">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="700" y="320" as="sourcePoint" />
+            <mxPoint x="580" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -13,7 +13,7 @@ namespace OdemControl
 
         public event Action<string> OnMessageReceived;
 
-        private async void connect_Click(object sender, EventArgs e)
+        private async void ConnectToDevice()
         {
             if (isConnected)
             {
@@ -45,6 +45,8 @@ namespace OdemControl
                         }
                         else
                             LogMessage("Connected to device without KeepAlive");
+
+                        readTemp();
                     }
                 }
 
@@ -127,7 +129,7 @@ namespace OdemControl
             data.AddRange(GetBytesBigEndian((uint)vals.Count));
             foreach (uint v in vals)
                 data.AddRange(GetBytesBigEndian(v));
-            if (loggingEnabled)
+            if (dataLoggingEnabled)
             {
                 string tx = "01 00 ";
                 foreach (byte b in data.Skip(2))
@@ -140,7 +142,7 @@ namespace OdemControl
         private string WriteRegWaitResp(uint add, List<uint> vals)
         {
             byte[] TxBuf = SerWriteRegBuf(add, vals);
-            if (!isConnected) return "";
+            if (!isConnected) return "Device not connected";
             stream.ReadTimeout = 10000;
             stream.Write(TxBuf);
 
@@ -168,10 +170,9 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
-
         private string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
         {
-            if (!isConnected) return "";
+            if (!isConnected) return "Device not connected";
 
             byte[] regadd = GetBytesBigEndian(reg).ToArray();
             List<byte> data = new List<byte>();
@@ -217,7 +218,7 @@ namespace OdemControl
                     return "Invalid I2C data size option";
             }
 
-            if (loggingEnabled)
+            if (dataLoggingEnabled)
             {
                 string tx = "";
                 foreach (byte b in data)
@@ -244,6 +245,131 @@ namespace OdemControl
             }
             catch (IOException)
             {
+                return "Device not reponding";
+            }
+        }
+        private string SPIWriteRegWaitResp(uint sys, uint reg, uint val)
+        {
+            if (!isConnected) return "Device not connected";
+
+            List<byte> data = new List<byte>();
+            data.Add(0x04);         // command
+            data.Add(0x08);         // Sub command
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
+            data.AddRange(new List<byte>() { 0, 0, 0, 6 });   // length
+            data.Add((byte)sys);    
+            data.Add((byte)reg);    
+            data.AddRange(GetBytesBigEndian(val));  // Number of values
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("I2C write: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 10000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
+                    return "";
+                else
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+            }
+            catch (IOException)
+            {
+                return "Device not reponding";
+            }
+        }
+
+        private string ReadI2C(uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals)
+        {
+            vals = null;
+            if (!isConnected)
+                return "Device not connected";
+ 
+            byte[] regadd = GetBytesBigEndian(reg).ToArray();
+            List<byte> data = new List<byte>();
+            data.Add(0x08);         // command ID
+            data.Add(0x00);         // Bus
+            data.Add(0x70);         // Mux
+            data.Add((byte)ch);     // Mux channel
+            data.Add((byte)dev);    // Device
+            data.Add((byte)option); // I2C device register
+            data.AddRange(GetBytesBigEndian(len));  // Number of values
+
+            switch (option & 0x30)
+            {
+                case 0x10:                  // 8 bits register address
+                    data.Add(regadd[3]);
+                    break;
+
+                case 0x20:                  // 16 bits register address
+                    data.Add(regadd[2]);
+                    data.Add(regadd[3]);
+                    break;
+
+                default:
+                    MessageBox.Show("Invalid I2C register address option");
+                    return "Invalid I2C register address option";
+            }
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("I2C read command: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 10000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 8))
+                {
+                    vals = new List<uint>();
+                    int nvals = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    int idx = 8;
+                    if ((option & 0xC) == 0)
+                    {
+                        for (int n = 0; n < nvals; n++)
+                            vals.Add((uint)buffer[idx + n]);
+                    }
+                    else
+                    {
+                        for (int n = 0; n < nvals; n += 2)
+                        {
+                            vals.Add(((uint)buffer[idx + n] << 8) + (uint)buffer[idx + n + 1]);
+                        }
+
+                    }
+                    return "";
+
+                }
+                else
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+            }
+            catch (IOException)
+            {
+                vals = null;
                 return "Device not reponding";
             }
         }

@@ -39,6 +39,11 @@
             IPPort = new TextBox();
             devices = new ComboBox();
             mainBox = new GroupBox();
+            groupBox4 = new GroupBox();
+            tLaser = new RadioButton();
+            tPIC = new RadioButton();
+            cTemp = new Label();
+            checkT = new Button();
             groupBox3 = new GroupBox();
             ModeParams = new DataGridView();
             Column1 = new DataGridViewTextBoxColumn();
@@ -61,6 +66,7 @@
             KeepAlive = new CheckBox();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
+            groupBox4.SuspendLayout();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ModeParams).BeginInit();
             streamBox.SuspendLayout();
@@ -142,6 +148,7 @@
             // 
             // mainBox
             // 
+            mainBox.Controls.Add(groupBox4);
             mainBox.Controls.Add(groupBox3);
             mainBox.Controls.Add(debugMode);
             mainBox.Controls.Add(streamBox);
@@ -156,6 +163,62 @@
             mainBox.Size = new Size(574, 314);
             mainBox.TabIndex = 2;
             mainBox.TabStop = false;
+            // 
+            // groupBox4
+            // 
+            groupBox4.Controls.Add(tLaser);
+            groupBox4.Controls.Add(tPIC);
+            groupBox4.Controls.Add(cTemp);
+            groupBox4.Controls.Add(checkT);
+            groupBox4.Location = new Point(257, 180);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Size = new Size(297, 52);
+            groupBox4.TabIndex = 10;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Temperature of";
+            // 
+            // tLaser
+            // 
+            tLaser.AutoSize = true;
+            tLaser.Location = new Point(65, 24);
+            tLaser.Name = "tLaser";
+            tLaser.Size = new Size(52, 19);
+            tLaser.TabIndex = 10;
+            tLaser.Text = "Laser";
+            tLaser.UseVisualStyleBackColor = true;
+            // 
+            // tPIC
+            // 
+            tPIC.AutoSize = true;
+            tPIC.Checked = true;
+            tPIC.Location = new Point(12, 24);
+            tPIC.Name = "tPIC";
+            tPIC.Size = new Size(43, 19);
+            tPIC.TabIndex = 10;
+            tPIC.TabStop = true;
+            tPIC.Text = "PIC";
+            tPIC.UseVisualStyleBackColor = true;
+            // 
+            // cTemp
+            // 
+            cTemp.AutoSize = true;
+            cTemp.BorderStyle = BorderStyle.FixedSingle;
+            cTemp.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            cTemp.Location = new Point(204, 24);
+            cTemp.Name = "cTemp";
+            cTemp.Size = new Size(33, 19);
+            cTemp.TabIndex = 9;
+            cTemp.Text = ".. °c";
+            // 
+            // checkT
+            // 
+            checkT.Location = new Point(127, 19);
+            checkT.Name = "checkT";
+            checkT.Size = new Size(67, 29);
+            checkT.TabIndex = 8;
+            checkT.Text = "Read";
+            checkT.UseVisualStyleBackColor = true;
+            checkT.Click += checkT_Click;
             // 
             // groupBox3
             // 
@@ -390,8 +453,6 @@
             // KeepAlive
             // 
             KeepAlive.AutoSize = true;
-            KeepAlive.Checked = true;
-            KeepAlive.CheckState = CheckState.Checked;
             KeepAlive.Location = new Point(16, 36);
             KeepAlive.Name = "KeepAlive";
             KeepAlive.Size = new Size(78, 19);
@@ -420,6 +481,8 @@
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             mainBox.ResumeLayout(false);
+            groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
             streamBox.ResumeLayout(false);
@@ -464,5 +527,10 @@
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
         private CheckBox KeepAlive;
+        private Button checkT;
+        private Label cTemp;
+        private GroupBox groupBox4;
+        private RadioButton tLaser;
+        private RadioButton tPIC;
     }
 }
