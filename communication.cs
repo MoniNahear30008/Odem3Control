@@ -1,4 +1,5 @@
-﻿using Renci.SshNet;
+﻿using Org.BouncyCastle.Tls.Crypto.Impl.BC;
+using Renci.SshNet;
 using System.Collections;
 using System.Net.Sockets;
 using System.Reflection;
@@ -329,42 +330,72 @@ namespace OdemControl
 
 
         }
-        private string SPIWriteRegWaitResp(uint sys, uint reg, uint val)
+        private string RunOpto(int mode)
         {
             if (!isConnected) return "Device not connected";
 
             List<byte> data = new List<byte>();
             data.Add(0x04);         // command
-            data.Add(0x08);         // Sub command
+            data.Add(0x09);         // Sub command
             data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
-            data.AddRange(new List<byte>() { 0, 0, 0, 6 });   // length
-            data.Add((byte)sys);    
-            data.Add((byte)reg);    
-            data.AddRange(GetBytesBigEndian(val));  // Number of values
+            data.AddRange(new List<byte>() { 0, 0, 0, 2 });   // length
+            data.Add((byte)(0x30 + mode));    
+            data.Add(0x00);    
 
             if (dataLoggingEnabled)
             {
                 string tx = "";
                 foreach (byte b in data)
                     tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
+                LogMessage("SPI Write: " + tx);
             }
 
             byte[] TxBuf = data.ToArray();
-            stream.ReadTimeout = 10000;
+            stream.ReadTimeout = 100000;
             stream.Write(TxBuf);
 
+            int stepNum = 0;
+            int NumSteps = 20;
+
+            List<string> msgs = new List<string>();
+            List<byte> resp = new List<byte>();
             try
             {
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
-                    return "";
-                else
+                while (true)
                 {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
+                    while (true)
+                    {
+                        byte[] buffer = new byte[1024];
+                        int count = stream.Read(buffer, 0, buffer.Length);
+                        resp.AddRange(new List<byte>(buffer.Take(count)));
+                        while (resp.Count > 17)
+                        {
+                            int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];
+                            if (resp.Count < (ml + 12))
+                                continue;
+                            if ((resp[0] == 2) && (resp[1] == 9))
+                            {
+                                stepNum = (int)resp[11];
+                                NumSteps = (int)resp[15];
+                                int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
+                                string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
+                                msgs.Add(msg);
+                                runstatus.Text = "Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg;
+                                this.Refresh();
+                                resp.RemoveRange(0, ml + 12);
+
+                                if (stepNum == NumSteps)
+                                {
+                                    return "";
+                                }
+                            }
+                            else
+                            {
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml);
+                                return s;
+                            }
+                        }
+                    }
                 }
             }
             catch (IOException)
@@ -453,7 +484,6 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
-        
         private string LoadFiles()
         {
             string modeName = modes[appSetting.scanModeNum];

@@ -14,3 +14,7 @@
 /obj/Debug/net10.0-windows/OdemControl.csproj.GenerateResource.cache
 /obj/Debug/net10.0-windows/OdemControl.pdb
 *.md
+/bin/Debug/net10.0-windows/OdemControl.deps.json
+/obj
+/bin
+/bin/Debug/net10.0-windows/OdemControl.deps.json

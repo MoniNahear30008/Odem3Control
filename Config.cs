@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Tls.Crypto.Impl.BC;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -123,6 +124,8 @@ namespace OdemControl
                         break;
 
                     case (int)confStates.LOAD_SSH_DRIVER:
+                        // insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip="192.168.2.20" udp_dest_port=10003 transfer_size=704
+// ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20" udp_dest_port=10003 transfer_size=704']
                         confState++;
                         break;
 
@@ -288,13 +291,21 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error Load files:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
                         break;
 
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
+                        LogMessage("Configuring: Run opto");
+                        Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
                         confState++;
                         break;
 

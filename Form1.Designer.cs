@@ -64,6 +64,7 @@
             SensitivityNormal = new RadioButton();
             label3 = new Label();
             KeepAlive = new CheckBox();
+            runstatus = new ToolStripStatusLabel();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -78,7 +79,7 @@
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { connectState });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { connectState, runstatus });
             statusStrip1.Location = new Point(0, 378);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
@@ -460,6 +461,11 @@
             KeepAlive.Text = "KeepAlive";
             KeepAlive.UseVisualStyleBackColor = true;
             // 
+            // runstatus
+            // 
+            runstatus.Name = "runstatus";
+            runstatus.Size = new Size(0, 17);
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -532,5 +538,6 @@
         private GroupBox groupBox4;
         private RadioButton tLaser;
         private RadioButton tPIC;
+        private ToolStripStatusLabel runstatus;
     }
 }
