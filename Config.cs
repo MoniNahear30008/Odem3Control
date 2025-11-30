@@ -80,7 +80,15 @@ namespace OdemControl
                         break;
 
                     case (int)confStates.SET_CHIRP_WAVEFORM:
-                        confState = (int)confStates.SET_CHIRP_GAIN;
+                        LogMessage("Configuring: Load AWG waveform");
+                        Error = SPIWriteAWGWaitResp(confFiles["AWG"] );
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
                         break;
 
                     case (int)confStates.SET_CHIRP_GAIN:
@@ -274,28 +282,15 @@ namespace OdemControl
                         confState++;
                         break;
 
-                    case (int)confStates.SET_OPTOTUNE_X:
-                        confState++;
-                        break;
-
-                    case (int)confStates.SET_OPTOTUNE_Y:
-                        confState++;
-                        break;
-
-                    case (int)confStates.SET_MIRROR_FREQUENCY:
-                        LogMessage("Configuring: SET_MIRROR_FREQUENCY");
-                        uint iFreq = BitConverter.SingleToUInt32Bits((float)scanModes[modes[appSetting.scanModeNum]].mirror);
-                        Error = SPIWriteRegWaitResp(0x68, 0x04, iFreq);
+                    case (int)confStates.LOAD_FILES:
+                        LogMessage("Configuring: Load files");
+                        Error = LoadFiles();
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        confState++;
-                        break;
-
-                    case (int)confStates.SET_NUMBER_OF_POINTS:
                         confState++;
                         break;
 

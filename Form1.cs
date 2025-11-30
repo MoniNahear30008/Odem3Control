@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace OdemControl
 {
@@ -11,14 +12,15 @@ namespace OdemControl
         public List<string> deviceID = new List<string>();
         private Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>()
         {
-            { "88deg_0.015res_80L", new scanMode() { mirror=2000, nPoints=12329, hFOV=88, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=5 , folder="Mode1"} },
-            { "88deg_0.030res_80L", new scanMode() { mirror=4000, nPoints=6164, hFOV=88, vFOV=19, hRes=0.03, vRes=0.24, lines=80, fRate=10, folder="Mode2" } },
-            { "80deg_0.050res_160L", new scanMode() { mirror=8000, nPoints=6164, hFOV=80, vFOV=19, hRes=0.05, vRes=0.12, lines=160, fRate=10, folder="Mode3" } },
-            { "60deg_0.013res_80L", new scanMode() { mirror=2500, nPoints=9106, hFOV=60, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=6, folder="ModeA4" } },
+            { "88deg_0.015res_80L", new scanMode() { mirror=2000, nPoints=12329, hFOV=88, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=5 , folder="Mode1", modeNum = 1} },
+            { "88deg_0.030res_80L", new scanMode() { mirror=4000, nPoints=6164, hFOV=88, vFOV=19, hRes=0.03, vRes=0.24, lines=80, fRate=10, folder="Mode2", modeNum = 2 } },
+            { "80deg_0.050res_160L", new scanMode() { mirror=8000, nPoints=6164, hFOV=80, vFOV=19, hRes=0.05, vRes=0.12, lines=160, fRate=10, folder="Mode3", modeNum = 3 } },
+            { "60deg_0.013res_80L", new scanMode() { mirror=2500, nPoints=9106, hFOV=60, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=6, folder="ModeA4", modeNum = 4 } },
         };
         private List<string> modes = new List<string>();
         Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
         Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
+        string scanParamsJson = "";
         private List<string> devicesList = new List<string>();
         int confState = (int)confStates.IDLE;
         Dictionary<string, uint> deviceParameters = new Dictionary<string, uint>()
@@ -141,10 +143,20 @@ namespace OdemControl
             List<string> files = wfFiles.Keys.ToList();
             Stream stream;
             StreamReader reader;
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + "scan_parameters.json");
+            if (stream == null)
+            {
+                MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            reader = new StreamReader(stream);
+            scanParamsJson = reader.ReadToEnd();
+
             foreach (string f in files)
             {
                 wfFiles[f].Clear();
-                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + f + ".csv");
+                string fname = resourceName + f + ".csv";
+                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fname);
                 if (stream == null)
                 {
                     MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -320,9 +332,6 @@ namespace OdemControl
         }
         private void readTemp()
         {
-            double R1 = 5.6;
-            double R2 = 2;
-            double R3 = 47;
             string err = "";
             List<uint> temp;
             if (tLaser.Checked)
@@ -333,6 +342,9 @@ namespace OdemControl
             {
                 if (tLaser.Checked)
                 {
+                    double R1 = 5.6;
+                    double R2 = 2;
+                    double R3 = 47;
                     double Vtempout = ((double)temp[0] / 4095 * 2.5);
                     double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
                     double t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
@@ -341,12 +353,33 @@ namespace OdemControl
                 }
                 else
                 {
-                    R1 = 6.81;
-                    R2 = 2.7;
-                    R3 = 68;
-                    double Vtempout = ((double)temp[0] / 4095 * 2.5);
-                    double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
-                    double t = 1 / ((1 / 298.15) + (1 / 3380) * Math.Log(Rth / 10)) - 273.15;
+                    double vref = 2.45;
+                    double r1 = 5.6;
+                    double r2 = 2.0;
+                    double r3 = 47.0;
+                    double vtempout = ((double)temp[0] / 4095 * 2.5);
+                    double term1 = 2 * r1 * r2 * vtempout;
+                    double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
+                    double term2 = vref * term2_inner;
+                    double numerator = term1 - term2;
+
+                    double term3_inner = r1 - r3;
+                    double term3 = vref * term3_inner;
+                    double term4 = 2 * r1 * vtempout;
+                    double denominator = term3 - term4;
+
+                    double rth = numerator / denominator;
+                    double T0 = 298.15;
+                    double B = 3380;
+                    double R0 = 10;
+                    double ratio = rth / R0;
+                    double ln_ratio = Math.Log(ratio);
+                    double inv_t0 = 1 / T0;
+                    double ln_term = (1 / B) * ln_ratio;
+                    double inv_temp_kelvin = inv_t0 + ln_term;
+                    double temp_kelvin = 1 / inv_temp_kelvin;
+                    double t = temp_kelvin - 273.15;
+
                     cTemp.Text = t.ToString("0.00") + " °c";
 
                     if ((t >= 47) && (t <= 59))
@@ -401,6 +434,7 @@ namespace OdemControl
         public int lines;
         public int fRate;
         public string folder;
+        public int modeNum;
 
         public scanMode()
         {
@@ -413,6 +447,7 @@ namespace OdemControl
             lines = 1;
             fRate = 10;
             folder = "";
+            modeNum = 0;
         }
     }
 
@@ -441,10 +476,7 @@ namespace OdemControl
         SET_VECTOR_4,
         SET_VECTOR_5,
         SET_VECTOR_6,
-        SET_OPTOTUNE_X,
-        SET_OPTOTUNE_Y,
-        SET_MIRROR_FREQUENCY,
-        SET_NUMBER_OF_POINTS,
+        LOAD_FILES,
         RUN_OPTOTUNE_CALIBRATION,
         DONE
     }
