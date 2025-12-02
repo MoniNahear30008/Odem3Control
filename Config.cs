@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OdemControl
 {
-    partial class Form1
+    public partial class Form1
     {
         // Sensitivity --> Normal: 0x81010E3C; High: 0x80010F3c	
         List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x80010F3c };
@@ -173,8 +173,19 @@ namespace OdemControl
                         break;
 
                     case (int)confStates.LOAD_SSH_DRIVER:
+                        LogMessage("Configuring: LOAD_SSH_DRIVER");
+                        if (debugmodeEnabled)
+                            runstatus.Text = "Configuring: LOAD_SSH_DRIVER";
+                        this.Refresh();
+                        Error = LoadHHSDriver();
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error loading HHS driver:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
                         // insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip="192.168.2.20" udp_dest_port=10003 transfer_size=704
-// ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20" udp_dest_port=10003 transfer_size=704']
+                        // ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20" udp_dest_port=10003 transfer_size=704']
                         confState++;
                         break;
 

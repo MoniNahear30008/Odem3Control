@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -21,6 +21,7 @@
     <None Remove="Devices\SN0051\FF248200.txt" />
     <None Remove="Devices\SN0051\FF340000.txt" />
     <None Remove="Devices\SN0051\FF346000.txt" />
+    <None Remove="Devices\SN0051\General_Params.csv" />
     <None Remove="Devices\SN0052\128Bins_Final.txt" />
     <None Remove="Devices\SN0052\2kWin.txt" />
     <None Remove="Devices\SN0052\AWG.txt" />
@@ -77,6 +78,7 @@
     <EmbeddedResource Include="Devices\SN0051\AWG.txt" />
     <EmbeddedResource Include="Devices\SN0051\badGoodIndxs_High.txt" />
     <EmbeddedResource Include="Devices\SN0051\badGoodIndxs_Low.txt" />
+    <EmbeddedResource Include="Devices\SN0051\General_Params.csv" />
     <EmbeddedResource Include="Devices\SN0052\128Bins_Final.txt" />
     <EmbeddedResource Include="Devices\SN0052\2kWin.txt" />
     <EmbeddedResource Include="Devices\SN0052\AWG.txt" />

@@ -2,6 +2,7 @@
 using Renci.SshNet;
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
@@ -10,12 +11,13 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace OdemControl
 {
-    partial class Form1
+    public partial class Form1
     {
         private string _ipAddress = "192.168.2.24";
         private int _port = 24871;
         NetworkStream stream;
         TcpClient client;
+        SshClient ssh;
 
         public event Action<string> OnMessageReceived;
 
@@ -26,6 +28,7 @@ namespace OdemControl
                 LogMessage("Disconnecting from device...");
                 isConnected = false;
                 client.Close();
+                ssh.Disconnect();
                 connect.Text = "Connect";
                 connectState.Text = "DisConnected";
                 connectState.ForeColor = Color.Red;
@@ -65,6 +68,9 @@ namespace OdemControl
                     connectState.Text = "Connected";
                     connectState.ForeColor = Color.Lime;
                     mainBox.Enabled = true;
+                    ssh = new SshClient("192.168.2.24", "root", "");
+                    ssh.Connect();
+
                 }
                 else
                 {
@@ -484,17 +490,19 @@ namespace OdemControl
             }
         }
 
+        private string LoadHHSDriver()
+        {
+            string command = "'-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20\" udp_dest_port=10003 transfer_size=704']";
+            var result = ssh.CreateCommand(command).Execute().Trim();
+            return "";
+        }
         public void RemoteDirectoryExists()
         {
             string path = "/var/lib/odem/patterns";
-            SshClient ssh = new SshClient("192.168.2.24", "root", "");
-            ssh.Connect();
-
             string command = $"[ -d \"{path}\" ] && echo exists || echo missing";
             var result = ssh.CreateCommand(command).Execute().Trim();
-            if (result != "")
+            if (result != "exists")
                 ssh.CreateCommand($"mkdir -p \"{path}\"").Execute();
-            ssh.Disconnect();
         }
         private string LoadFiles()
         {
