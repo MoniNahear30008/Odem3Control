@@ -380,7 +380,8 @@ namespace OdemControl
                                 int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
                                 string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
                                 msgs.Add(msg);
-                                runstatus.Text = "Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg;
+                                LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
+                                runstatus.Text = "Configuring: Run opto step " + stepNum.ToString() + " / " + NumSteps.ToString();
                                 this.Refresh();
                                 resp.RemoveRange(0, ml + 12);
 
@@ -484,11 +485,27 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
+
+        public void RemoteDirectoryExists()
+        {
+            string path = "/var/lib/odem/patterns";
+            SshClient ssh = new SshClient("192.168.2.24", "root", "");
+            ssh.Connect();
+
+            string command = $"[ -d \"{path}\" ] && echo exists || echo missing";
+            var result = ssh.CreateCommand(command).Execute().Trim();
+            if (result != "")
+                ssh.CreateCommand($"mkdir -p \"{path}\"").Execute();
+            ssh.Disconnect();
+        }
         private string LoadFiles()
         {
             string modeName = modes[appSetting.scanModeNum];
             int modeIndex = scanModes[modeName].modeNum;
             var assembly = Assembly.GetExecutingAssembly();
+
+
+            RemoteDirectoryExists();
 
             using (var client = new ScpClient("192.168.2.24", "root", ""))
             {
@@ -500,6 +517,7 @@ namespace OdemControl
                 {
                     return "Failed to read device configuation file";
                 }
+
                 client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
 
                 resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformX.csv";
@@ -520,6 +538,51 @@ namespace OdemControl
 
                 client.Disconnect();
             }
+
+            return "";
+        }
+    
+        private string StreamingCmd(bool start)
+        {
+            if (!isConnected) return "Device not connected";
+
+            List<byte> data = new List<byte>();
+            data.Add(0x05);         // command
+            if (start)
+                data.Add(0x01);         // Sub command
+            else
+                data.Add(0x02);         // Sub command
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // length
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("I2C write: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 1000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 11)))
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+            }
+            catch (IOException)
+            {
+                return "Device not reponding";
+            }
+
 
             return "";
         }

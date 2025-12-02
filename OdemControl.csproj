@@ -63,6 +63,7 @@
     <None Remove="Optotune\Mode1\waveformY.csv" />
     <None Remove="Optotune\Mode2\waveformX.csv" />
     <None Remove="Optotune\Mode2\waveformY.csv" />
+    <None Remove="Optotune\modes_params.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -112,6 +113,7 @@
     <EmbeddedResource Include="Optotune\Mode1\waveformY.csv" />
     <EmbeddedResource Include="Optotune\Mode2\waveformX.csv" />
     <EmbeddedResource Include="Optotune\Mode2\waveformY.csv" />
+    <EmbeddedResource Include="Optotune\modes_params.json" />
   </ItemGroup>
 
   <ItemGroup>

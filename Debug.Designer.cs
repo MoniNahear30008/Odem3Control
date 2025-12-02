@@ -39,9 +39,12 @@
             pwBox = new GroupBox();
             startDebug = new Button();
             pw = new TextBox();
+            wrOTDelay = new Button();
+            OTDelay = new NumericUpDown();
             dbgControl.SuspendLayout();
             tabPage1.SuspendLayout();
             pwBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -107,6 +110,8 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(wrOTDelay);
+            tabPage1.Controls.Add(OTDelay);
             tabPage1.Controls.Add(button1);
             tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(button3);
@@ -159,6 +164,25 @@
             pw.Size = new Size(159, 23);
             pw.TabIndex = 0;
             // 
+            // wrOTDelay
+            // 
+            wrOTDelay.Location = new Point(34, 287);
+            wrOTDelay.Name = "wrOTDelay";
+            wrOTDelay.Size = new Size(127, 23);
+            wrOTDelay.TabIndex = 6;
+            wrOTDelay.Text = "Update OT Delay";
+            wrOTDelay.UseVisualStyleBackColor = true;
+            // 
+            // OTDelay
+            // 
+            OTDelay.Location = new Point(167, 287);
+            OTDelay.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            OTDelay.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
+            OTDelay.Name = "OTDelay";
+            OTDelay.Size = new Size(101, 23);
+            OTDelay.TabIndex = 5;
+            OTDelay.TextAlign = HorizontalAlignment.Right;
+            // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -174,6 +198,7 @@
             tabPage1.PerformLayout();
             pwBox.ResumeLayout(false);
             pwBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)OTDelay).EndInit();
             ResumeLayout(false);
         }
 
@@ -190,5 +215,7 @@
         private GroupBox pwBox;
         private Button startDebug;
         private TextBox pw;
+        private Button wrOTDelay;
+        private NumericUpDown OTDelay;
     }
 }

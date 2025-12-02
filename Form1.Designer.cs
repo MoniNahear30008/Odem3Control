@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             statusStrip1 = new StatusStrip();
             connectState = new ToolStripStatusLabel();
+            runstatus = new ToolStripStatusLabel();
             connect = new Button();
             toolTip1 = new ToolTip(components);
             label2 = new Label();
@@ -51,7 +52,6 @@
             scanMode = new ComboBox();
             debugMode = new Button();
             streamBox = new GroupBox();
-            pictureBox1 = new PictureBox();
             sStop = new Button();
             sStart = new Button();
             confDev = new Button();
@@ -62,25 +62,25 @@
             groupBox1 = new GroupBox();
             sensitivityHigh = new RadioButton();
             SensitivityNormal = new RadioButton();
+            pictureBox1 = new PictureBox();
             label3 = new Label();
             KeepAlive = new CheckBox();
-            runstatus = new ToolStripStatusLabel();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ModeParams).BeginInit();
             streamBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { connectState, runstatus });
-            statusStrip1.Location = new Point(0, 378);
+            statusStrip1.Location = new Point(0, 414);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
             statusStrip1.Size = new Size(592, 22);
@@ -93,6 +93,11 @@
             connectState.Name = "connectState";
             connectState.Size = new Size(79, 17);
             connectState.Text = "Disconnected";
+            // 
+            // runstatus
+            // 
+            runstatus.Name = "runstatus";
+            runstatus.Size = new Size(0, 17);
             // 
             // connect
             // 
@@ -108,7 +113,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(334, 12);
+            label2.Location = new Point(16, 67);
             label2.Name = "label2";
             label2.Size = new Size(50, 15);
             label2.TabIndex = 7;
@@ -139,7 +144,7 @@
             // devices
             // 
             devices.FormattingEnabled = true;
-            devices.Location = new Point(397, 9);
+            devices.Location = new Point(79, 64);
             devices.Margin = new Padding(3, 2, 3, 2);
             devices.Name = "devices";
             devices.Size = new Size(124, 23);
@@ -157,11 +162,11 @@
             mainBox.Controls.Add(groupBox2);
             mainBox.Controls.Add(groupBox1);
             mainBox.Enabled = false;
-            mainBox.Location = new Point(8, 52);
+            mainBox.Location = new Point(10, 99);
             mainBox.Margin = new Padding(3, 2, 3, 2);
             mainBox.Name = "mainBox";
             mainBox.Padding = new Padding(3, 2, 3, 2);
-            mainBox.Size = new Size(574, 314);
+            mainBox.Size = new Size(574, 313);
             mainBox.TabIndex = 2;
             mainBox.TabStop = false;
             // 
@@ -292,7 +297,6 @@
             // 
             // streamBox
             // 
-            streamBox.Controls.Add(pictureBox1);
             streamBox.Controls.Add(sStop);
             streamBox.Controls.Add(sStart);
             streamBox.Enabled = false;
@@ -304,41 +308,31 @@
             streamBox.TabIndex = 4;
             streamBox.TabStop = false;
             // 
-            // pictureBox1
-            // 
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
-            pictureBox1.Location = new Point(158, 20);
-            pictureBox1.Margin = new Padding(3, 2, 3, 2);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(248, 44);
-            pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
-            pictureBox1.TabIndex = 1;
-            pictureBox1.TabStop = false;
-            // 
             // sStop
             // 
             sStop.BackColor = Color.Red;
             sStop.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(416, 22);
+            sStop.Location = new Point(381, 18);
             sStop.Margin = new Padding(3, 2, 3, 2);
             sStop.Name = "sStop";
-            sStop.Size = new Size(112, 31);
+            sStop.Size = new Size(141, 39);
             sStop.TabIndex = 0;
             sStop.Text = "Stop streaming";
             sStop.UseVisualStyleBackColor = false;
+            sStop.Click += sStop_Click;
             // 
             // sStart
             // 
             sStart.BackColor = Color.Lime;
-            sStart.Location = new Point(5, 22);
+            sStart.Location = new Point(30, 18);
             sStart.Margin = new Padding(3, 2, 3, 2);
             sStart.Name = "sStart";
-            sStart.Size = new Size(112, 31);
+            sStart.Size = new Size(141, 39);
             sStart.TabIndex = 0;
             sStart.Text = "Start streaming";
             sStart.UseVisualStyleBackColor = false;
+            sStart.Click += sStart_Click;
             // 
             // confDev
             // 
@@ -442,6 +436,18 @@
             SensitivityNormal.UseVisualStyleBackColor = true;
             SensitivityNormal.CheckedChanged += SensitivityNormal_CheckedChanged;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
+            pictureBox1.Location = new Point(336, 12);
+            pictureBox1.Margin = new Padding(3, 2, 3, 2);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(248, 44);
+            pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
+            pictureBox1.TabIndex = 1;
+            pictureBox1.TabStop = false;
+            // 
             // label3
             // 
             label3.AutoSize = true;
@@ -461,16 +467,12 @@
             KeepAlive.Text = "KeepAlive";
             KeepAlive.UseVisualStyleBackColor = true;
             // 
-            // runstatus
-            // 
-            runstatus.Name = "runstatus";
-            runstatus.Size = new Size(0, 17);
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(592, 400);
+            ClientSize = new Size(592, 436);
+            Controls.Add(pictureBox1);
             Controls.Add(KeepAlive);
             Controls.Add(label3);
             Controls.Add(IPPort);
@@ -492,12 +494,11 @@
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
             streamBox.ResumeLayout(false);
-            streamBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }

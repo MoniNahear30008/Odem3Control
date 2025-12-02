@@ -1,5 +1,5 @@
 Capture_Delay ,3600
-Chirp AWG gain,7000
+Chirp_AWG_gain,7000
 LO,7000
 TxSOA1,2050
 TxSOA2,5050

@@ -1,0 +1,50 @@
+{
+  "88deg_0.015res_80L": {
+    "mirror": 2000,
+    "nPoints": 12329,
+    "hFOV": 88,
+    "vFOV": 19,
+    "hRes": 0.013,
+    "vRes": 0.24,
+    "lines": 80,
+    "fRate": 5,
+    "folder": "Mode1",
+    "modeNum": 1
+  },
+  "88deg_0.030res_80L": {
+    "mirror": 4000,
+    "nPoints": 6164,
+    "hFOV": 88,
+    "vFOV": 19,
+    "hRes": 0.03,
+    "vRes": 0.24,
+    "lines": 80,
+    "fRate": 10,
+    "folder": "Mode2",
+    "modeNum": 2
+  },
+  "80deg_0.050res_160L": {
+    "mirror": 8000,
+    "nPoints": 6164,
+    "hFOV": 80,
+    "vFOV": 19,
+    "hRes": 0.05,
+    "vRes": 0.12,
+    "lines": 160,
+    "fRate": 10,
+    "folder": "Mode3",
+    "modeNum": 3
+  },
+  "60deg_0.013res_80L": {
+    "mirror": 2500,
+    "nPoints": 9106,
+    "hFOV": 60,
+    "vFOV": 19,
+    "hRes": 0.013,
+    "vRes": 0.24,
+    "lines": 80,
+    "fRate": 6,
+    "folder": "Mode4",
+    "modeNum": 4
+  }
+}

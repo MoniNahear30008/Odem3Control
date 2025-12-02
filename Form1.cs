@@ -1,7 +1,9 @@
 using System;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Text.Json;
 using System.Xml.Linq;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace OdemControl
 {
@@ -10,13 +12,7 @@ namespace OdemControl
         public appSettings appSetting;
         public bool isConnected = false;
         public List<string> deviceID = new List<string>();
-        private Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>()
-        {
-            { "88deg_0.015res_80L", new scanMode() { mirror=2000, nPoints=12329, hFOV=88, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=5 , folder="Mode1", modeNum = 1} },
-            { "88deg_0.030res_80L", new scanMode() { mirror=4000, nPoints=6164, hFOV=88, vFOV=19, hRes=0.03, vRes=0.24, lines=80, fRate=10, folder="Mode2", modeNum = 2 } },
-            { "80deg_0.050res_160L", new scanMode() { mirror=8000, nPoints=6164, hFOV=80, vFOV=19, hRes=0.05, vRes=0.12, lines=160, fRate=10, folder="Mode3", modeNum = 3 } },
-            { "60deg_0.013res_80L", new scanMode() { mirror=2500, nPoints=9106, hFOV=60, vFOV=19, hRes=0.013, vRes=0.24, lines=80, fRate=6, folder="ModeA4", modeNum = 4 } },
-        };
+        private Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         private List<string> modes = new List<string>();
         Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
         Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
@@ -26,7 +22,7 @@ namespace OdemControl
         Dictionary<string, uint> deviceParameters = new Dictionary<string, uint>()
         {
             {"Capture_Delay" ,3600},
-            {"Chirp AWG gain",7000},
+            {"Chirp_AWG_gain",7000},
             {"LO",7000},
             {"TxSOA1",2050},
             {"TxSOA2",5050},
@@ -36,6 +32,7 @@ namespace OdemControl
             {"Tx3_30_39",5050},
         };
         bool loggingEnabled = false;
+        bool debugmodeEnabled = false;
         bool dataLoggingEnabled = false;
         private StreamWriter logFile;
 
@@ -44,55 +41,74 @@ namespace OdemControl
             InitializeComponent();
 
             debugMode.Visible = mode.Contains("-d");
+            debugmodeEnabled = mode.Contains("-d");
             loggingEnabled = mode.Contains("-l");
             dataLoggingEnabled = mode.Contains("-le");
             if (loggingEnabled)
                 OpenLogFile();
 
+            SetVars();
+        }
+
+        private void SetVars()
+        {
+            appSetting = new appSettings();
+
             IPAddredd.Text = _ipAddress;
             IPPort.Text = _port.ToString();
 
+            // Set devices lists
             var assembly = Assembly.GetExecutingAssembly();
             string[] resources = assembly.GetManifestResourceNames();
             foreach (string r in resources)
             {
                 if (r.Contains("badGoodIndxs_High"))
-                    devicesList.Add(r.Split('.')[2]);
+                {
+                    string devName = r.Split('.')[2];
+                    devicesList.Add(devName);
+                    deviceID.Add(devName);
+                    devices.Items.Add(devName);
+                }
             }
+            devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
 
-            foreach (string d in devicesList)
-                deviceID.Add(d);
-
-            ModeParams.Rows.Clear();
-            ModeParams.Rows.Add("Horizontal FOV", ".. °");
-            ModeParams.Rows.Add("Vertical FOV", ".. °");
-            ModeParams.Rows.Add("Horizontal Res.", ".. °");
-            ModeParams.Rows.Add("Vertical Res.", ".. °");
-            ModeParams.Rows.Add("Lies per frame", ".. °");
-            ModeParams.Rows.Add("frame rate", ".. FPS");
-
+            // configuration files dictionaries
             confFiles.Add("badGoodIndxs_High", new List<uint>());
             confFiles.Add("badGoodIndxs_Low", new List<uint>());
             confFiles.Add("2kWin", new List<uint>());
             confFiles.Add("128Bins_Final", new List<uint>());
             confFiles.Add("blackmanHarris_DEC", new List<uint>());
             confFiles.Add("AWG", new List<uint>());
-
             wfFiles.Add("waveformX", new List<uint>());
             wfFiles.Add("waveformY", new List<uint>());
 
+            // Set scan mode parameters table
+            ModeParams.Rows.Clear();
+            ModeParams.Rows.Add("Horizontal FOV", ".. °");
+            ModeParams.Rows.Add("Vertical FOV", ".. °");
+            ModeParams.Rows.Add("Horizontal Res.", ".. °");
+            ModeParams.Rows.Add("Vertical Res.", ".. °");
+            ModeParams.Rows.Add("Lines per frame", ".. °");
+            ModeParams.Rows.Add("frame rate", ".. FPS");
+
+            // Get scan modes from json file
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.json");
+            if (stream == null)
+            {
+                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            StreamReader reader = new StreamReader(stream);
+            string json = reader.ReadToEnd();
+            scanModes = JsonSerializer.Deserialize<Dictionary<string, scanMode>>(json);
             modes = scanModes.Keys.ToList();
             foreach (string m in scanModes.Keys)
+            {
                 scanMode.Items.Add(m);
-
-            foreach (string d in deviceID)
-                devices.Items.Add(d);
-
-            appSetting = new appSettings();
+                deviceParameters.Add(m, 0);
+            }
             scanMode.SelectedIndex = Math.Min(appSetting.scanModeNum, modes.Count() - 1);
             updateScanMode(scanMode.SelectedIndex);
-
-            devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
 
             if (appSetting.sensitivity == 0)
                 SensitivityNormal.Checked = true;
@@ -106,7 +122,6 @@ namespace OdemControl
             else
                 rangeMax.Checked = true;
         }
-
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
         {
             if (SensitivityNormal.Checked)
@@ -179,20 +194,32 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
+            this.Cursor = Cursors.WaitCursor;
+            this.Enabled = false;
+            runstatus.Text = "";
+            runstatus.ForeColor = Color.Black;
             appSetting.Update(true);
             UpdateConfFiles();
             confState = (int)confStates.IDLE;
             cofigdevice();
             if (confState == (int)confStates.DONE)
             {
+                runstatus.Text = "Device ready";
+                runstatus.ForeColor = Color.Lime;
                 LogMessage("Configuring: Done");
                 streamBox.Enabled = true;
             }
             else
             {
+                runstatus.Text = "Device configuration error";
+                runstatus.ForeColor = Color.Red;
                 LogMessage("Configuring: Error");
                 streamBox.Enabled = false;
             }
+
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+
         }
         public static byte[] GetBytesBigEndian(uint value)
         {
@@ -397,6 +424,22 @@ namespace OdemControl
         {
             ConnectToDevice();
         }
+
+        private void wrOTDelay_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void sStart_Click(object sender, EventArgs e)
+        {
+            string err = StreamingCmd(true);
+        }
+
+        private void sStop_Click(object sender, EventArgs e)
+        {
+            string err = StreamingCmd(false);
+
+        }
     }
 
     public class appSettings
@@ -423,18 +466,42 @@ namespace OdemControl
         }
     }
 
+    public class deviceParameters
+    {
+        public uint Capture_Delay { get; set; }
+        public uint Chirp_AWG_gain { get; set; }
+        public uint LO { get; set; }
+        public uint TxSOA1 { get; set; }
+        public uint TxSOA2 { get; set; }
+        public uint Tx3_0_9 { get; set; }
+        public uint Tx3_10_19 { get; set; }
+        public uint Tx3_20_29 { get; set; }
+        public uint Tx3_30_39 { get; set; }
+        public deviceParameters()
+        {
+            Capture_Delay = 3600;
+            Chirp_AWG_gain = 7000;
+            TxSOA1 = 2050;
+            TxSOA2 = 5050;
+            Tx3_0_9 = 5050;
+            Tx3_10_19 = 5050;
+            Tx3_20_29 = 5050;
+            Tx3_30_39 = 5050;
+        }
+    }
+
     public class scanMode
     {
-        public int mirror;
-        public int nPoints;
-        public int hFOV;
-        public int vFOV;
-        public double hRes;
-        public double vRes;
-        public int lines;
-        public int fRate;
-        public string folder;
-        public int modeNum;
+        public int mirror { get; set;}
+        public int nPoints { get; set; }
+        public int hFOV { get; set; }
+        public int vFOV { get; set; }
+        public double hRes { get; set; }
+        public double vRes { get; set; }
+        public int lines { get; set; }
+        public int fRate { get; set; }
+        public string folder { get; set; }
+        public int modeNum { get; set; }
 
         public scanMode()
         {
@@ -478,6 +545,7 @@ namespace OdemControl
         SET_VECTOR_6,
         LOAD_FILES,
         RUN_OPTOTUNE_CALIBRATION,
+        SET_OT_DELAY,
         DONE
     }
 }
