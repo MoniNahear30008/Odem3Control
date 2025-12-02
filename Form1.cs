@@ -422,9 +422,9 @@ namespace OdemControl
 
         }
 
-        private void connect_Click(object sender, EventArgs e)
+        private async Task connect_ClickAsync(object sender, EventArgs e)
         {
-            ConnectToDevice();
+            await ConnectToDevice();
         }
 
         private void wrOTDelay_Click(object sender, EventArgs e)

@@ -21,7 +21,7 @@ namespace OdemControl
 
         public event Action<string> OnMessageReceived;
 
-        private async void ConnectToDevice()
+        private async Task ConnectToDevice()
         {
             if (isConnected)
             {
@@ -489,7 +489,6 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
-
         private string LoadHHSDriver()
         {
             var result = ssh.CreateCommand($"lsmod").Execute().Trim();
@@ -552,7 +551,6 @@ namespace OdemControl
 
             return "";
         }
-    
         private string StreamingCmd(bool start)
         {
             if (!isConnected) return "Device not connected";

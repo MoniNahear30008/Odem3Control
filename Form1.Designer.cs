@@ -113,7 +113,7 @@
             connect.TabIndex = 1;
             connect.Text = "Connect";
             connect.UseVisualStyleBackColor = true;
-            connect.Click += connect_Click;
+            connect.Click += async (sender, e) => await connect_ClickAsync(sender, e);
             // 
             // label2
             // 
