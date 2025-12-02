@@ -30,8 +30,8 @@ namespace OdemControl
                 client.Close();
                 ssh.Disconnect();
                 connect.Text = "Connect";
-                connectState.Text = "DisConnected";
-                connectState.ForeColor = Color.Red;
+                deviceState.Text = "DisConnected";
+                deviceState.ForeColor = Color.Red;
                 mainBox.Enabled = false;
                 devices.Enabled = true;
             }
@@ -65,8 +65,8 @@ namespace OdemControl
                 {
                     devices.Enabled = false;
                     connect.Text = "Disconnect";
-                    connectState.Text = "Connected";
-                    connectState.ForeColor = Color.Lime;
+                    deviceState.Text = "Connected";
+                    deviceState.ForeColor = Color.Lime;
                     mainBox.Enabled = true;
                     ssh = new SshClient("192.168.2.24", "root", "");
                     ssh.Connect();
@@ -76,8 +76,8 @@ namespace OdemControl
                 {
                     MessageBox.Show("Failed to connect to the device.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     connect.Text = "Connect";
-                    connectState.Text = "Disconnected";
-                    connectState.ForeColor = Color.Red;
+                    deviceState.Text = "Disconnected";
+                    deviceState.ForeColor = Color.Red;
                 }
             }
         }
@@ -492,8 +492,13 @@ namespace OdemControl
 
         private string LoadHHSDriver()
         {
-            string command = "'-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20\" udp_dest_port=10003 transfer_size=704']";
-            var result = ssh.CreateCommand(command).Execute().Trim();
+            var result = ssh.CreateCommand($"lsmod").Execute().Trim();
+            if (!result.Contains("altera_msgdma_st"))
+            {
+                string command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"192.168.2.20\" udp_dest_port=10003 transfer_size=704";
+                var reult = ssh.CreateCommand(command).Execute().Trim();  //cmd.Execute();
+                result = ssh.CreateCommand($"lsmod").Execute().Trim();  //cmd.Execute();
+            }
             return "";
         }
         public void RemoteDirectoryExists()

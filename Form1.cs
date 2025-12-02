@@ -198,23 +198,23 @@ namespace OdemControl
         {
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
-            runstatus.Text = "";
-            runstatus.ForeColor = Color.Black;
+            deviceState.Text = "";
+            deviceState.ForeColor = Color.Black;
             appSetting.Update(true);
             UpdateConfFiles();
             confState = (int)confStates.IDLE;
             cofigdevice();
             if (confState == (int)confStates.DONE)
             {
-                runstatus.Text = "Device ready";
-                runstatus.ForeColor = Color.Lime;
+                deviceState.Text = "Device ready";
+                deviceState.ForeColor = Color.Lime;
                 LogMessage("Configuring: Done");
                 streamBox.Enabled = true;
             }
             else
             {
-                runstatus.Text = "Device configuration error";
-                runstatus.ForeColor = Color.Red;
+                deviceState.Text = "Device configuration error";
+                deviceState.ForeColor = Color.Red;
                 LogMessage("Configuring: Error");
                 streamBox.Enabled = false;
             }
@@ -434,11 +434,20 @@ namespace OdemControl
 
         private void sStart_Click(object sender, EventArgs e)
         {
+            streaming.Visible = false;
             string Error = StreamingCmd(true);
             if (Error.Length > 0)
             {
                 LogMessage("Streaming command: " + Error);
                 MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                streaming.Visible = true;
+                sStart.Enabled = false;
+                sStop.Enabled = true;
+                deviceState.Text = "Steaming";
+                deviceState.ForeColor = Color.Lime;
             }
         }
 
@@ -449,6 +458,14 @@ namespace OdemControl
             {
                 LogMessage("Streaming command: " + Error);
                 MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                streaming.Visible = false;
+                sStart.Enabled = true;
+                sStop.Enabled = false;
+                deviceState.Text = "Steaming stopped";
+                deviceState.ForeColor = Color.Orange;
             }
 
         }

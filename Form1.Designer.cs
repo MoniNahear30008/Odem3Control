@@ -31,8 +31,7 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             statusStrip1 = new StatusStrip();
-            connectState = new ToolStripStatusLabel();
-            runstatus = new ToolStripStatusLabel();
+            deviceState = new ToolStripStatusLabel();
             optoStat = new ToolStripProgressBar();
             connect = new Button();
             toolTip1 = new ToolTip(components);
@@ -53,6 +52,7 @@
             scanMode = new ComboBox();
             debugMode = new Button();
             streamBox = new GroupBox();
+            streaming = new Label();
             sStop = new Button();
             sStart = new Button();
             confDev = new Button();
@@ -81,31 +81,27 @@
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { connectState, runstatus, optoStat });
-            statusStrip1.Location = new Point(0, 414);
+            statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
+            statusStrip1.Location = new Point(0, 410);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
-            statusStrip1.Size = new Size(592, 22);
+            statusStrip1.Size = new Size(592, 26);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
-            // connectState
+            // deviceState
             // 
-            connectState.ForeColor = Color.Red;
-            connectState.Name = "connectState";
-            connectState.Size = new Size(79, 17);
-            connectState.Text = "Disconnected";
-            // 
-            // runstatus
-            // 
-            runstatus.Name = "runstatus";
-            runstatus.Size = new Size(0, 17);
+            deviceState.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            deviceState.ForeColor = Color.Red;
+            deviceState.Name = "deviceState";
+            deviceState.Size = new Size(103, 21);
+            deviceState.Text = "Disconnected";
             // 
             // optoStat
             // 
             optoStat.Maximum = 36;
             optoStat.Name = "optoStat";
-            optoStat.Size = new Size(100, 16);
+            optoStat.Size = new Size(100, 20);
             optoStat.Visible = false;
             // 
             // connect
@@ -306,6 +302,7 @@
             // 
             // streamBox
             // 
+            streamBox.Controls.Add(streaming);
             streamBox.Controls.Add(sStop);
             streamBox.Controls.Add(sStart);
             streamBox.Enabled = false;
@@ -317,12 +314,26 @@
             streamBox.TabIndex = 4;
             streamBox.TabStop = false;
             // 
+            // streaming
+            // 
+            streaming.AutoSize = true;
+            streaming.BackColor = Color.Green;
+            streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            streaming.ForeColor = Color.White;
+            streaming.Location = new Point(182, 25);
+            streaming.Name = "streaming";
+            streaming.Size = new Size(182, 25);
+            streaming.TabIndex = 1;
+            streaming.Text = "Device is streaming";
+            streaming.Visible = false;
+            // 
             // sStop
             // 
             sStop.BackColor = Color.Red;
+            sStop.Enabled = false;
             sStop.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(381, 18);
+            sStop.Location = new Point(386, 18);
             sStop.Margin = new Padding(3, 2, 3, 2);
             sStop.Name = "sStop";
             sStop.Size = new Size(141, 39);
@@ -334,7 +345,7 @@
             // sStart
             // 
             sStart.BackColor = Color.Lime;
-            sStart.Location = new Point(30, 18);
+            sStart.Location = new Point(19, 18);
             sStart.Margin = new Padding(3, 2, 3, 2);
             sStart.Name = "sStart";
             sStart.Size = new Size(141, 39);
@@ -508,6 +519,7 @@
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
             streamBox.ResumeLayout(false);
+            streamBox.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
@@ -520,7 +532,7 @@
         #endregion
 
         private StatusStrip statusStrip1;
-        private ToolStripStatusLabel connectState;
+        private ToolStripStatusLabel deviceState;
         private Button connect;
         private ToolTip toolTip1;
         private GroupBox mainBox;
@@ -553,8 +565,8 @@
         private GroupBox groupBox4;
         private RadioButton tLaser;
         private RadioButton tPIC;
-        private ToolStripStatusLabel runstatus;
         private ToolStripProgressBar optoStat;
         private System.Windows.Forms.Timer timer1;
+        private Label streaming;
     }
 }

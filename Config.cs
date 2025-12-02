@@ -34,7 +34,7 @@ namespace OdemControl
                 {
                     case (int)confStates.IDLE:
                         LogMessage("Configuring device");
-                        runstatus.Text = "Configuring device";
+                        deviceState.Text = "Configuring device";
                         this.Refresh();
                         confState++;
                         break;
@@ -42,7 +42,7 @@ namespace OdemControl
                     case (int)confStates.SEND_CAPTURE_DELAY:
                         LogMessage("Configuring: Capture_Delay");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Capture_Delay";
+                            deviceState.Text = "Configuring: Capture_Delay";
                         this.Refresh();
 
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SEND_CAPTURE_DELAY], new List<uint> { deviceParameters["Capture_Delay"] });
@@ -70,7 +70,7 @@ namespace OdemControl
                     case (int)confStates.SET_SENSITIVITY:
                         LogMessage("Configuring: Sensitivity");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Sensitivity";
+                            deviceState.Text = "Configuring: Sensitivity";
                         this.Refresh();
 
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_SENSITIVITY], new List<uint> { sensitivity[appSetting.sensitivity] });
@@ -86,7 +86,7 @@ namespace OdemControl
                     case (int)confStates.SET_RANGE:  // CFAR multiplication
                         LogMessage("Configuring: CFAR multiplication");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: multiplication";
+                            deviceState.Text = "Configuring: multiplication";
                         this.Refresh();
 
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { 0x00000808 });
@@ -102,7 +102,7 @@ namespace OdemControl
                     case (int)confStates.SET_RETRO_LEVEL:
                         LogMessage("Configuring: Retro level");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Retro level";
+                            deviceState.Text = "Configuring: Retro level";
                         this.Refresh();
 
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RETRO_LEVEL], new List<uint> { 10000 });
@@ -118,7 +118,7 @@ namespace OdemControl
                     case (int)confStates.SET_CHIRP_WAVEFORM:
                         LogMessage("Configuring: Load AWG waveform");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Load AWG waveform";
+                            deviceState.Text = "Configuring: Load AWG waveform";
                         this.Refresh();
 
                         Error = SPIWriteAWGWaitResp(confFiles["AWG"] );
@@ -134,7 +134,7 @@ namespace OdemControl
                     case (int)confStates.SET_CHIRP_GAIN:
                         LogMessage("Configuring: SET_CHIRP_GAIN");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_CHIRP_GAIN";
+                            deviceState.Text = "Configuring: SET_CHIRP_GAIN";
                         this.Refresh();
 
                         Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1C, new List<uint> { deviceParameters["Chirp_AWG_gain"] });
@@ -149,7 +149,7 @@ namespace OdemControl
                      case (int)confStates.SET_PM_CONTROL:
                         LogMessage("Configuring: SET_PM1_CONTROL");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_PM1_CONTROL";
+                            deviceState.Text = "Configuring: SET_PM1_CONTROL";
                         this.Refresh();
                         Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1C, new List<uint> { 0 });
                         if (Error.Length > 0)
@@ -160,7 +160,7 @@ namespace OdemControl
                         }
                         LogMessage("Configuring: SET_PM2_CONTROL");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_PM2_CONTROL";
+                            deviceState.Text = "Configuring: SET_PM2_CONTROL";
                         this.Refresh();
                         Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { 1 });
                         if (Error.Length > 0)
@@ -175,7 +175,7 @@ namespace OdemControl
                     case (int)confStates.LOAD_SSH_DRIVER:
                         LogMessage("Configuring: LOAD_SSH_DRIVER");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: LOAD_SSH_DRIVER";
+                            deviceState.Text = "Configuring: LOAD_SSH_DRIVER";
                         this.Refresh();
                         Error = LoadHHSDriver();
                         if (Error.Length > 0)
@@ -192,7 +192,7 @@ namespace OdemControl
                     case (int)confStates.SET_LO:
                         LogMessage("Configuring: SET_LO");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_LO";
+                            deviceState.Text = "Configuring: SET_LO";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x4B, 0x14, 0x1C, new List<uint> { deviceParameters["LO"] });
                         if (Error.Length > 0)
@@ -207,7 +207,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX_SOA1:
                         LogMessage("Configuring: SET_TX_SOA1");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX_SOA1";
+                            deviceState.Text = "Configuring: SET_TX_SOA1";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x19, new List<uint> { deviceParameters["TxSOA1"] });
                         if (Error.Length > 0)
@@ -222,7 +222,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX_SOA2:
                         LogMessage("Configuring: SET_TX_SOA2");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX_SOA2";
+                            deviceState.Text = "Configuring: SET_TX_SOA2";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x1C, new List<uint> { deviceParameters["TxSOA2"] });
                         if (Error.Length > 0)
@@ -237,7 +237,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX3_0_9:
                         LogMessage("Configuring: SET_TX3_0_9");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX3_0_9";
+                            deviceState.Text = "Configuring: SET_TX3_0_9";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x19, new List<uint> { deviceParameters["Tx3_0_9"] });
                         if (Error.Length > 0)
@@ -252,7 +252,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX3_10_19:
                         LogMessage("Configuring: SET_TX3_10_19");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX3_10_19";
+                            deviceState.Text = "Configuring: SET_TX3_10_19";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x1C, new List<uint> { deviceParameters["Tx3_10_19"] });
                         if (Error.Length > 0)
@@ -267,7 +267,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX3_20_29:
                         LogMessage("Configuring: SET_TX3_20_29");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX3_20_29";
+                            deviceState.Text = "Configuring: SET_TX3_20_29";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x19, new List<uint> { deviceParameters["Tx3_20_29"] });
                         if (Error.Length > 0)
@@ -282,7 +282,7 @@ namespace OdemControl
                     case (int)confStates.SET_TX3_30_39:
                         LogMessage("Configuring: SET_TX3_30_39");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: SET_TX3_30_39";
+                            deviceState.Text = "Configuring: SET_TX3_30_39";
                         this.Refresh();
                         Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1C, new List<uint> { deviceParameters["Tx3_30_39"] });
                         if (Error.Length > 0)
@@ -297,7 +297,7 @@ namespace OdemControl
                     case (int)confStates.SET_VECTOR_1:
                         LogMessage("Configuring: badGoodIndxs_High");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: badGoodIndxs_High";
+                            deviceState.Text = "Configuring: badGoodIndxs_High";
                         this.Refresh();
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_VECTOR_1], confFiles["badGoodIndxs_High"]);
                         if (Error.Length > 0)
@@ -312,7 +312,7 @@ namespace OdemControl
                     case (int)confStates.SET_VECTOR_2:
                         LogMessage("Configuring: badGoodIndxs_Low");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: badGoodIndxs_Low";
+                            deviceState.Text = "Configuring: badGoodIndxs_Low";
                         this.Refresh();
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_VECTOR_2], confFiles["badGoodIndxs_Low"]);
                         if (Error.Length > 0)
@@ -328,7 +328,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                         LogMessage("Configuring: 128Bins_Final to 0xFF248000");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: 128Bins_Final";
+                            deviceState.Text = "Configuring: 128Bins_Final";
                         this.Refresh();
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_VECTOR_3], confFiles["128Bins_Final"]);
                         if (Error.Length > 0)
@@ -355,7 +355,7 @@ namespace OdemControl
                     case (int)confStates.SET_VECTOR_5:
                         LogMessage("Configuring: blackmanHarris_DEC");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: blackmanHarris_DEC";
+                            deviceState.Text = "Configuring: blackmanHarris_DEC";
                         this.Refresh();
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_VECTOR_5], confFiles["blackmanHarris_DEC"]);
                         if (Error.Length > 0)
@@ -370,7 +370,7 @@ namespace OdemControl
                     case (int)confStates.SET_VECTOR_6:
                         LogMessage("Configuring: 2kWin");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: 2kWin";
+                            deviceState.Text = "Configuring: 2kWin";
                         this.Refresh();
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_VECTOR_6], confFiles["2kWin"]);
                         if (Error.Length > 0)
@@ -385,7 +385,7 @@ namespace OdemControl
                     case (int)confStates.LOAD_FILES:
                         LogMessage("Configuring: Load files");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Load files";
+                            deviceState.Text = "Configuring: Load files";
                         this.Refresh();
                         Error = LoadFiles();
                         if (Error.Length > 0)
@@ -400,7 +400,7 @@ namespace OdemControl
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
                         LogMessage("Configuring: Run opto");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Start odem (~ 40Sec)";
+                            deviceState.Text = "Start odem (~ 40Sec)";
                         this.Refresh();
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
                         if (Error.Length > 0)
@@ -431,7 +431,7 @@ namespace OdemControl
                         break;
 
                     case (int)confStates.DONE:
-                        runstatus.Text = "Device ready";
+                        deviceState.Text = "Device ready";
                         this.Refresh();
                         break;
 
