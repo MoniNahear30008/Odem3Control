@@ -401,8 +401,16 @@ namespace OdemControl
                         LogMessage("Configuring: Run opto");
                         if (debugmodeEnabled)
                             deviceState.Text = "Start odem (~ 40Sec)";
+                        optoStat.Maximum = 12;
+                        optoStat.Value = 0;
+                        //optoStat.Visible = true;
                         this.Refresh();
+                        //timer1.Interval = 3000;
+                        //timer1.Start();
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
+                        timer1.Stop();
+                        optoStat.Visible = false;
+                        this.Refresh();
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);

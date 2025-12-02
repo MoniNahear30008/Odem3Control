@@ -21,7 +21,7 @@ namespace OdemControl
 
         public event Action<string> OnMessageReceived;
 
-        private async Task ConnectToDevice()
+        private async void ConnectToDevice()
         {
             if (isConnected)
             {

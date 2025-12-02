@@ -113,7 +113,7 @@
             connect.TabIndex = 1;
             connect.Text = "Connect";
             connect.UseVisualStyleBackColor = true;
-            connect.Click += async (sender, e) => await connect_ClickAsync(sender, e);
+            connect.Click += connect_Click;
             // 
             // label2
             // 
@@ -510,6 +510,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "ODEM Control by Lidwave";
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();

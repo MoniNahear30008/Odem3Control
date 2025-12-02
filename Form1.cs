@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text.Json;
@@ -54,6 +55,10 @@ namespace OdemControl
 
         private void SetVars()
         {
+            string op =Dns.GetHostEntry(Dns.GetHostName()).AddressList
+              .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
+              .ToString() ?? "No IPv4 found";
+
             appSetting = new appSettings();
 
             IPAddredd.Text = _ipAddress;
@@ -422,9 +427,9 @@ namespace OdemControl
 
         }
 
-        private async Task connect_ClickAsync(object sender, EventArgs e)
+        private void connect_Click(object sender, EventArgs e)
         {
-            await ConnectToDevice();
+            ConnectToDevice();
         }
 
         private void wrOTDelay_Click(object sender, EventArgs e)
@@ -471,8 +476,9 @@ namespace OdemControl
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            //optoStat.Value += 6;
-            //this.Refresh();
+            if (optoStat.Value < optoStat.Maximum)
+                optoStat.Value++;
+            this.Refresh();
         }
     }
 
