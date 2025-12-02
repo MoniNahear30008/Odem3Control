@@ -1,6 +1,7 @@
 ﻿using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using Renci.SshNet;
 using System.Collections;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
@@ -357,7 +358,6 @@ namespace OdemControl
             int stepNum = 0;
             int NumSteps = 20;
 
-            List<string> msgs = new List<string>();
             List<byte> resp = new List<byte>();
             try
             {
@@ -365,6 +365,7 @@ namespace OdemControl
                 {
                     while (true)
                     {
+                        this.Refresh();
                         byte[] buffer = new byte[1024];
                         int count = stream.Read(buffer, 0, buffer.Length);
                         resp.AddRange(new List<byte>(buffer.Take(count)));
@@ -379,10 +380,7 @@ namespace OdemControl
                                 NumSteps = (int)resp[15];
                                 int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
                                 string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
-                                msgs.Add(msg);
                                 LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
-                                runstatus.Text = "Configuring: Run opto step " + stepNum.ToString() + " / " + NumSteps.ToString();
-                                this.Refresh();
                                 resp.RemoveRange(0, ml + 12);
 
                                 if (stepNum == NumSteps)
@@ -571,7 +569,9 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
-                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 11)))
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 5))
+                    return "";
+                else
                 {
                     int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
                     string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);

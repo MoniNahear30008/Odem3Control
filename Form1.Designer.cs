@@ -33,6 +33,7 @@
             statusStrip1 = new StatusStrip();
             connectState = new ToolStripStatusLabel();
             runstatus = new ToolStripStatusLabel();
+            optoStat = new ToolStripProgressBar();
             connect = new Button();
             toolTip1 = new ToolTip(components);
             label2 = new Label();
@@ -65,6 +66,7 @@
             pictureBox1 = new PictureBox();
             label3 = new Label();
             KeepAlive = new CheckBox();
+            timer1 = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -79,7 +81,7 @@
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { connectState, runstatus });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { connectState, runstatus, optoStat });
             statusStrip1.Location = new Point(0, 414);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
@@ -98,6 +100,13 @@
             // 
             runstatus.Name = "runstatus";
             runstatus.Size = new Size(0, 17);
+            // 
+            // optoStat
+            // 
+            optoStat.Maximum = 36;
+            optoStat.Name = "optoStat";
+            optoStat.Size = new Size(100, 16);
+            optoStat.Visible = false;
             // 
             // connect
             // 
@@ -467,6 +476,11 @@
             KeepAlive.Text = "KeepAlive";
             KeepAlive.UseVisualStyleBackColor = true;
             // 
+            // timer1
+            // 
+            timer1.Interval = 1000;
+            timer1.Tick += timer1_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -540,5 +554,7 @@
         private RadioButton tLaser;
         private RadioButton tPIC;
         private ToolStripStatusLabel runstatus;
+        private ToolStripProgressBar optoStat;
+        private System.Windows.Forms.Timer timer1;
     }
 }

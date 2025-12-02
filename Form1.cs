@@ -2,7 +2,9 @@ using System;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text.Json;
+using System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.Design.AxImporter;
 
 namespace OdemControl
@@ -36,7 +38,7 @@ namespace OdemControl
         bool dataLoggingEnabled = false;
         private StreamWriter logFile;
 
-        public Form1(String mode)
+        public Form1(string mode)
         {
             InitializeComponent();
 
@@ -432,13 +434,28 @@ namespace OdemControl
 
         private void sStart_Click(object sender, EventArgs e)
         {
-            string err = StreamingCmd(true);
+            string Error = StreamingCmd(true);
+            if (Error.Length > 0)
+            {
+                LogMessage("Streaming command: " + Error);
+                MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void sStop_Click(object sender, EventArgs e)
         {
-            string err = StreamingCmd(false);
+            string Error = StreamingCmd(false);
+            if (Error.Length > 0)
+            {
+                LogMessage("Streaming command: " + Error);
+                MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
+        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            //optoStat.Value += 6;
+            //this.Refresh();
         }
     }
 

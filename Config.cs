@@ -24,6 +24,7 @@ namespace OdemControl
             {(int)confStates.SET_VECTOR_6, 0xFF346000},
             {(int)confStates.SET_OT_DELAY, 0xFF20003C}
         };
+
         private void cofigdevice()
         {
             string Error = "";
@@ -388,7 +389,7 @@ namespace OdemControl
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
                         LogMessage("Configuring: Run opto");
                         if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Run opto";
+                            runstatus.Text = "Start odem (~ 40Sec)";
                         this.Refresh();
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
                         if (Error.Length > 0)
@@ -402,16 +403,16 @@ namespace OdemControl
 
                     case (int)confStates.SET_OT_DELAY:
                         LogMessage("Configuring: Set OT Delay");
-                        if (debugmodeEnabled)
-                            runstatus.Text = "Configuring: Set OT Delay";
-                        this.Refresh();
+                        //if (debugmodeEnabled)
+                        //    runstatus.Text = "Configuring: Set OT Delay";
+                        //this.Refresh();
                         string mode = modes[appSetting.scanModeNum];
                         uint otd = deviceParameters[mode];
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { otd });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending Reset DSP:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending  Set OT Delay:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
 
