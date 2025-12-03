@@ -66,7 +66,7 @@ namespace OdemControl
                     devices.Enabled = false;
                     connect.Text = "Disconnect";
                     deviceState.Text = "Connected";
-                    deviceState.ForeColor = Color.Lime;
+                    deviceState.ForeColor = Color.Green;
                     mainBox.Enabled = true;
                     ssh = new SshClient("192.168.2.24", "root", "");
                     ssh.Connect();

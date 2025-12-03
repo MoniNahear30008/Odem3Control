@@ -38,6 +38,8 @@ namespace OdemControl
         bool debugmodeEnabled = false;
         bool dataLoggingEnabled = false;
         private StreamWriter logFile;
+        int readTempCounter = 0;
+        bool configuring = false;
 
         public Form1(string mode)
         {
@@ -55,12 +57,13 @@ namespace OdemControl
 
         private void SetVars()
         {
-            string op =Dns.GetHostEntry(Dns.GetHostName()).AddressList
+            string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
               .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
               .ToString() ?? "No IPv4 found";
 
             tempTable.Rows.Add("PIC", "");
             tempTable.Rows.Add("Laser", "");
+            tempTable.ClearSelection();
 
             appSetting = new appSettings();
 
@@ -204,6 +207,7 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
+            configuring = true;
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
             deviceState.Text = "";
@@ -229,7 +233,7 @@ namespace OdemControl
 
             this.Cursor = Cursors.Default;
             this.Enabled = true;
-
+            configuring = false;
         }
         public static byte[] GetBytesBigEndian(uint value)
         {
@@ -363,8 +367,10 @@ namespace OdemControl
             }
         }
 
-        private void checkT_Click(object sender, EventArgs e)
+        private void ReadAllTemp()
         {
+            if (!isConnected) return;
+
             foreach (DataGridViewRow row in tempTable.Rows)
             {
                 double t = 0;
@@ -375,7 +381,7 @@ namespace OdemControl
                         t = ReadPICtemp();
                         row.Cells[1].Value = t.ToString("0.00") + " °c";
                         if ((t >= 47) && (t <= 59))
-                            row.Cells[1].Style.ForeColor = Color.Lime;
+                            row.Cells[1].Style.ForeColor = Color.Green;
                         else
                             row.Cells[1].Style.ForeColor = Color.Red;
                         break;
@@ -385,8 +391,13 @@ namespace OdemControl
                         row.Cells[1].Style.ForeColor = Color.Black;
                         break;
                 }
-
             }
+            tempTable.ClearSelection();
+        }
+
+        private void checkT_Click(object sender, EventArgs e)
+        {
+            ReadAllTemp();
         }
         private double ReadPICtemp()
         {
@@ -425,7 +436,7 @@ namespace OdemControl
             string err = "";
             List<uint> temp;
             double t = 0;
-                err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
+            err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
             if (err == "")
             {
                 double R1 = 5.6;
@@ -463,7 +474,7 @@ namespace OdemControl
                 sStart.Enabled = false;
                 sStop.Enabled = true;
                 deviceState.Text = "Steaming";
-                deviceState.ForeColor = Color.Lime;
+                deviceState.ForeColor = Color.Green;
             }
         }
 
@@ -487,10 +498,33 @@ namespace OdemControl
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (optoStat.Value < optoStat.Maximum)
-                optoStat.Value++;
-            this.Refresh();
+            if (configuring) return;
+            readTempCounter -= 10;
+            if (readTempCounter <= 0)
+            {
+                readTempCounter = 60 * (int)ReadInt.Value;
+                ReadAllTemp();
+            }
         }
+
+        private void autoTemp_CheckedChanged(object sender, EventArgs e)
+        {
+            checkT.Visible = !autoTemp.Checked;
+            ReadInt.Visible = autoTemp.Checked;
+            ReadIntText.Visible = autoTemp.Checked;
+            if (autoTemp.Checked)
+            {
+                timer1.Interval = 10000;
+                readTempCounter = 60 * (int)ReadInt.Value;
+                ReadAllTemp();
+                timer1.Start();
+            }
+            else
+            {
+                timer1.Stop();
+            }
+        }
+        
     }
 
     public class appSettings

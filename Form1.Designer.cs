@@ -67,6 +67,9 @@
             label3 = new Label();
             KeepAlive = new CheckBox();
             timer1 = new System.Windows.Forms.Timer(components);
+            autoTemp = new CheckBox();
+            ReadInt = new NumericUpDown();
+            ReadIntText = new Label();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -77,6 +80,7 @@
             streamBox.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
@@ -168,21 +172,24 @@
             mainBox.Controls.Add(confDev);
             mainBox.Controls.Add(groupBox1);
             mainBox.Enabled = false;
-            mainBox.Location = new Point(10, 99);
+            mainBox.Location = new Point(10, 91);
             mainBox.Margin = new Padding(3, 2, 3, 2);
             mainBox.Name = "mainBox";
             mainBox.Padding = new Padding(3, 2, 3, 2);
-            mainBox.Size = new Size(574, 313);
+            mainBox.Size = new Size(574, 321);
             mainBox.TabIndex = 2;
             mainBox.TabStop = false;
             // 
             // groupBox4
             // 
-            groupBox4.Controls.Add(tempTable);
+            groupBox4.Controls.Add(ReadIntText);
+            groupBox4.Controls.Add(ReadInt);
             groupBox4.Controls.Add(checkT);
-            groupBox4.Location = new Point(378, 31);
+            groupBox4.Controls.Add(autoTemp);
+            groupBox4.Controls.Add(tempTable);
+            groupBox4.Location = new Point(378, 20);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(171, 201);
+            groupBox4.Size = new Size(171, 212);
             groupBox4.TabIndex = 10;
             groupBox4.TabStop = false;
             groupBox4.Text = "Temperature";
@@ -196,11 +203,11 @@
             tempTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
             tempTable.Enabled = false;
-            tempTable.Location = new Point(12, 55);
+            tempTable.Location = new Point(12, 73);
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(147, 140);
+            tempTable.Size = new Size(147, 133);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -219,9 +226,9 @@
             // 
             // checkT
             // 
-            checkT.Location = new Point(12, 20);
+            checkT.Location = new Point(41, 41);
             checkT.Name = "checkT";
-            checkT.Size = new Size(67, 29);
+            checkT.Size = new Size(51, 29);
             checkT.TabIndex = 8;
             checkT.Text = "Read";
             checkT.UseVisualStyleBackColor = true;
@@ -368,7 +375,7 @@
             // 
             sStop.BackColor = Color.Red;
             sStop.Enabled = false;
-            sStop.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            sStop.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
             sStop.Location = new Point(386, 18);
             sStop.Margin = new Padding(3, 2, 3, 2);
@@ -381,7 +388,9 @@
             // 
             // sStart
             // 
-            sStart.BackColor = Color.Lime;
+            sStart.BackColor = Color.Green;
+            sStart.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            sStart.ForeColor = Color.White;
             sStart.Location = new Point(19, 18);
             sStart.Margin = new Padding(3, 2, 3, 2);
             sStart.Name = "sStart";
@@ -442,10 +451,10 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(452, 64);
+            debugMode.Location = new Point(480, 64);
             debugMode.Margin = new Padding(3, 2, 3, 2);
             debugMode.Name = "debugMode";
-            debugMode.Size = new Size(132, 34);
+            debugMode.Size = new Size(84, 23);
             debugMode.TabIndex = 6;
             debugMode.Text = "Debug";
             debugMode.UseVisualStyleBackColor = true;
@@ -488,6 +497,39 @@
             timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
             // 
+            // autoTemp
+            // 
+            autoTemp.AutoSize = true;
+            autoTemp.Location = new Point(17, 21);
+            autoTemp.Name = "autoTemp";
+            autoTemp.Size = new Size(109, 19);
+            autoTemp.TabIndex = 10;
+            autoTemp.Text = "Auto read every";
+            autoTemp.UseVisualStyleBackColor = true;
+            autoTemp.CheckedChanged += autoTemp_CheckedChanged;
+            // 
+            // ReadInt
+            // 
+            ReadInt.Location = new Point(17, 44);
+            ReadInt.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            ReadInt.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            ReadInt.Name = "ReadInt";
+            ReadInt.Size = new Size(48, 23);
+            ReadInt.TabIndex = 11;
+            ReadInt.TextAlign = HorizontalAlignment.Right;
+            ReadInt.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            ReadInt.Visible = false;
+            // 
+            // ReadIntText
+            // 
+            ReadIntText.AutoSize = true;
+            ReadIntText.Location = new Point(73, 48);
+            ReadIntText.Name = "ReadIntText";
+            ReadIntText.Size = new Size(45, 15);
+            ReadIntText.TabIndex = 12;
+            ReadIntText.Text = "Minute";
+            ReadIntText.Visible = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -513,6 +555,7 @@
             statusStrip1.PerformLayout();
             mainBox.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)tempTable).EndInit();
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
@@ -523,6 +566,7 @@
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ReadInt).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -566,5 +610,8 @@
         private DataGridView tempTable;
         private DataGridViewTextBoxColumn Column3;
         private DataGridViewTextBoxColumn Column4;
+        private CheckBox autoTemp;
+        private Label ReadIntText;
+        private NumericUpDown ReadInt;
     }
 }
