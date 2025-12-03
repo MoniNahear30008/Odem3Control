@@ -450,9 +450,9 @@ namespace OdemControl
                             MessageBox.Show("Can not read main boad temerature");
                         else
                         {
-                            msg += sensor + ": " + t.ToString("0.00") + " °c; ";
-                            row.Cells[1].Value = t.ToString("0.00") + " °c";
-                            if (t < 72)
+                            msg += sensor + ": " + temp.ToString("0.00") + " °c; ";
+                            row.Cells[1].Value = temp.ToString("0.00") + " °c";
+                            if (temp < 72)
                                 row.Cells[1].Style.ForeColor = Color.Green;
                             else
                             {
@@ -486,6 +486,8 @@ namespace OdemControl
         {
             List<uint> temp;
             string err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
+            if (temp == null)
+                return 0;
             double vref = 2.45;
             double r1 = 5.6;
             double r2 = 2.0;
@@ -621,8 +623,10 @@ namespace OdemControl
         {
             if (configuring) return;
             readTempCounter -= 10;
+            ReadIntProg.Value = Math.Max(0, ReadIntProg.Value -10);
             if (readTempCounter <= 0)
             {
+                ReadIntProg.Value = (int)ReadInt.Value * 60;
                 readTempCounter = 60 * (int)ReadInt.Value;
                 ReadAllTemp();
             }
@@ -632,8 +636,11 @@ namespace OdemControl
             checkT.Visible = !autoTemp.Checked;
             ReadInt.Visible = autoTemp.Checked;
             ReadIntText.Visible = autoTemp.Checked;
+            ReadIntProg.Visible = autoTemp.Checked;
             if (autoTemp.Checked)
             {
+                ReadIntProg.Value = (int)ReadInt.Value * 60;
+                ReadIntProg.Maximum = (int)ReadInt.Value * 60;
                 timer1.Interval = 10000;
                 readTempCounter = 60 * (int)ReadInt.Value;
                 ReadAllTemp();

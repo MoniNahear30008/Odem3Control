@@ -37,17 +37,21 @@
             MonitorView = new RichTextBox();
             pwBox = new GroupBox();
             pw = new TextBox();
+            tabPage1 = new TabPage();
+            label1 = new Label();
             dbgControl.SuspendLayout();
             Control.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             Monitor.SuspendLayout();
             pwBox.SuspendLayout();
+            tabPage1.SuspendLayout();
             SuspendLayout();
             // 
             // dbgControl
             // 
             dbgControl.Controls.Add(Control);
             dbgControl.Controls.Add(Monitor);
+            dbgControl.Controls.Add(tabPage1);
             dbgControl.Dock = DockStyle.Fill;
             dbgControl.Location = new Point(0, 0);
             dbgControl.Name = "dbgControl";
@@ -142,6 +146,28 @@
             pw.TabIndex = 0;
             pw.KeyDown += pw_KeyDown;
             // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(label1);
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(842, 387);
+            tabPage1.TabIndex = 2;
+            tabPage1.Text = "Custom setting";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Arial", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.Red;
+            label1.Location = new Point(290, 196);
+            label1.Name = "label1";
+            label1.Size = new Size(235, 29);
+            label1.TabIndex = 0;
+            label1.Text = "Under construction";
+            // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -160,6 +186,8 @@
             Monitor.PerformLayout();
             pwBox.ResumeLayout(false);
             pwBox.PerformLayout();
+            tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -173,5 +201,7 @@
         private NumericUpDown OTDelay;
         private RichTextBox MonitorView;
         private CheckBox AutoScroll;
+        private TabPage tabPage1;
+        private Label label1;
     }
 }
