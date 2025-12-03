@@ -41,28 +41,28 @@
             devices = new ComboBox();
             mainBox = new GroupBox();
             groupBox4 = new GroupBox();
-            tLaser = new RadioButton();
-            tPIC = new RadioButton();
-            cTemp = new Label();
+            tempTable = new DataGridView();
+            Column3 = new DataGridViewTextBoxColumn();
+            Column4 = new DataGridViewTextBoxColumn();
             checkT = new Button();
             groupBox3 = new GroupBox();
             ModeParams = new DataGridView();
             Column1 = new DataGridViewTextBoxColumn();
             Column2 = new DataGridViewTextBoxColumn();
             scanMode = new ComboBox();
-            debugMode = new Button();
+            groupBox2 = new GroupBox();
+            rangeMax = new RadioButton();
+            RangeExt = new RadioButton();
+            RangeNormal = new RadioButton();
             streamBox = new GroupBox();
             streaming = new Label();
             sStop = new Button();
             sStart = new Button();
             confDev = new Button();
-            groupBox2 = new GroupBox();
-            rangeMax = new RadioButton();
-            RangeExt = new RadioButton();
-            RangeNormal = new RadioButton();
             groupBox1 = new GroupBox();
             sensitivityHigh = new RadioButton();
             SensitivityNormal = new RadioButton();
+            debugMode = new Button();
             pictureBox1 = new PictureBox();
             label3 = new Label();
             KeepAlive = new CheckBox();
@@ -70,10 +70,11 @@
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ModeParams).BeginInit();
-            streamBox.SuspendLayout();
             groupBox2.SuspendLayout();
+            streamBox.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
@@ -82,19 +83,19 @@
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
-            statusStrip1.Location = new Point(0, 410);
+            statusStrip1.Location = new Point(0, 414);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
-            statusStrip1.Size = new Size(592, 26);
+            statusStrip1.Size = new Size(592, 22);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
             // deviceState
             // 
-            deviceState.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            deviceState.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             deviceState.ForeColor = Color.Red;
             deviceState.Name = "deviceState";
-            deviceState.Size = new Size(103, 21);
+            deviceState.Size = new Size(92, 17);
             deviceState.Text = "Disconnected";
             // 
             // optoStat
@@ -102,6 +103,7 @@
             optoStat.Maximum = 36;
             optoStat.Name = "optoStat";
             optoStat.Size = new Size(100, 20);
+            optoStat.Style = ProgressBarStyle.Marquee;
             optoStat.Visible = false;
             // 
             // connect
@@ -161,10 +163,9 @@
             // 
             mainBox.Controls.Add(groupBox4);
             mainBox.Controls.Add(groupBox3);
-            mainBox.Controls.Add(debugMode);
+            mainBox.Controls.Add(groupBox2);
             mainBox.Controls.Add(streamBox);
             mainBox.Controls.Add(confDev);
-            mainBox.Controls.Add(groupBox2);
             mainBox.Controls.Add(groupBox1);
             mainBox.Enabled = false;
             mainBox.Location = new Point(10, 99);
@@ -177,53 +178,48 @@
             // 
             // groupBox4
             // 
-            groupBox4.Controls.Add(tLaser);
-            groupBox4.Controls.Add(tPIC);
-            groupBox4.Controls.Add(cTemp);
+            groupBox4.Controls.Add(tempTable);
             groupBox4.Controls.Add(checkT);
-            groupBox4.Location = new Point(257, 180);
+            groupBox4.Location = new Point(378, 31);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(297, 52);
+            groupBox4.Size = new Size(171, 201);
             groupBox4.TabIndex = 10;
             groupBox4.TabStop = false;
-            groupBox4.Text = "Temperature of";
+            groupBox4.Text = "Temperature";
             // 
-            // tLaser
+            // tempTable
             // 
-            tLaser.AutoSize = true;
-            tLaser.Location = new Point(65, 24);
-            tLaser.Name = "tLaser";
-            tLaser.Size = new Size(52, 19);
-            tLaser.TabIndex = 10;
-            tLaser.Text = "Laser";
-            tLaser.UseVisualStyleBackColor = true;
+            tempTable.AllowUserToAddRows = false;
+            tempTable.AllowUserToDeleteRows = false;
+            tempTable.AllowUserToResizeRows = false;
+            tempTable.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tempTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
+            tempTable.Enabled = false;
+            tempTable.Location = new Point(12, 55);
+            tempTable.Name = "tempTable";
+            tempTable.ReadOnly = true;
+            tempTable.RowHeadersVisible = false;
+            tempTable.Size = new Size(147, 140);
+            tempTable.TabIndex = 9;
             // 
-            // tPIC
+            // Column3
             // 
-            tPIC.AutoSize = true;
-            tPIC.Checked = true;
-            tPIC.Location = new Point(12, 24);
-            tPIC.Name = "tPIC";
-            tPIC.Size = new Size(43, 19);
-            tPIC.TabIndex = 10;
-            tPIC.TabStop = true;
-            tPIC.Text = "PIC";
-            tPIC.UseVisualStyleBackColor = true;
+            Column3.HeaderText = "Section";
+            Column3.Name = "Column3";
+            Column3.ReadOnly = true;
+            Column3.Width = 80;
             // 
-            // cTemp
+            // Column4
             // 
-            cTemp.AutoSize = true;
-            cTemp.BorderStyle = BorderStyle.FixedSingle;
-            cTemp.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            cTemp.Location = new Point(204, 24);
-            cTemp.Name = "cTemp";
-            cTemp.Size = new Size(33, 19);
-            cTemp.TabIndex = 9;
-            cTemp.Text = ".. °c";
+            Column4.HeaderText = "Temp";
+            Column4.Name = "Column4";
+            Column4.ReadOnly = true;
+            Column4.Width = 50;
             // 
             // checkT
             // 
-            checkT.Location = new Point(127, 19);
+            checkT.Location = new Point(12, 20);
             checkT.Name = "checkT";
             checkT.Size = new Size(67, 29);
             checkT.TabIndex = 8;
@@ -288,17 +284,58 @@
             scanMode.TabIndex = 0;
             scanMode.SelectedIndexChanged += scanMode_SelectedIndexChanged;
             // 
-            // debugMode
+            // groupBox2
             // 
-            debugMode.Location = new Point(413, 20);
-            debugMode.Margin = new Padding(3, 2, 3, 2);
-            debugMode.Name = "debugMode";
-            debugMode.Size = new Size(132, 34);
-            debugMode.TabIndex = 6;
-            debugMode.Text = "Debug";
-            debugMode.UseVisualStyleBackColor = true;
-            debugMode.Visible = false;
-            debugMode.Click += debugMode_Click;
+            groupBox2.Controls.Add(rangeMax);
+            groupBox2.Controls.Add(RangeExt);
+            groupBox2.Controls.Add(RangeNormal);
+            groupBox2.Location = new Point(270, 185);
+            groupBox2.Margin = new Padding(3, 2, 3, 2);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Padding = new Padding(3, 2, 3, 2);
+            groupBox2.Size = new Size(78, 48);
+            groupBox2.TabIndex = 2;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Range";
+            groupBox2.Visible = false;
+            // 
+            // rangeMax
+            // 
+            rangeMax.AutoSize = true;
+            rangeMax.Location = new Point(17, 80);
+            rangeMax.Margin = new Padding(3, 2, 3, 2);
+            rangeMax.Name = "rangeMax";
+            rangeMax.Size = new Size(47, 19);
+            rangeMax.TabIndex = 0;
+            rangeMax.Text = "Max";
+            rangeMax.UseVisualStyleBackColor = true;
+            rangeMax.CheckedChanged += rangeChanged;
+            // 
+            // RangeExt
+            // 
+            RangeExt.AutoSize = true;
+            RangeExt.Location = new Point(17, 52);
+            RangeExt.Margin = new Padding(3, 2, 3, 2);
+            RangeExt.Name = "RangeExt";
+            RangeExt.Size = new Size(73, 19);
+            RangeExt.TabIndex = 0;
+            RangeExt.Text = "Extended";
+            RangeExt.UseVisualStyleBackColor = true;
+            RangeExt.CheckedChanged += rangeChanged;
+            // 
+            // RangeNormal
+            // 
+            RangeNormal.AutoSize = true;
+            RangeNormal.Checked = true;
+            RangeNormal.Location = new Point(17, 23);
+            RangeNormal.Margin = new Padding(3, 2, 3, 2);
+            RangeNormal.Name = "RangeNormal";
+            RangeNormal.Size = new Size(65, 19);
+            RangeNormal.TabIndex = 0;
+            RangeNormal.TabStop = true;
+            RangeNormal.Text = "Normal";
+            RangeNormal.UseVisualStyleBackColor = true;
+            RangeNormal.CheckedChanged += rangeChanged;
             // 
             // streamBox
             // 
@@ -356,67 +393,14 @@
             // 
             // confDev
             // 
-            confDev.Location = new Point(257, 129);
+            confDev.Location = new Point(257, 124);
             confDev.Margin = new Padding(3, 2, 3, 2);
             confDev.Name = "confDev";
-            confDev.Size = new Size(127, 34);
+            confDev.Size = new Size(95, 45);
             confDev.TabIndex = 3;
             confDev.Text = "Configure device";
             confDev.UseVisualStyleBackColor = true;
             confDev.Click += confDev_Click;
-            // 
-            // groupBox2
-            // 
-            groupBox2.Controls.Add(rangeMax);
-            groupBox2.Controls.Add(RangeExt);
-            groupBox2.Controls.Add(RangeNormal);
-            groupBox2.Location = new Point(413, 65);
-            groupBox2.Margin = new Padding(3, 2, 3, 2);
-            groupBox2.Name = "groupBox2";
-            groupBox2.Padding = new Padding(3, 2, 3, 2);
-            groupBox2.Size = new Size(117, 101);
-            groupBox2.TabIndex = 2;
-            groupBox2.TabStop = false;
-            groupBox2.Text = "Range";
-            groupBox2.Visible = false;
-            // 
-            // rangeMax
-            // 
-            rangeMax.AutoSize = true;
-            rangeMax.Location = new Point(17, 80);
-            rangeMax.Margin = new Padding(3, 2, 3, 2);
-            rangeMax.Name = "rangeMax";
-            rangeMax.Size = new Size(47, 19);
-            rangeMax.TabIndex = 0;
-            rangeMax.Text = "Max";
-            rangeMax.UseVisualStyleBackColor = true;
-            rangeMax.CheckedChanged += rangeChanged;
-            // 
-            // RangeExt
-            // 
-            RangeExt.AutoSize = true;
-            RangeExt.Location = new Point(17, 52);
-            RangeExt.Margin = new Padding(3, 2, 3, 2);
-            RangeExt.Name = "RangeExt";
-            RangeExt.Size = new Size(73, 19);
-            RangeExt.TabIndex = 0;
-            RangeExt.Text = "Extended";
-            RangeExt.UseVisualStyleBackColor = true;
-            RangeExt.CheckedChanged += rangeChanged;
-            // 
-            // RangeNormal
-            // 
-            RangeNormal.AutoSize = true;
-            RangeNormal.Checked = true;
-            RangeNormal.Location = new Point(17, 23);
-            RangeNormal.Margin = new Padding(3, 2, 3, 2);
-            RangeNormal.Name = "RangeNormal";
-            RangeNormal.Size = new Size(65, 19);
-            RangeNormal.TabIndex = 0;
-            RangeNormal.TabStop = true;
-            RangeNormal.Text = "Normal";
-            RangeNormal.UseVisualStyleBackColor = true;
-            RangeNormal.CheckedChanged += rangeChanged;
             // 
             // groupBox1
             // 
@@ -426,7 +410,7 @@
             groupBox1.Margin = new Padding(3, 2, 3, 2);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new Padding(3, 2, 3, 2);
-            groupBox1.Size = new Size(127, 94);
+            groupBox1.Size = new Size(95, 94);
             groupBox1.TabIndex = 2;
             groupBox1.TabStop = false;
             groupBox1.Text = "Sensitivity";
@@ -455,6 +439,18 @@
             SensitivityNormal.Text = "Normal";
             SensitivityNormal.UseVisualStyleBackColor = true;
             SensitivityNormal.CheckedChanged += SensitivityNormal_CheckedChanged;
+            // 
+            // debugMode
+            // 
+            debugMode.Location = new Point(452, 64);
+            debugMode.Margin = new Padding(3, 2, 3, 2);
+            debugMode.Name = "debugMode";
+            debugMode.Size = new Size(132, 34);
+            debugMode.TabIndex = 6;
+            debugMode.Text = "Debug";
+            debugMode.UseVisualStyleBackColor = true;
+            debugMode.Visible = false;
+            debugMode.Click += debugMode_Click;
             // 
             // pictureBox1
             // 
@@ -499,6 +495,7 @@
             ClientSize = new Size(592, 436);
             Controls.Add(pictureBox1);
             Controls.Add(KeepAlive);
+            Controls.Add(debugMode);
             Controls.Add(label3);
             Controls.Add(IPPort);
             Controls.Add(IPAddredd);
@@ -516,13 +513,13 @@
             statusStrip1.PerformLayout();
             mainBox.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
-            groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)tempTable).EndInit();
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
-            streamBox.ResumeLayout(false);
-            streamBox.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
+            streamBox.ResumeLayout(false);
+            streamBox.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
@@ -562,12 +559,12 @@
         private DataGridViewTextBoxColumn Column2;
         private CheckBox KeepAlive;
         private Button checkT;
-        private Label cTemp;
         private GroupBox groupBox4;
-        private RadioButton tLaser;
-        private RadioButton tPIC;
         private ToolStripProgressBar optoStat;
         private System.Windows.Forms.Timer timer1;
         private Label streaming;
+        private DataGridView tempTable;
+        private DataGridViewTextBoxColumn Column3;
+        private DataGridViewTextBoxColumn Column4;
     }
 }

@@ -59,6 +59,9 @@ namespace OdemControl
               .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
               .ToString() ?? "No IPv4 found";
 
+            tempTable.Rows.Add("PIC", "");
+            tempTable.Rows.Add("Laser", "");
+
             appSetting = new appSettings();
 
             IPAddredd.Text = _ipAddress;
@@ -362,69 +365,77 @@ namespace OdemControl
 
         private void checkT_Click(object sender, EventArgs e)
         {
-            readTemp();
-        }
-        private void readTemp()
-        {
-            string err = "";
-            List<uint> temp;
-            if (tLaser.Checked)
-                err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
-            else
-                err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
-            if (err == "")
+            foreach (DataGridViewRow row in tempTable.Rows)
             {
-                if (tLaser.Checked)
+                double t = 0;
+                string sensor = row.Cells[0].Value.ToString();
+                switch (sensor)
                 {
-                    double R1 = 5.6;
-                    double R2 = 2;
-                    double R3 = 47;
-                    double Vtempout = ((double)temp[0] / 4095 * 2.5);
-                    double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
-                    double t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
-                    cTemp.Text = t.ToString("0.00") + " °c";
-                    cTemp.ForeColor = Color.Black;
-                }
-                else
-                {
-                    double vref = 2.45;
-                    double r1 = 5.6;
-                    double r2 = 2.0;
-                    double r3 = 47.0;
-                    double vtempout = ((double)temp[0] / 4095 * 2.5);
-                    double term1 = 2 * r1 * r2 * vtempout;
-                    double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
-                    double term2 = vref * term2_inner;
-                    double numerator = term1 - term2;
-
-                    double term3_inner = r1 - r3;
-                    double term3 = vref * term3_inner;
-                    double term4 = 2 * r1 * vtempout;
-                    double denominator = term3 - term4;
-
-                    double rth = numerator / denominator;
-                    double T0 = 298.15;
-                    double B = 3380;
-                    double R0 = 10;
-                    double ratio = rth / R0;
-                    double ln_ratio = Math.Log(ratio);
-                    double inv_t0 = 1 / T0;
-                    double ln_term = (1 / B) * ln_ratio;
-                    double inv_temp_kelvin = inv_t0 + ln_term;
-                    double temp_kelvin = 1 / inv_temp_kelvin;
-                    double t = temp_kelvin - 273.15;
-
-                    cTemp.Text = t.ToString("0.00") + " °c";
-
-                    if ((t >= 47) && (t <= 59))
-                        cTemp.ForeColor = Color.Lime;
-                    else
-                        cTemp.ForeColor = Color.Red;
-
+                    case "PIC":
+                        t = ReadPICtemp();
+                        row.Cells[1].Value = t.ToString("0.00") + " °c";
+                        if ((t >= 47) && (t <= 59))
+                            row.Cells[1].Style.ForeColor = Color.Lime;
+                        else
+                            row.Cells[1].Style.ForeColor = Color.Red;
+                        break;
+                    case "Laser":
+                        t = readLaserTemp();
+                        row.Cells[1].Value = t.ToString("0.00") + " °c";
+                        row.Cells[1].Style.ForeColor = Color.Black;
+                        break;
                 }
 
             }
+        }
+        private double ReadPICtemp()
+        {
+            List<uint> temp;
+            string err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
+            double vref = 2.45;
+            double r1 = 5.6;
+            double r2 = 2.0;
+            double r3 = 47.0;
+            double vtempout = ((double)temp[0] / 4095 * 2.5);
+            double term1 = 2 * r1 * r2 * vtempout;
+            double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
+            double term2 = vref * term2_inner;
+            double numerator = term1 - term2;
 
+            double term3_inner = r1 - r3;
+            double term3 = vref * term3_inner;
+            double term4 = 2 * r1 * vtempout;
+            double denominator = term3 - term4;
+
+            double rth = numerator / denominator;
+            double T0 = 298.15;
+            double B = 3380;
+            double R0 = 10;
+            double ratio = rth / R0;
+            double ln_ratio = Math.Log(ratio);
+            double inv_t0 = 1 / T0;
+            double ln_term = (1 / B) * ln_ratio;
+            double inv_temp_kelvin = inv_t0 + ln_term;
+            double temp_kelvin = 1 / inv_temp_kelvin;
+            double t = temp_kelvin - 273.15;
+            return t;
+        }
+        private double readLaserTemp()
+        {
+            string err = "";
+            List<uint> temp;
+            double t = 0;
+                err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
+            if (err == "")
+            {
+                double R1 = 5.6;
+                double R2 = 2;
+                double R3 = 47;
+                double Vtempout = ((double)temp[0] / 4095 * 2.5);
+                double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
+                t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
+            }
+            return t;
         }
 
         private void connect_Click(object sender, EventArgs e)
@@ -584,8 +595,8 @@ namespace OdemControl
         SET_VECTOR_5,
         SET_VECTOR_6,
         LOAD_FILES,
-        RUN_OPTOTUNE_CALIBRATION,
         SET_OT_DELAY,
+        RUN_OPTOTUNE_CALIBRATION,
         DONE
     }
 }

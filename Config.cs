@@ -397,34 +397,11 @@ namespace OdemControl
                         confState++;
                         break;
 
-                    case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
-                        LogMessage("Configuring: Run opto");
-                        if (debugmodeEnabled)
-                            deviceState.Text = "Start odem (~ 40Sec)";
-                        optoStat.Maximum = 12;
-                        optoStat.Value = 0;
-                        //optoStat.Visible = true;
-                        this.Refresh();
-                        //timer1.Interval = 3000;
-                        //timer1.Start();
-                        Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
-                        timer1.Stop();
-                        optoStat.Visible = false;
-                        this.Refresh();
-                        if (Error.Length > 0)
-                        {
-                            LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-                        confState++;
-                        break;
-
                     case (int)confStates.SET_OT_DELAY:
                         LogMessage("Configuring: Set OT Delay");
-                        //if (debugmodeEnabled)
-                        //    runstatus.Text = "Configuring: Set OT Delay";
-                        //this.Refresh();
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Configuring: Set OT Delay";
+                        this.Refresh();
                         string mode = modes[appSetting.scanModeNum];
                         uint otd = deviceParameters[mode];
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { otd });
@@ -434,7 +411,22 @@ namespace OdemControl
                             MessageBox.Show("Error sending  Set OT Delay:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
+                        confState++;
+                        break;
 
+                    case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
+                        LogMessage("Configuring: Run opto");
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Start Odem (~40Sec)";
+                        Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
+                        optoStat.Visible = false;
+                        this.Refresh();
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
                         confState++;
                         break;
 

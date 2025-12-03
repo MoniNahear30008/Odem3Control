@@ -55,7 +55,7 @@ namespace OdemControl
                         else
                             LogMessage("Connected to device without KeepAlive");
 
-                        readTemp();
+                        readLaserTemp();
                     }
                 }
 
@@ -337,17 +337,15 @@ namespace OdemControl
 
 
         }
-        private string RunOpto(int mode)
+        private void SendRunCmd(int mode)
         {
-            if (!isConnected) return "Device not connected";
-
             List<byte> data = new List<byte>();
             data.Add(0x04);         // command
             data.Add(0x09);         // Sub command
             data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
             data.AddRange(new List<byte>() { 0, 0, 0, 2 });   // length
-            data.Add((byte)(0x30 + mode));    
-            data.Add(0x00);    
+            data.Add((byte)(0x30 + mode));
+            data.Add(0x00);
 
             if (dataLoggingEnabled)
             {
@@ -360,9 +358,23 @@ namespace OdemControl
             byte[] TxBuf = data.ToArray();
             stream.ReadTimeout = 100000;
             stream.Write(TxBuf);
+        }
+        private string RunOpto(int mode)
+        {
+            if (!isConnected) return "Device not connected";
 
+            SendRunCmd(mode);
+            optoStat.Maximum = 7;
+            optoStat.Value = 0;
+            optoStat.Visible = true;
+            string res = WaitOptoDone();
+            optoStat.Visible = false;
+            return res;
+        }
+        private string WaitOptoDone()
+        { 
             int stepNum = 0;
-            int NumSteps = 20;
+            int NumSteps = 7;
 
             List<byte> resp = new List<byte>();
             try
@@ -389,6 +401,8 @@ namespace OdemControl
                                 LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
                                 resp.RemoveRange(0, ml + 12);
 
+                                optoStat.Value = stepNum;
+                                this.Refresh();
                                 if (stepNum == NumSteps)
                                 {
                                     return "";
