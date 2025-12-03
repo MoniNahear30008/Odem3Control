@@ -382,6 +382,7 @@ namespace OdemControl
         private void ReadAllTemp()
         {
             if (!isConnected) return;
+
             bool tooHat = false;
             bool picHat = false;
             bool lasercold = false;
