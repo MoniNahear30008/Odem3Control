@@ -70,6 +70,7 @@
             label3 = new Label();
             KeepAlive = new CheckBox();
             timer1 = new System.Windows.Forms.Timer(components);
+            coldLaser = new Label();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -182,6 +183,7 @@
             // 
             // groupBox4
             // 
+            groupBox4.Controls.Add(coldLaser);
             groupBox4.Controls.Add(ReadIntText);
             groupBox4.Controls.Add(ReadInt);
             groupBox4.Controls.Add(checkT);
@@ -189,7 +191,7 @@
             groupBox4.Controls.Add(tempTable);
             groupBox4.Location = new Point(378, 20);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(171, 212);
+            groupBox4.Size = new Size(171, 236);
             groupBox4.TabIndex = 10;
             groupBox4.TabStop = false;
             groupBox4.Text = "Temperature";
@@ -250,7 +252,7 @@
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(147, 133);
+            tempTable.Size = new Size(147, 140);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -530,6 +532,18 @@
             timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
             // 
+            // coldLaser
+            // 
+            coldLaser.AutoSize = true;
+            coldLaser.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            coldLaser.ForeColor = Color.Orange;
+            coldLaser.Location = new Point(17, 217);
+            coldLaser.Name = "coldLaser";
+            coldLaser.Size = new Size(136, 16);
+            coldLaser.TabIndex = 13;
+            coldLaser.Text = "Laser is warming up";
+            coldLaser.Visible = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -613,5 +627,6 @@
         private CheckBox autoTemp;
         private Label ReadIntText;
         private NumericUpDown ReadInt;
+        private Label coldLaser;
     }
 }

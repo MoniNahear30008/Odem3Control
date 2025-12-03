@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Tls.Crypto.Impl.BC;
+﻿using Org.BouncyCastle.Asn1.CryptoPro;
+using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using Renci.SshNet;
 using System.Collections;
 using System.Diagnostics;
@@ -7,6 +8,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace OdemControl
@@ -55,7 +57,7 @@ namespace OdemControl
                         else
                             LogMessage("Connected to device without KeepAlive");
 
-                        readLaserTemp();
+                        ReadAllTemp();
                     }
                 }
 
@@ -407,8 +409,6 @@ namespace OdemControl
             {
                 return "Device not reponding";
             }
-
-
         }
         private void SendRunCmd(int mode)
         {
@@ -696,6 +696,61 @@ namespace OdemControl
                     int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
                     string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
                     return s;
+                }
+            }
+            catch (IOException)
+            {
+                return "Device not reponding";
+            }
+
+
+            return "";
+        }
+    
+        private string ReadRegFromOT(uint sys, uint reg, out double val)
+        {
+            val = 0;
+            List<byte> data = new List<byte>();
+            data.Add(0x04);         // command
+            data.Add(0x07);         // Sub command
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
+            data.AddRange(new List<byte>() { 0, 0, 0, 2 });   // length
+            data.Add((byte)sys);
+            data.Add((byte)reg);
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("OT Reg read: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 100000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("SOA write response: " + tx);
+                }
+                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4)))
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+                else
+                {
+                    uint v = ((uint)buffer[8] << 24) + ((uint)buffer[9] << 16) + ((uint)buffer[10] << 8) + (uint)buffer[11];
+                    val = BitConverter.UInt32BitsToSingle(v);
                 }
             }
             catch (IOException)

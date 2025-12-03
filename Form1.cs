@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
@@ -41,11 +42,13 @@ namespace OdemControl
         int readTempCounter = 0;
         bool configuring = false;
         Debug db = null;
+        string version = "1.00.00";
 
         public Form1(string mode)
         {
             InitializeComponent();
 
+            this.Text = "Odem Control - Version " + version;
             debugMode.Visible = mode.Contains("-d");
             debugmodeEnabled = mode.Contains("-d");
             loggingEnabled = mode.Contains("-l");
@@ -63,6 +66,8 @@ namespace OdemControl
               .ToString() ?? "No IPv4 found";
 
             tempTable.Rows.Add("PIC", "");
+            tempTable.Rows.Add("Optotune", "");
+            tempTable.Rows.Add("Main Board", "");
             tempTable.Rows.Add("Laser", "");
             tempTable.ClearSelection();
 
@@ -377,9 +382,13 @@ namespace OdemControl
         private void ReadAllTemp()
         {
             if (!isConnected) return;
-
+            bool tooHat = false;
+            bool picHat = false;
+            bool lasercold = false;
+            string msg = "Temperature readings: ";
             foreach (DataGridViewRow row in tempTable.Rows)
             {
+                row.Cells[1].Value = "";
                 double t = 0;
                 string sensor = row.Cells[0].Value.ToString();
                 switch (sensor)
@@ -387,19 +396,87 @@ namespace OdemControl
                     case "PIC":
                         t = ReadPICtemp();
                         row.Cells[1].Value = t.ToString("0.00") + " °c";
+                        msg += sensor + ": " + t.ToString("0.00") + " °c; ";
                         if ((t >= 47) && (t <= 59))
                             row.Cells[1].Style.ForeColor = Color.Green;
                         else
+                        {
                             row.Cells[1].Style.ForeColor = Color.Red;
+                            picHat = true;
+                        }
                         break;
                     case "Laser":
                         t = readLaserTemp();
                         row.Cells[1].Value = t.ToString("0.00") + " °c";
-                        row.Cells[1].Style.ForeColor = Color.Black;
+                        msg += sensor + ": " + t.ToString("0.00") + " °c; ";
+                        if (t > 58)
+                        {
+                            row.Cells[1].Style.ForeColor = Color.Red;
+                            tooHat = true;
+                        }
+                        else if (t >= 52)
+                            row.Cells[1].Style.ForeColor = Color.Green;
+                        else
+                        {
+                            row.Cells[1].Style.ForeColor = Color.Orange;
+                            lasercold = true;
+                        }
+                        break;
+
+                    case "Optotune":
+                        double ottemp = 0;
+                        string oterr = readOMTemp(out ottemp);
+                        if (oterr != "")
+                            MessageBox.Show("Can not read Optotune temerature");
+                        else
+                        {
+                            msg += sensor + ": " + ottemp.ToString("0.00") + " °c; ";
+                            row.Cells[1].Value = ottemp.ToString("0.00") + " °c";
+                            if (ottemp < 88)
+                                row.Cells[1].Style.ForeColor = Color.Green;
+                            else
+                            {
+                                row.Cells[1].Style.ForeColor = Color.Red;
+                                tooHat = true;
+                            }
+
+                        }
+                        break;
+
+                    case "Main Board":
+                        double temp = 0;
+                        string err = readMBTemp(out temp);
+                        if (err != "")
+                            MessageBox.Show("Can not read main boad temerature");
+                        else
+                        {
+                            msg += sensor + ": " + t.ToString("0.00") + " °c; ";
+                            row.Cells[1].Value = t.ToString("0.00") + " °c";
+                            if (t < 72)
+                                row.Cells[1].Style.ForeColor = Color.Green;
+                            else
+                            {
+                                row.Cells[1].Style.ForeColor = Color.Red;
+                                tooHat = true;
+                            }
+                        }
                         break;
                 }
             }
             tempTable.ClearSelection();
+            LogMessage(msg);
+            if (tooHat || picHat)
+            {
+                System.Media.SystemSounds.Beep.Play();
+                string Error = SPISOAControl(0);
+                if (Error.Length > 0)
+                    picHat = true;
+                if (picHat)
+                    MessageBox.Show("Please power off and restart the system" + Error, "Over temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else
+                    MessageBox.Show("System overheating\n Please power off, connect the top cooling unit, and try again" + Error, "Over temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            coldLaser.Visible = lasercold;
         }
         private void checkT_Click(object sender, EventArgs e)
         {
@@ -453,6 +530,52 @@ namespace OdemControl
                 t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
             }
             return t;
+        }
+        private string readOMTemp(out double temp)
+        {
+            List<int> regs = new List<int>() { 0, 2, 6 };
+            temp = 0;
+            double tmp;
+            List<double> tmp2 = new List<double>();
+            double t = 0;
+            foreach (int r in regs)
+            {
+                string err = ReadRegFromOT(0x22, (uint)r, out tmp);
+                if (err != "")
+                    return err;
+                tmp2.Add(tmp);
+            }
+            temp = tmp2.Max();
+            return "";
+        }
+        private string readMBTemp(out double temp)
+        {
+            temp = 0;
+            string err = "";
+            List<uint> tmp;
+            List<uint> tmp2 = new List<uint>();
+            double t = 0;
+            err = ReadI2C(1, 0x48, 0x14, 0, 1, out tmp);
+            if (err != "")
+                return err;
+            tmp2.Add(tmp[0]);
+            err = ReadI2C(1, 0x49, 0x14, 0, 1, out tmp);
+            if (err != "")
+                return err;
+            tmp2.Add(tmp[0]);
+            err = ReadI2C(1, 0x4A, 0x14, 0, 1, out tmp);
+            if (err != "")
+                return err;
+            tmp2.Add(tmp[0]);
+            err = ReadI2C(1, 0x4B, 0x14, 0, 1, out tmp);
+            if (err != "")
+                return err;
+            tmp2.Add(tmp[0]);
+            uint mtmp = tmp2.Max();
+            mtmp >>= 4;       // 12-bit value
+            if ((mtmp & 0x800) != 0) mtmp -= 4096;
+            temp = (double)mtmp * 0.0625;
+            return "";
         }
         private void connect_Click(object sender, EventArgs e)
         {
