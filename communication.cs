@@ -150,7 +150,7 @@ namespace OdemControl
             }
             return data.ToArray();
         }
-        private string WriteRegWaitResp(uint add, List<uint> vals)
+        public string WriteRegWaitResp(uint add, List<uint> vals)
         {
             byte[] TxBuf = SerWriteRegBuf(add, vals);
             if (!isConnected) return "Device not connected";

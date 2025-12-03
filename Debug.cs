@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OdemControl
 {
@@ -17,6 +18,7 @@ namespace OdemControl
             this.mainfrm = mainfrm;
             MonitorView.Clear();
             dbgControl.SelectedTab = Monitor;
+            OTDelay.Value = mainfrm.lastOTdelay;
         }
 
         private void Debug_FormClosing(object sender, FormClosingEventArgs e)
@@ -48,6 +50,24 @@ namespace OdemControl
                     MessageBox.Show("Incorrect Password");
                 }
             }
+        }
+
+        private void wrOTDelay_Click(object sender, EventArgs e)
+        {
+            mainfrm.LogMessage("Configuring: Set OT Delay");
+            string mode = mainfrm.modes[mainfrm.appSetting.scanModeNum];
+            int nPoints = mainfrm.scanModes[mode].nPoints;
+            int otd = (int)OTDelay.Value;
+            uint iotd = (uint)(nPoints - otd);
+            mainfrm.lastOTdelay = otd;
+            string Error = mainfrm.WriteRegWaitResp(mainfrm.WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
+            if (Error.Length > 0)
+            {
+                mainfrm.LogMessage("Configuring Error: " + Error);
+                MessageBox.Show("Error sending  Set OT Delay:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
         }
     }
 }

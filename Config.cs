@@ -9,7 +9,7 @@ namespace OdemControl
     {
         // Sensitivity --> Normal: 0x81010E3C; High: 0x80010F3c	
         List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x80010F3c };
-        Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
+        public Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
         {
             {(int)confStates.SEND_CAPTURE_DELAY, 0xFF200024 },
             {(int)confStates.RESET_DSP, 0xFF200010 },
@@ -24,6 +24,7 @@ namespace OdemControl
             {(int)confStates.SET_VECTOR_6, 0xFF346000},
             {(int)confStates.SET_OT_DELAY, 0xFF20003C}
         };
+        public int lastOTdelay = 0;
 
         private void cofigdevice()
         {
@@ -45,7 +46,7 @@ namespace OdemControl
                             deviceState.Text = "Configuring: Capture_Delay";
                         this.Refresh();
 
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SEND_CAPTURE_DELAY], new List<uint> { deviceParameters["Capture_Delay"] });
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SEND_CAPTURE_DELAY], new List<uint> { (uint)deviceParameters["Capture_Delay"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -137,7 +138,7 @@ namespace OdemControl
                             deviceState.Text = "Configuring: SET_CHIRP_GAIN";
                         this.Refresh();
 
-                        Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1C, new List<uint> { deviceParameters["Chirp_AWG_gain"] });
+                        Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Chirp_AWG_gain"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -194,7 +195,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_LO";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x4B, 0x14, 0x1C, new List<uint> { deviceParameters["LO"] });
+                        Error = WriteI2CWaitResp(7, 0x4B, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["LO"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -209,7 +210,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX_SOA1";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x19, new List<uint> { deviceParameters["TxSOA1"] });
+                        Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x19, new List<uint> { (uint)deviceParameters["TxSOA1"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -224,7 +225,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX_SOA2";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x1C, new List<uint> { deviceParameters["TxSOA2"] });
+                        Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["TxSOA2"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -239,7 +240,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_0_9";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x19, new List<uint> { deviceParameters["Tx3_0_9"] });
+                        Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x19, new List<uint> { (uint)deviceParameters["Tx3_0_9"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -254,7 +255,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_10_19";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x1C, new List<uint> { deviceParameters["Tx3_10_19"] });
+                        Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Tx3_10_19"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -269,7 +270,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_20_29";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x19, new List<uint> { deviceParameters["Tx3_20_29"] });
+                        Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x19, new List<uint> { (uint)deviceParameters["Tx3_20_29"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -284,7 +285,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_30_39";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1C, new List<uint> { deviceParameters["Tx3_30_39"] });
+                        Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Tx3_30_39"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -403,8 +404,11 @@ namespace OdemControl
                             deviceState.Text = "Configuring: Set OT Delay";
                         this.Refresh();
                         string mode = modes[appSetting.scanModeNum];
-                        uint otd = deviceParameters[mode];
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { otd });
+                        int nPoints = scanModes[mode].nPoints;
+                        int otd = deviceParameters[mode];
+                        uint iotd = (uint)(nPoints - otd);
+                        lastOTdelay = otd;
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);

@@ -28,11 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            button1 = new Button();
-            textBox1 = new TextBox();
-            button2 = new Button();
-            button3 = new Button();
             dbgControl = new TabControl();
             Control = new TabPage();
             wrOTDelay = new Button();
@@ -48,55 +43,6 @@
             Monitor.SuspendLayout();
             pwBox.SuspendLayout();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 18F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.Red;
-            label1.Location = new Point(311, 210);
-            label1.Name = "label1";
-            label1.Size = new Size(227, 32);
-            label1.TabIndex = 0;
-            label1.Text = "Under construction";
-            // 
-            // button1
-            // 
-            button1.Location = new Point(20, 18);
-            button1.Margin = new Padding(3, 2, 3, 2);
-            button1.Name = "button1";
-            button1.Size = new Size(124, 38);
-            button1.TabIndex = 2;
-            button1.Text = "CFAR multiplication";
-            button1.UseVisualStyleBackColor = true;
-            // 
-            // textBox1
-            // 
-            textBox1.Location = new Point(160, 27);
-            textBox1.Margin = new Padding(3, 2, 3, 2);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(110, 23);
-            textBox1.TabIndex = 3;
-            // 
-            // button2
-            // 
-            button2.Location = new Point(22, 71);
-            button2.Margin = new Padding(3, 2, 3, 2);
-            button2.Name = "button2";
-            button2.Size = new Size(122, 34);
-            button2.TabIndex = 4;
-            button2.Text = "Optotune";
-            button2.UseVisualStyleBackColor = true;
-            // 
-            // button3
-            // 
-            button3.Location = new Point(34, 119);
-            button3.Margin = new Padding(3, 2, 3, 2);
-            button3.Name = "button3";
-            button3.Size = new Size(122, 34);
-            button3.TabIndex = 4;
-            button3.Text = "Vectors";
-            button3.UseVisualStyleBackColor = true;
             // 
             // dbgControl
             // 
@@ -114,11 +60,6 @@
             // 
             Control.Controls.Add(wrOTDelay);
             Control.Controls.Add(OTDelay);
-            Control.Controls.Add(button1);
-            Control.Controls.Add(label1);
-            Control.Controls.Add(button3);
-            Control.Controls.Add(textBox1);
-            Control.Controls.Add(button2);
             Control.Location = new Point(4, 24);
             Control.Name = "Control";
             Control.Padding = new Padding(3);
@@ -129,16 +70,18 @@
             // 
             // wrOTDelay
             // 
-            wrOTDelay.Location = new Point(34, 287);
+            wrOTDelay.Location = new Point(19, 24);
             wrOTDelay.Name = "wrOTDelay";
             wrOTDelay.Size = new Size(127, 23);
             wrOTDelay.TabIndex = 6;
             wrOTDelay.Text = "Update OT Delay";
             wrOTDelay.UseVisualStyleBackColor = true;
+            wrOTDelay.Click += wrOTDelay_Click;
             // 
             // OTDelay
             // 
-            OTDelay.Location = new Point(167, 287);
+            OTDelay.Increment = new decimal(new int[] { 10, 0, 0, 0 });
+            OTDelay.Location = new Point(152, 24);
             OTDelay.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             OTDelay.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
             OTDelay.Name = "OTDelay";
@@ -212,7 +155,6 @@
             FormClosing += Debug_FormClosing;
             dbgControl.ResumeLayout(false);
             Control.ResumeLayout(false);
-            Control.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).EndInit();
             Monitor.ResumeLayout(false);
             Monitor.PerformLayout();
@@ -222,12 +164,6 @@
         }
 
         #endregion
-
-        private Label label1;
-        private Button button1;
-        private TextBox textBox1;
-        private Button button2;
-        private Button button3;
         private TabControl dbgControl;
         private TabPage Control;
         private TabPage Monitor;

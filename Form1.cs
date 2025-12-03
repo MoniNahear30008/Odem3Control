@@ -15,14 +15,14 @@ namespace OdemControl
         public appSettings appSetting;
         public bool isConnected = false;
         public List<string> deviceID = new List<string>();
-        private Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
-        private List<string> modes = new List<string>();
+        public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
+        public List<string> modes = new List<string>();
         Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
         Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
         string scanParamsJson = "";
         private List<string> devicesList = new List<string>();
         int confState = (int)confStates.IDLE;
-        Dictionary<string, uint> deviceParameters = new Dictionary<string, uint>()
+        public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
         {
             {"Capture_Delay" ,3600},
             {"Chirp_AWG_gain",7000},
@@ -287,7 +287,7 @@ namespace OdemControl
                 string pname = parts[0].Trim();
                 uint pval = uint.Parse(parts[1]);
                 if (deviceParameters.ContainsKey(pname))
-                    deviceParameters[pname] = pval;
+                    deviceParameters[pname] = (int)pval;
                 else
                 {
                     MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -348,7 +348,7 @@ namespace OdemControl
                 }
             }
         }
-        private void LogMessage(string message)
+        public void LogMessage(string message)
         {
             if (db != null)
             {
