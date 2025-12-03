@@ -273,6 +273,51 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
+        public string SPISOAControl(uint val)
+        {
+            if (!isConnected) return "Device not connected";
+            List<byte> data = new List<byte>();
+            data.Add(0x0A);         // command
+            data.Add(0x01);         // Sub command
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
+            data.AddRange(GetBytesBigEndian((uint)16));
+            data.AddRange(GetBytesBigEndian(val));
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("SOA write: " + tx);
+            }
+            byte[] TxBuf = data.ToArray();
+            stream.ReadTimeout = 10000;
+            stream.Write(TxBuf);
+
+            try
+            {
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("SOA write response: " + tx);
+                }
+                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 10)))
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return s;
+                }
+            }
+            catch (IOException)
+            {
+                return "Device not reponding";
+            }
+
+            return "";
+        }
         private string SPIWriteAWGWaitResp(List<uint> vals)
         {
             if (!isConnected) return "Device not connected";

@@ -15,6 +15,7 @@ namespace OdemControl
             {(int)confStates.RESET_DSP, 0xFF200010 },
             {(int)confStates.SET_SENSITIVITY, 0xFF200010 },
             {(int)confStates.SET_RANGE, 0xFF20007C},
+            {(int)confStates.SET_SPUR, 0xFF200074},
             {(int)confStates.SET_RETRO_LEVEL, 0xFF200070},
             {(int)confStates.SET_VECTOR_1, 0xFF200028},
             {(int)confStates.SET_VECTOR_2, 0xFF20002C},
@@ -89,12 +90,32 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: multiplication";
                         this.Refresh();
-
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { 0x00000808 });
+                        uint rangeMult = 0x00000408;
+                        if (appSetting.sensitivity == 1)
+                            rangeMult = 0x00000101;
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { rangeMult });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
                             MessageBox.Show("Error sending Set Range:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
+                        break;
+
+                    case (int)confStates.SET_SPUR:
+                        LogMessage("Configuring: Spurs & NN filter");
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Configuring: Spurs & NN filter";
+                        this.Refresh();
+                        uint filt = 0x20023C78;
+                        if (appSetting.sensitivity == 1)
+                            filt = 0x00003C78;
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_SPUR], new List<uint> { filt });
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending Spurs & NN filter:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -126,7 +147,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending AWG waveform:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -142,7 +163,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_CHIRP_GAIN:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -156,7 +177,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_PM1_CONTROL:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         LogMessage("Configuring: SET_PM2_CONTROL");
@@ -167,7 +188,23 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_PM2_CONTROL:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
+                        break;
+
+                    case (int)confStates.SET_SOA_EN:
+                        LogMessage("Configuring: Enable SOA");
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Configuring: Enable SOA";
+                        this.Refresh();
+
+                        Error = SPISOAControl(2);
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending Enable SOA:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -185,8 +222,6 @@ namespace OdemControl
                             MessageBox.Show("Error loading HHS driver:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        // insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip="192.168.2.20" udp_dest_port=10003 transfer_size=704
-                        // ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null', '-o', 'LogLevel=ERROR', '-o', 'BatchMode=yes', 'root@192.168.2.24', 'insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_i....20" udp_dest_port=10003 transfer_size=704']
                         confState++;
                         break;
 
@@ -199,7 +234,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_LO:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -214,7 +249,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX_SOA1:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -229,7 +264,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX_SOA2:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -244,7 +279,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX3_0_9:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -259,7 +294,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX3_10_19:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -274,7 +309,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX3_20_29:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -289,7 +324,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending badGoodIndxs_High:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending SET_TX3_30_39:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -428,7 +463,7 @@ namespace OdemControl
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
-                            MessageBox.Show("Error sending 2kWin:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error sending Run opto:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
