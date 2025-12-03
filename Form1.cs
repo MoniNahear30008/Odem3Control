@@ -40,6 +40,7 @@ namespace OdemControl
         private StreamWriter logFile;
         int readTempCounter = 0;
         bool configuring = false;
+        Debug db = null;
 
         public Form1(string mode)
         {
@@ -245,9 +246,11 @@ namespace OdemControl
 
         private void debugMode_Click(object sender, EventArgs e)
         {
-            Debug db = new Debug(this);
+            dataLoggingEnabled = true;
+            debugMode.Enabled = false;
+            db = new Debug(this);
             db.StartPosition = FormStartPosition.CenterParent;
-            db.ShowDialog(this);
+            db.Show(this);
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -347,6 +350,11 @@ namespace OdemControl
         }
         private void LogMessage(string message)
         {
+            if (db != null)
+            {
+                db.UpdateMonitor(message);
+            }
+
             if (loggingEnabled && logFile != null)
             {
                 if (message.StartsWith("Reg write") & (message.Length > 80))
@@ -366,7 +374,6 @@ namespace OdemControl
                     logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
             }
         }
-
         private void ReadAllTemp()
         {
             if (!isConnected) return;
@@ -394,7 +401,6 @@ namespace OdemControl
             }
             tempTable.ClearSelection();
         }
-
         private void checkT_Click(object sender, EventArgs e)
         {
             ReadAllTemp();
@@ -448,17 +454,10 @@ namespace OdemControl
             }
             return t;
         }
-
         private void connect_Click(object sender, EventArgs e)
         {
             ConnectToDevice();
         }
-
-        private void wrOTDelay_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void sStart_Click(object sender, EventArgs e)
         {
             streaming.Visible = false;
@@ -477,7 +476,6 @@ namespace OdemControl
                 deviceState.ForeColor = Color.Green;
             }
         }
-
         private void sStop_Click(object sender, EventArgs e)
         {
             string Error = StreamingCmd(false);
@@ -506,7 +504,6 @@ namespace OdemControl
                 ReadAllTemp();
             }
         }
-
         private void autoTemp_CheckedChanged(object sender, EventArgs e)
         {
             checkT.Visible = !autoTemp.Checked;
@@ -524,7 +521,7 @@ namespace OdemControl
                 timer1.Stop();
             }
         }
-        
+       
     }
 
     public class appSettings

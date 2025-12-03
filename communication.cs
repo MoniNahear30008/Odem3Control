@@ -161,6 +161,13 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("Write Reg response: " + tx);
+                }
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 1))
                 {
                     LogMessage("Reg write pass");
@@ -245,6 +252,13 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("I2C write response: " + tx);
+                }
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 7))
                     return "";
                 else
@@ -276,7 +290,7 @@ namespace OdemControl
                 string tx = "";
                 foreach (byte b in data)
                     tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
+                LogMessage("AWG write: " + tx);
             }
 
             byte[] TxBuf = data.ToArray();
@@ -287,6 +301,13 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("AWG write response: " + tx);
+                }
                 if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 11)))
                 {
                     int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
@@ -310,7 +331,7 @@ namespace OdemControl
                 string tx = "";
                 foreach (byte b in data)
                     tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
+                LogMessage("AWG gain write: " + tx);
             }
 
             TxBuf = data.ToArray();
@@ -321,6 +342,13 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("AWG gain response: " + tx);
+                }
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 10))
                     return "";
                 else
@@ -469,6 +497,21 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("I2C read response: " + tx);
+                }
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("I2C response: " + tx);
+                }
+
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 8))
                 {
                     vals = new List<uint>();
@@ -583,7 +626,7 @@ namespace OdemControl
                 string tx = "";
                 foreach (byte b in data)
                     tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
+                LogMessage("Straem command write: " + tx);
             }
 
             byte[] TxBuf = data.ToArray();
@@ -594,6 +637,13 @@ namespace OdemControl
             {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("Streaming command response: " + tx);
+                }
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 5))
                     return "";
                 else

@@ -15,19 +15,38 @@ namespace OdemControl
         {
             InitializeComponent();
             this.mainfrm = mainfrm;
+            MonitorView.Clear();
+            dbgControl.SelectedTab = Monitor;
         }
 
-        private void startDebug_Click(object sender, EventArgs e)
+        private void Debug_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (pw.Text == "evawdil")
+            mainfrm.debugMode.Enabled = true;
+        }
+        public void UpdateMonitor(string text)
+        {
+            MonitorView.AppendText(text + Environment.NewLine);
+            if (AutoScroll.Checked)
             {
-                pwBox.Visible = false;
-                dbgControl.Visible = true;
+                MonitorView.SelectionStart = MonitorView.Text.Length;
+                MonitorView.ScrollToCaret();
             }
-            else
+        }
+
+        private void pw_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
             {
-                pw.Text = "";
-                MessageBox.Show("Incorrect Password");
+                if (pw.Text == "macamor")
+                {
+                    pwBox.Visible = false;
+                    dbgControl.Visible = true;
+                }
+                else
+                {
+                    pw.Text = "";
+                    MessageBox.Show("Incorrect Password");
+                }
             }
         }
     }

@@ -41,10 +41,13 @@
             devices = new ComboBox();
             mainBox = new GroupBox();
             groupBox4 = new GroupBox();
+            ReadIntText = new Label();
+            ReadInt = new NumericUpDown();
+            checkT = new Button();
+            autoTemp = new CheckBox();
             tempTable = new DataGridView();
             Column3 = new DataGridViewTextBoxColumn();
             Column4 = new DataGridViewTextBoxColumn();
-            checkT = new Button();
             groupBox3 = new GroupBox();
             ModeParams = new DataGridView();
             Column1 = new DataGridViewTextBoxColumn();
@@ -67,12 +70,10 @@
             label3 = new Label();
             KeepAlive = new CheckBox();
             timer1 = new System.Windows.Forms.Timer(components);
-            autoTemp = new CheckBox();
-            ReadInt = new NumericUpDown();
-            ReadIntText = new Label();
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ModeParams).BeginInit();
@@ -80,14 +81,13 @@
             streamBox.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
-            statusStrip1.Location = new Point(0, 414);
+            statusStrip1.Location = new Point(0, 424);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
             statusStrip1.Size = new Size(592, 22);
@@ -194,6 +194,49 @@
             groupBox4.TabStop = false;
             groupBox4.Text = "Temperature";
             // 
+            // ReadIntText
+            // 
+            ReadIntText.AutoSize = true;
+            ReadIntText.Location = new Point(73, 48);
+            ReadIntText.Name = "ReadIntText";
+            ReadIntText.Size = new Size(45, 15);
+            ReadIntText.TabIndex = 12;
+            ReadIntText.Text = "Minute";
+            ReadIntText.Visible = false;
+            // 
+            // ReadInt
+            // 
+            ReadInt.Location = new Point(17, 44);
+            ReadInt.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            ReadInt.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            ReadInt.Name = "ReadInt";
+            ReadInt.Size = new Size(48, 23);
+            ReadInt.TabIndex = 11;
+            ReadInt.TextAlign = HorizontalAlignment.Right;
+            ReadInt.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            ReadInt.Visible = false;
+            // 
+            // checkT
+            // 
+            checkT.Location = new Point(41, 41);
+            checkT.Name = "checkT";
+            checkT.Size = new Size(51, 29);
+            checkT.TabIndex = 8;
+            checkT.Text = "Read";
+            checkT.UseVisualStyleBackColor = true;
+            checkT.Click += checkT_Click;
+            // 
+            // autoTemp
+            // 
+            autoTemp.AutoSize = true;
+            autoTemp.Location = new Point(17, 21);
+            autoTemp.Name = "autoTemp";
+            autoTemp.Size = new Size(109, 19);
+            autoTemp.TabIndex = 10;
+            autoTemp.Text = "Auto read every";
+            autoTemp.UseVisualStyleBackColor = true;
+            autoTemp.CheckedChanged += autoTemp_CheckedChanged;
+            // 
             // tempTable
             // 
             tempTable.AllowUserToAddRows = false;
@@ -224,16 +267,6 @@
             Column4.ReadOnly = true;
             Column4.Width = 50;
             // 
-            // checkT
-            // 
-            checkT.Location = new Point(41, 41);
-            checkT.Name = "checkT";
-            checkT.Size = new Size(51, 29);
-            checkT.TabIndex = 8;
-            checkT.Text = "Read";
-            checkT.UseVisualStyleBackColor = true;
-            checkT.Click += checkT_Click;
-            // 
             // groupBox3
             // 
             groupBox3.Controls.Add(ModeParams);
@@ -260,7 +293,7 @@
             ModeParams.Name = "ModeParams";
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(209, 165);
+            ModeParams.Size = new Size(209, 173);
             ModeParams.TabIndex = 1;
             // 
             // Column1
@@ -350,7 +383,7 @@
             streamBox.Controls.Add(sStop);
             streamBox.Controls.Add(sStart);
             streamBox.Enabled = false;
-            streamBox.Location = new Point(10, 237);
+            streamBox.Location = new Point(10, 249);
             streamBox.Margin = new Padding(3, 2, 3, 2);
             streamBox.Name = "streamBox";
             streamBox.Padding = new Padding(3, 2, 3, 2);
@@ -497,44 +530,11 @@
             timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
             // 
-            // autoTemp
-            // 
-            autoTemp.AutoSize = true;
-            autoTemp.Location = new Point(17, 21);
-            autoTemp.Name = "autoTemp";
-            autoTemp.Size = new Size(109, 19);
-            autoTemp.TabIndex = 10;
-            autoTemp.Text = "Auto read every";
-            autoTemp.UseVisualStyleBackColor = true;
-            autoTemp.CheckedChanged += autoTemp_CheckedChanged;
-            // 
-            // ReadInt
-            // 
-            ReadInt.Location = new Point(17, 44);
-            ReadInt.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            ReadInt.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            ReadInt.Name = "ReadInt";
-            ReadInt.Size = new Size(48, 23);
-            ReadInt.TabIndex = 11;
-            ReadInt.TextAlign = HorizontalAlignment.Right;
-            ReadInt.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            ReadInt.Visible = false;
-            // 
-            // ReadIntText
-            // 
-            ReadIntText.AutoSize = true;
-            ReadIntText.Location = new Point(73, 48);
-            ReadIntText.Name = "ReadIntText";
-            ReadIntText.Size = new Size(45, 15);
-            ReadIntText.TabIndex = 12;
-            ReadIntText.Text = "Minute";
-            ReadIntText.Visible = false;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(592, 436);
+            ClientSize = new Size(592, 446);
             Controls.Add(pictureBox1);
             Controls.Add(KeepAlive);
             Controls.Add(debugMode);
@@ -556,6 +556,7 @@
             mainBox.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)ReadInt).EndInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).EndInit();
             groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
@@ -566,7 +567,6 @@
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ReadInt).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -595,7 +595,7 @@
         private Label label3;
         private TextBox IPPort;
         private TextBox IPAddredd;
-        private Button debugMode;
+        public Button debugMode;
         private GroupBox groupBox3;
         private PictureBox pictureBox1;
         private DataGridView ModeParams;
