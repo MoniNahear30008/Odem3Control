@@ -72,6 +72,7 @@
             label3 = new Label();
             KeepAlive = new CheckBox();
             timer1 = new System.Windows.Forms.Timer(components);
+            timer2 = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -548,11 +549,17 @@
             KeepAlive.TabIndex = 12;
             KeepAlive.Text = "KeepAlive";
             KeepAlive.UseVisualStyleBackColor = true;
+            KeepAlive.CheckedChanged += KeepAlive_CheckedChanged;
             // 
             // timer1
             // 
             timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
+            // 
+            // timer2
+            // 
+            timer2.Interval = 5000;
+            timer2.Tick += timer2_Tick;
             // 
             // Form1
             // 
@@ -639,5 +646,6 @@
         private NumericUpDown ReadInt;
         private Label coldLaser;
         private ProgressBar ReadIntProg;
+        private System.Windows.Forms.Timer timer2;
     }
 }

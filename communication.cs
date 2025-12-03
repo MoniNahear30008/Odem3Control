@@ -27,6 +27,7 @@ namespace OdemControl
         {
             LogMessage("Disconnecting from device...");
             isConnected = false;
+            timer2.Stop();
             client.Close();
             ssh.Disconnect();
             connect.Text = "Connect";
@@ -65,13 +66,7 @@ namespace OdemControl
                         stream = client?.GetStream();
                         client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
                         if (KeepAlive.Checked)
-                        {
-                            SetKeepAlive(client.Client, 5000, 1000); // 5s idle, 1s interval
-                            LogMessage("Connected to device with KeepAlive");
-                        }
-                        else
-                            LogMessage("Connected to device without KeepAlive");
-
+                            timer2.Start();
                         ReadAllTemp();
                     }
                 }
@@ -149,6 +144,49 @@ namespace OdemControl
             return true;
 
         }
+        private void PingDevice()
+        {
+            List<byte> data = new List<byte>();
+            data.Add(0x09);         // Write command
+            data.Add(0x00);         // Reserved
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
+            if (dataLoggingEnabled)
+            {
+                string tx = "01 00 ";
+                foreach (byte b in data.Skip(2))
+                    tx += b.ToString("X2") + " ";
+                LogMessage("Ping: " + tx);
+            }
+
+            if (stream.CanWrite == false)
+            {
+                DevieLost();
+            }
+            byte[] TxBuf = data.ToArray();
+            try
+            {
+                stream.Write(TxBuf);
+
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("Ping response: " + tx);
+                }
+                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 9)))
+                {
+                    DevieLost();
+                }
+            }
+            catch (IOException)
+            {
+                DevieLost();
+            }
+        }
         private byte[] SerWriteRegBuf(uint add, List<uint> vals)
         {
             List<byte> data = new List<byte>();
@@ -179,7 +217,6 @@ namespace OdemControl
 
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
 
                 byte[] buffer = new byte[1024];

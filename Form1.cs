@@ -43,6 +43,7 @@ namespace OdemControl
         bool configuring = false;
         Debug db = null;
         string version = "1.00.00";
+        bool EnablePing = true;
 
         public Form1(string mode)
         {
@@ -213,6 +214,7 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
+            timer2.Stop();
             configuring = true;
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
@@ -240,6 +242,8 @@ namespace OdemControl
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             configuring = false;
+            if (KeepAlive.Checked)
+                timer2.Start();
         }
         public static byte[] GetBytesBigEndian(uint value)
         {
@@ -629,7 +633,7 @@ namespace OdemControl
         {
             if (configuring) return;
             readTempCounter -= 10;
-            ReadIntProg.Value = Math.Max(0, ReadIntProg.Value -10);
+            ReadIntProg.Value = Math.Max(0, ReadIntProg.Value - 10);
             if (readTempCounter <= 0)
             {
                 ReadIntProg.Value = (int)ReadInt.Value * 60;
@@ -642,7 +646,7 @@ namespace OdemControl
             autoTempControl();
         }
         private void autoTempControl()
-        { 
+        {
             checkT.Visible = !autoTemp.Checked;
             ReadInt.Visible = autoTemp.Checked;
             ReadIntText.Visible = autoTemp.Checked;
@@ -661,7 +665,25 @@ namespace OdemControl
                 timer1.Stop();
             }
         }
-       
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            if (KeepAlive.Checked && isConnected)
+                PingDevice();
+        }
+
+        private void KeepAlive_CheckedChanged(object sender, EventArgs e)
+        {
+            if (KeepAlive.Checked)
+            {
+                if (isConnected)
+                    timer2.Start();
+            }
+            else
+            {
+                timer2.Stop();
+            }
+        }
     }
 
     public class appSettings
