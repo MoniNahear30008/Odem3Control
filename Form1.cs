@@ -586,6 +586,11 @@ namespace OdemControl
         private void sStart_Click(object sender, EventArgs e)
         {
             streaming.Visible = false;
+            if (coldLaser.Visible)
+            {
+                MessageBox.Show("Laser temperature too low.\nPlease wait until the laser warms up.", "Laser Temperature", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             string Error = StreamingCmd(true);
             if (Error.Length > 0)
             {
@@ -633,6 +638,10 @@ namespace OdemControl
         }
         private void autoTemp_CheckedChanged(object sender, EventArgs e)
         {
+            autoTempControl();
+        }
+        private void autoTempControl()
+        { 
             checkT.Visible = !autoTemp.Checked;
             ReadInt.Visible = autoTemp.Checked;
             ReadIntText.Visible = autoTemp.Checked;

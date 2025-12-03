@@ -72,7 +72,7 @@ namespace OdemControl
                     mainBox.Enabled = true;
                     ssh = new SshClient("192.168.2.24", "root", "");
                     ssh.Connect();
-
+                    autoTempControl();
                 }
                 else
                 {

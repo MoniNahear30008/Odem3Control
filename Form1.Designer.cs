@@ -42,7 +42,6 @@
             mainBox = new GroupBox();
             groupBox4 = new GroupBox();
             ReadIntProg = new ProgressBar();
-            coldLaser = new Label();
             ReadIntText = new Label();
             ReadInt = new NumericUpDown();
             checkT = new Button();
@@ -61,6 +60,7 @@
             RangeNormal = new RadioButton();
             streamBox = new GroupBox();
             streaming = new Label();
+            coldLaser = new Label();
             sStop = new Button();
             sStart = new Button();
             confDev = new Button();
@@ -174,18 +174,17 @@
             mainBox.Controls.Add(confDev);
             mainBox.Controls.Add(groupBox1);
             mainBox.Enabled = false;
-            mainBox.Location = new Point(10, 91);
+            mainBox.Location = new Point(10, 87);
             mainBox.Margin = new Padding(3, 2, 3, 2);
             mainBox.Name = "mainBox";
             mainBox.Padding = new Padding(3, 2, 3, 2);
-            mainBox.Size = new Size(574, 321);
+            mainBox.Size = new Size(574, 335);
             mainBox.TabIndex = 2;
             mainBox.TabStop = false;
             // 
             // groupBox4
             // 
             groupBox4.Controls.Add(ReadIntProg);
-            groupBox4.Controls.Add(coldLaser);
             groupBox4.Controls.Add(ReadIntText);
             groupBox4.Controls.Add(ReadInt);
             groupBox4.Controls.Add(checkT);
@@ -193,7 +192,7 @@
             groupBox4.Controls.Add(tempTable);
             groupBox4.Location = new Point(378, 20);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(171, 236);
+            groupBox4.Size = new Size(171, 225);
             groupBox4.TabIndex = 10;
             groupBox4.TabStop = false;
             groupBox4.Text = "Temperature";
@@ -204,19 +203,6 @@
             ReadIntProg.Name = "ReadIntProg";
             ReadIntProg.Size = new Size(143, 11);
             ReadIntProg.TabIndex = 14;
-            ReadIntProg.Visible = false;
-            // 
-            // coldLaser
-            // 
-            coldLaser.AutoSize = true;
-            coldLaser.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            coldLaser.ForeColor = Color.Orange;
-            coldLaser.Location = new Point(17, 217);
-            coldLaser.Name = "coldLaser";
-            coldLaser.Size = new Size(136, 16);
-            coldLaser.TabIndex = 13;
-            coldLaser.Text = "Laser is warming up";
-            coldLaser.Visible = false;
             // 
             // ReadIntText
             // 
@@ -226,7 +212,6 @@
             ReadIntText.Size = new Size(45, 15);
             ReadIntText.TabIndex = 12;
             ReadIntText.Text = "Minute";
-            ReadIntText.Visible = false;
             // 
             // ReadInt
             // 
@@ -238,7 +223,6 @@
             ReadInt.TabIndex = 11;
             ReadInt.TextAlign = HorizontalAlignment.Right;
             ReadInt.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            ReadInt.Visible = false;
             // 
             // checkT
             // 
@@ -248,11 +232,14 @@
             checkT.TabIndex = 8;
             checkT.Text = "Read";
             checkT.UseVisualStyleBackColor = true;
+            checkT.Visible = false;
             checkT.Click += checkT_Click;
             // 
             // autoTemp
             // 
             autoTemp.AutoSize = true;
+            autoTemp.Checked = true;
+            autoTemp.CheckState = CheckState.Checked;
             autoTemp.Location = new Point(17, 21);
             autoTemp.Name = "autoTemp";
             autoTemp.Size = new Size(109, 19);
@@ -274,7 +261,7 @@
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(147, 126);
+            tempTable.Size = new Size(147, 132);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -404,14 +391,15 @@
             // streamBox
             // 
             streamBox.Controls.Add(streaming);
+            streamBox.Controls.Add(coldLaser);
             streamBox.Controls.Add(sStop);
             streamBox.Controls.Add(sStart);
             streamBox.Enabled = false;
-            streamBox.Location = new Point(10, 249);
+            streamBox.Location = new Point(10, 246);
             streamBox.Margin = new Padding(3, 2, 3, 2);
             streamBox.Name = "streamBox";
             streamBox.Padding = new Padding(3, 2, 3, 2);
-            streamBox.Size = new Size(544, 63);
+            streamBox.Size = new Size(544, 81);
             streamBox.TabIndex = 4;
             streamBox.TabStop = false;
             // 
@@ -421,12 +409,24 @@
             streaming.BackColor = Color.Green;
             streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             streaming.ForeColor = Color.White;
-            streaming.Location = new Point(182, 25);
+            streaming.Location = new Point(182, 39);
             streaming.Name = "streaming";
             streaming.Size = new Size(182, 25);
             streaming.TabIndex = 1;
             streaming.Text = "Device is streaming";
             streaming.Visible = false;
+            // 
+            // coldLaser
+            // 
+            coldLaser.AutoSize = true;
+            coldLaser.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            coldLaser.ForeColor = Color.Orange;
+            coldLaser.Location = new Point(131, 12);
+            coldLaser.Name = "coldLaser";
+            coldLaser.Size = new Size(287, 16);
+            coldLaser.TabIndex = 13;
+            coldLaser.Text = "Laser is warming up - Do not start streaming";
+            coldLaser.Visible = false;
             // 
             // sStop
             // 
@@ -434,7 +434,7 @@
             sStop.Enabled = false;
             sStop.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(386, 18);
+            sStop.Location = new Point(386, 32);
             sStop.Margin = new Padding(3, 2, 3, 2);
             sStop.Name = "sStop";
             sStop.Size = new Size(141, 39);
@@ -448,7 +448,7 @@
             sStart.BackColor = Color.Green;
             sStart.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(19, 18);
+            sStart.Location = new Point(19, 32);
             sStart.Margin = new Padding(3, 2, 3, 2);
             sStart.Name = "sStart";
             sStart.Size = new Size(141, 39);
