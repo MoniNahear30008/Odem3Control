@@ -35,10 +35,25 @@ namespace OdemControl
                 switch (confState)
                 {
                     case (int)confStates.IDLE:
-                        LogMessage("Configuring device");
+                        LogMessage("Start devive configuring");
                         deviceState.Text = "Configuring device";
                         this.Refresh();
                         confState++;
+                        break;
+
+                    case (int)confStates.STOP_OT:
+                        LogMessage("Configuring: Stop OT");
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Configuring: Stop OT";
+                        Error = SendStopCmd();
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending Stop OT:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
+                        this.Refresh();
                         break;
 
                     case (int)confStates.SEND_CAPTURE_DELAY:

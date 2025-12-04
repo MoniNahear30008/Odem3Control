@@ -836,6 +836,7 @@ namespace OdemControl
     public enum confStates
     {
         IDLE,
+        STOP_OT,
         SEND_CAPTURE_DELAY,
         RESET_DSP,
         SET_SENSITIVITY,
