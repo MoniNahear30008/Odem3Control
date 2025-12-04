@@ -45,6 +45,7 @@ namespace OdemControl
         string version = "1.00.00";
         bool EnablePing = true;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
+        int pingLost = 0;
 
         public Form1(string mode)
         {
@@ -259,6 +260,7 @@ namespace OdemControl
         private void confDev_Click(object sender, EventArgs e)
         {
             configuring = true;
+            pingLost = 10;
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
             deviceState.Text = "";

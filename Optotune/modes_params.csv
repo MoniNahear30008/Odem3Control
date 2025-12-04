@@ -1,0 +1,10 @@
+,,30@0.01deg_160L_5fps,60@0.02deg_80L_10fps,80@0.05deg_160L_10fps,90@0.015deg_80L_5fps,90@0.03deg_80L_10fps
+Config,Mirror freq,4000,4000,8000,2000,4000
+,FPGA points,12283,6103,6164,12329,6164
+,,,,,,
+GUI Info,Horizontal FOV,30 Deg,60 Deg,80 Deg,88 Deg,88 Deg
+,Vertical FOV,19 Deg,19 Deg,19 Deg,19 Deg,19 Deg
+,Horizontal res,0.01 Deg,0.02 Deg,0.05 Deg,0.015 Deg,0.03 Deg
+,Vertical res,0.12 Deg,0.24 Deg,0.12 Deg,0.24 Deg,0.24 Deg
+,Lines per frame,160,80,160,80,80
+,Frame rate,5 FPS,10 FPS,10 FPS,5 FPS,10 FPS

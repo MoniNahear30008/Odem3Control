@@ -175,10 +175,13 @@ namespace OdemControl
                     for (int i = 0; i < count; i++)
                         tx += buffer[i].ToString("X2") + " ";
                     LogMessage("Ping response: " + tx);
+                    pingLost = 10;
                 }
                 if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 9)))
                 {
-                    DevieLost();
+                    pingLost--;
+                    if (pingLost == 0)
+                        DevieLost();
                 }
             }
             catch (IOException)
@@ -465,7 +468,6 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
 
                 byte[] buffer = new byte[1024];
@@ -492,6 +494,57 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
+        private void SendStopCmd()
+        {
+            List<byte> data = new List<byte>();
+            data.Add(0x04);         // command
+            data.Add(0x03);         // Sub command
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
+            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // length
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("SPI Write: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            if (stream.CanWrite == false)
+            {
+                DevieLost();
+            }
+
+            try
+            {
+                stream.Write(TxBuf);
+
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("Streaming command response: " + tx);
+                }
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
+                    return;
+                else
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return;
+                }
+            }
+            catch (IOException)
+            {
+                DevieLost();
+                return;// "Device not reponding";
+            }
+
+        }
         private void SendRunCmd(int mode)
         {
             List<byte> data = new List<byte>();
@@ -517,17 +570,48 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 100000;
                 stream.Write(TxBuf);
             }
             catch (IOException)
             {
                 DevieLost();
             }
+
+            try
+            {
+                //                stream.ReadTimeout = 1000;
+                stream.Write(TxBuf);
+
+                byte[] buffer = new byte[1024];
+                int count = stream.Read(buffer, 0, buffer.Length);
+                if (dataLoggingEnabled)
+                {
+                    string tx = "";
+                    for (int i = 0; i < count; i++)
+                        tx += buffer[i].ToString("X2") + " ";
+                    LogMessage("Streaming command response: " + tx);
+                }
+                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
+                    return;
+                else
+                {
+                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                    return;
+                }
+            }
+            catch (IOException)
+            {
+                DevieLost();
+                return;// "Device not reponding";
+            }
+
         }
         private string RunOpto(int mode)
         {
             if (!isConnected) return "Device not connected";
+
+            SendStopCmd();
 
             SendRunCmd(mode);
             optoStat.Maximum = 7;

@@ -20,7 +20,7 @@ namespace OdemControl
             {(int)confStates.SET_VECTOR_1, 0xFF200028},
             {(int)confStates.SET_VECTOR_2, 0xFF20002C},
             {(int)confStates.SET_VECTOR_3, 0xFF248000},
-            {(int)confStates.SET_VECTOR_4, 0xFF248080},
+            {(int)confStates.SET_VECTOR_4, 0xFF248200},
             {(int)confStates.SET_VECTOR_5, 0xFF340000},
             {(int)confStates.SET_VECTOR_6, 0xFF346000},
             {(int)confStates.SET_OT_DELAY, 0xFF20003C}
