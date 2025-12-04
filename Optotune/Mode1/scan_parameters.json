@@ -1,9 +1,9 @@
 {
     "metadata": {
-        "timestamp": "20251127_110351",
+        "timestamp": "20251204_115744",
         "generation_method": "manual_update",
-        "generation_date": "20251127",
-        "generation_time": "110351",
+        "generation_date": "20251204",
+        "generation_time": "115744",
         "waveform_files": {
             "x_file": "waveformX.csv",
             "y_file": "waveformY.csv"
@@ -13,16 +13,41 @@
             "y_lines": 805
         }
     },
-  "selected_parameters": {
-    "mirror_frequency_hz": 4000.0,
-    "achieved_total_fpga_points_to_use": 12283,
-    "mirror_points_per_axis": 805
-  },
+    "selected_parameters": {
+        "mirror_frequency_hz": 4000.0,
+        "achieved_total_fpga_points_to_use": 12283,
+        "mirror_points_per_axis": 805
+    },
     "user_entered_parameters": {
         "horizontal_fov": 30.0,
         "pixel_angle_h": 0.01,
         "vertical_step_angle": 0.12,
         "number_lines": 160,
         "round_percent": 0.05
+    },
+    "deduced_parameters_from_optimization": {
+        "fpga_parameters": {
+            "fpga_points_per_line": 3000,
+            "total_fpga_points": 960000,
+            "fpga_total_scan_time_sec": 15.72864
+        },
+        "mirror_parameters": {
+            "mirror_points_per_line": 7,
+            "mirror_points_per_axis": 2240,
+            "mirror_frequency_hz": 142.34875444839858,
+            "mirror_total_scan_time_sec": 15.735999999999999,
+            "frequency_divisor": 281,
+            "base_frequency_hz": 40000
+        },
+        "achieved_parameters": {
+            "achieved_fpga_points_per_line": 3001.4038085937495,
+            "achieved_total_fpga_points": 960449.2187499999,
+            "achieved_total_fpga_points_to_use": 960449,
+            "achieved_fpga_points_per_line_diff": 3001.403125
+        },
+        "timing_analysis": {
+            "time_difference_sec": 0.007359999999998479,
+            "time_match_percent": 99.95322826639553
+        }
     }
 }

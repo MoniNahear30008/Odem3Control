@@ -1,9 +1,9 @@
 {
     "metadata": {
-        "timestamp": "20251127_110351",
+        "timestamp": "20251204_122030",
         "generation_method": "manual_update",
-        "generation_date": "20251127",
-        "generation_time": "110351",
+        "generation_date": "20251204",
+        "generation_time": "122030",
         "waveform_files": {
             "x_file": "waveformX.csv",
             "y_file": "waveformY.csv"
@@ -13,11 +13,11 @@
             "y_lines": 808
         }
     },
-  "selected_parameters": {
-    "mirror_frequency_hz": 8000.0,
-    "achieved_total_fpga_points_to_use": 6164,
-    "mirror_points_per_axis": 808
-  },
+    "selected_parameters": {
+        "mirror_frequency_hz": 8000.0,
+        "achieved_total_fpga_points_to_use": 6164,
+        "mirror_points_per_axis": 808
+    },
     "user_entered_parameters": {
         "horizontal_fov": 80.0,
         "pixel_angle_h": 0.05,

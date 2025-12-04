@@ -204,6 +204,7 @@ namespace OdemControl
         private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             updateScanMode(scanMode.SelectedIndex);
+            streamBox.Enabled = false;
         }
         private void updateScanMode(int mode)
         {
@@ -671,6 +672,7 @@ namespace OdemControl
                 sStop.Enabled = true;
                 deviceState.Text = "Steaming";
                 deviceState.ForeColor = Color.Green;
+                scanMode.Enabled = false;
             }
         }
         private void sStop_Click(object sender, EventArgs e)
@@ -688,6 +690,7 @@ namespace OdemControl
                 sStop.Enabled = false;
                 deviceState.Text = "Steaming stopped";
                 deviceState.ForeColor = Color.Orange;
+                scanMode.Enabled = true;
             }
 
         }
