@@ -70,7 +70,6 @@
             debugMode = new Button();
             pictureBox1 = new PictureBox();
             label3 = new Label();
-            KeepAlive = new CheckBox();
             timer1 = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
             mainBox.SuspendLayout();
@@ -126,7 +125,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(16, 67);
+            label2.Location = new Point(15, 50);
             label2.Name = "label2";
             label2.Size = new Size(50, 15);
             label2.TabIndex = 7;
@@ -157,7 +156,7 @@
             // devices
             // 
             devices.FormattingEnabled = true;
-            devices.Location = new Point(79, 64);
+            devices.Location = new Point(78, 47);
             devices.Margin = new Padding(3, 2, 3, 2);
             devices.Name = "devices";
             devices.Size = new Size(124, 23);
@@ -174,7 +173,7 @@
             mainBox.Controls.Add(confDev);
             mainBox.Controls.Add(groupBox1);
             mainBox.Enabled = false;
-            mainBox.Location = new Point(10, 87);
+            mainBox.Location = new Point(10, 82);
             mainBox.Margin = new Padding(3, 2, 3, 2);
             mainBox.Name = "mainBox";
             mainBox.Padding = new Padding(3, 2, 3, 2);
@@ -508,7 +507,7 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(480, 64);
+            debugMode.Location = new Point(225, 47);
             debugMode.Margin = new Padding(3, 2, 3, 2);
             debugMode.Name = "debugMode";
             debugMode.Size = new Size(84, 23);
@@ -539,17 +538,6 @@
             label3.TabIndex = 11;
             label3.Text = "Port";
             // 
-            // KeepAlive
-            // 
-            KeepAlive.AutoSize = true;
-            KeepAlive.Location = new Point(16, 36);
-            KeepAlive.Name = "KeepAlive";
-            KeepAlive.Size = new Size(78, 19);
-            KeepAlive.TabIndex = 12;
-            KeepAlive.Text = "KeepAlive";
-            KeepAlive.UseVisualStyleBackColor = true;
-            KeepAlive.CheckedChanged += KeepAlive_CheckedChanged;
-            // 
             // timer1
             // 
             timer1.Interval = 10000;
@@ -561,7 +549,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(592, 446);
             Controls.Add(pictureBox1);
-            Controls.Add(KeepAlive);
             Controls.Add(debugMode);
             Controls.Add(label3);
             Controls.Add(IPPort);
@@ -626,7 +613,6 @@
         private DataGridView ModeParams;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
-        private CheckBox KeepAlive;
         private Button checkT;
         private GroupBox groupBox4;
         private ToolStripProgressBar optoStat;

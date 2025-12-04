@@ -539,7 +539,6 @@ namespace OdemControl
             temp = 0;
             double tmp;
             List<double> tmp2 = new List<double>();
-            double t = 0;
             foreach (int r in regs)
             {
                 string err = ReadRegFromOT(0x22, (uint)r, out tmp);
@@ -556,7 +555,6 @@ namespace OdemControl
             string err = "";
             List<uint> tmp;
             List<uint> tmp2 = new List<uint>();
-            double t = 0;
             err = ReadI2C(1, 0x48, 0x14, 0, 1, out tmp);
             if (err != "")
                 return err;
