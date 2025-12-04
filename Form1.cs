@@ -44,6 +44,7 @@ namespace OdemControl
         Debug db = null;
         string version = "1.00.00";
         bool EnablePing = true;
+        Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
 
         public Form1(string mode)
         {
@@ -133,6 +134,43 @@ namespace OdemControl
             }
             scanMode.SelectedIndex = Math.Min(appSetting.scanModeNum, modes.Count() - 1);
             updateScanMode(scanMode.SelectedIndex);
+
+            // Get OT delay
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.OT_Delay.csv");
+            if (stream == null)
+            {
+                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            reader = new StreamReader(stream);
+            string otd = reader.ReadToEnd();
+            List<string> otdl = otd.Split("\r\n").ToList();
+            List<string> dv = otdl[0].Split(',').ToList();
+            dv.RemoveAt(0);
+            foreach (string d in dv)
+                OT_Delay.Add(d, null);
+
+            Dictionary<string, List<int>> ot = new Dictionary<string, List<int>>();
+            for (int l = 1; l < otdl.Count(); l++)
+            {
+                List<string> parts = otdl[l].Split(',').ToList();
+                string modeName = parts[0];
+                ot.Add(modeName, new List<int>());
+                for (int i = 1; i < parts.Count(); i++)
+                {
+                    ot[modeName].Add(int.Parse(parts[i]));
+                }
+            }
+
+            int dnun = 0;
+            foreach (string dname in OT_Delay.Keys)
+            {
+                Dictionary<string, int> otmp = new Dictionary<string, int>();
+                foreach (string mname in ot.Keys)
+                    otmp.Add(mname, ot[mname][dnun]);
+                OT_Delay[dname] = otmp;
+                dnun++;
+            }
 
             if (appSetting.sensitivity == 0)
                 SensitivityNormal.Checked = true;
@@ -269,7 +307,6 @@ namespace OdemControl
         private void UpdateConfFiles()
         {
             int dNum = devices.SelectedIndex;
-
             string resourceName = "OdemControl.Devices." + devicesList[dNum] + ".";
             List<string> files = confFiles.Keys.ToList();
             Stream stream;
@@ -303,7 +340,13 @@ namespace OdemControl
                     MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+            }
 
+            Dictionary<string, int> dp = OT_Delay[devicesList[dNum]] as Dictionary<string, int>;
+            foreach (string m in dp.Keys)
+            {
+                if (deviceParameters.ContainsKey(m))
+                    deviceParameters[m] = dp[m];
             }
 
             // Get common file
