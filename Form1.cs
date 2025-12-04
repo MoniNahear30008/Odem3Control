@@ -567,12 +567,38 @@ namespace OdemControl
             err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
             if (err == "")
             {
-                double R1 = 5.6;
-                double R2 = 2;
-                double R3 = 47;
-                double Vtempout = ((double)temp[0] / 4095 * 2.5);
-                double Rth = (2 * R1 * R2 * Vtempout - 2.45 * (R1 * R2 - R2 * R3 + R1 * R3)) / (2.45 * (R1 - R3) - 2 * R1 * Vtempout);
-                t = (1 / ((0.001129) + (0.0002341) * Math.Log(Rth * 1000) + (0.00000008775) * (Math.Pow(Math.Log(Rth * 1000), 3)))) - 273.15;
+                double r1 = 5.6;
+                double r2 = 2.0;
+                double r3 = 47;
+                double vref = 2.45;
+                double vtempout = ((double)temp[0] / 4095.0) * 2.5;
+                double term1 = 2 * r1 * r2 * vtempout;
+                double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
+                double term2 = vref * term2_inner;
+                double numerator = term1 - term2;
+
+                double term3_inner = r1 - r3;
+                double term3 = vref * term3_inner;
+                double term4 = 2 * r1 * vtempout;
+                double denominator = term3 - term4;
+
+                double rth = numerator / denominator;
+                double t_ref = 298.15;
+                double beta = 3380;
+                double r_ref = 10;
+
+                double T0 = t_ref;
+                double B = beta;
+                double R0 = r_ref;
+
+                double ratio = rth / R0;
+                double ln_ratio = Math.Log(ratio);
+                double inv_t0 = 1 / T0;
+                double ln_term = (1 / B) * ln_ratio;
+                double inv_temp_kelvin = inv_t0 + ln_term;
+                double temp_kelvin = 1 / inv_temp_kelvin;
+
+                t = temp_kelvin - 273.15;
             }
             return t;
         }
