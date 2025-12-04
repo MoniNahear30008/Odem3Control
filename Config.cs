@@ -440,9 +440,10 @@ namespace OdemControl
                         this.Refresh();
                         string mode = modes[appSetting.scanModeNum];
                         int nPoints = scanModes[mode].nPoints;
-                        int otd = deviceParameters[mode];
-                        uint iotd = (uint)(nPoints - otd);
-                        lastOTdelay = otd;
+                        lastOTdelay = deviceParameters[mode];
+                        uint iotd = (uint)Math.Abs(lastOTdelay);
+                        if (lastOTdelay < 0)
+                            iotd = (uint)(nPoints - iotd);
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
                         if (Error.Length > 0)
                         {

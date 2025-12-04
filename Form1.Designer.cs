@@ -88,10 +88,10 @@
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
-            statusStrip1.Location = new Point(0, 424);
+            statusStrip1.Location = new Point(0, 420);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
-            statusStrip1.Size = new Size(592, 22);
+            statusStrip1.Size = new Size(592, 26);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -100,7 +100,7 @@
             deviceState.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             deviceState.ForeColor = Color.Red;
             deviceState.Name = "deviceState";
-            deviceState.Size = new Size(92, 17);
+            deviceState.Size = new Size(92, 21);
             deviceState.Text = "Disconnected";
             // 
             // optoStat
@@ -108,7 +108,6 @@
             optoStat.Maximum = 36;
             optoStat.Name = "optoStat";
             optoStat.Size = new Size(100, 20);
-            optoStat.Style = ProgressBarStyle.Marquee;
             optoStat.Visible = false;
             // 
             // connect

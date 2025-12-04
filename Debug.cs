@@ -64,7 +64,9 @@ namespace OdemControl
             string mode = mainfrm.modes[mainfrm.appSetting.scanModeNum];
             int nPoints = mainfrm.scanModes[mode].nPoints;
             int otd = (int)OTDelay.Value;
-            uint iotd = (uint)(nPoints - otd);
+            uint iotd = (uint)Math.Abs(otd);
+            if (otd < 0)
+                iotd = (uint)(nPoints - iotd);
             mainfrm.lastOTdelay = otd;
             string Error = mainfrm.WriteRegWaitResp(mainfrm.WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
             if (Error.Length > 0)
@@ -89,6 +91,11 @@ namespace OdemControl
                 }
 
             }
+        }
+
+        private void clr_Click(object sender, EventArgs e)
+        {
+            MonitorView.Clear();
         }
     }
 }

@@ -41,6 +41,7 @@
             label1 = new Label();
             pwBox = new GroupBox();
             pw = new TextBox();
+            clr = new Button();
             dbgControl.SuspendLayout();
             Control.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
@@ -97,6 +98,7 @@
             // 
             // Monitor
             // 
+            Monitor.Controls.Add(clr);
             Monitor.Controls.Add(showVer);
             Monitor.Controls.Add(showCom);
             Monitor.Controls.Add(AutoScroll);
@@ -195,6 +197,16 @@
             pw.TabIndex = 0;
             pw.KeyDown += pw_KeyDown;
             // 
+            // clr
+            // 
+            clr.Location = new Point(334, 4);
+            clr.Name = "clr";
+            clr.Size = new Size(75, 23);
+            clr.TabIndex = 3;
+            clr.Text = "Clear";
+            clr.UseVisualStyleBackColor = true;
+            clr.Click += clr_Click;
+            // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -232,5 +244,6 @@
         private Label label1;
         private RadioButton showVer;
         private RadioButton showCom;
+        private Button clr;
     }
 }

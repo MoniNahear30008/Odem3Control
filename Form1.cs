@@ -95,7 +95,6 @@ namespace OdemControl
                     devices.Items.Add(devName);
                 }
             }
-            devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
 
             // configuration files dictionaries
             confFiles.Add("badGoodIndxs_High", new List<uint>());
@@ -183,6 +182,8 @@ namespace OdemControl
                 RangeExt.Checked = true;
             else
                 rangeMax.Checked = true;
+
+            devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
         {
@@ -263,7 +264,7 @@ namespace OdemControl
             deviceState.Text = "";
             deviceState.ForeColor = Color.Black;
             appSetting.Update(true);
-            UpdateConfFiles();
+            //UpdateConfFiles();
             confState = (int)confStates.IDLE;
             cofigdevice();
             if (confState == (int)confStates.DONE)
@@ -304,17 +305,19 @@ namespace OdemControl
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
             appSetting.deviceNum = devices.SelectedIndex;
+            UpdateConfFiles();
         }
         private void UpdateConfFiles()
         {
-            int dNum = devices.SelectedIndex;
-            string resourceName = "OdemControl.Devices." + devicesList[dNum] + ".";
+            string resourceName = "OdemControl.Devices." + devicesList[appSetting.deviceNum] + ".";
             List<string> files = confFiles.Keys.ToList();
             Stream stream;
             StreamReader reader;
             List<string> lc;
             // Get general parameters
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + "General_Params.csv");
+            string fln = resourceName + "General_Params.csv";
+            LogMessage("Update file: " + fln);
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
             if (stream == null)
             {
                 MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -343,7 +346,7 @@ namespace OdemControl
                 }
             }
 
-            Dictionary<string, int> dp = OT_Delay[devicesList[dNum]] as Dictionary<string, int>;
+            Dictionary<string, int> dp = OT_Delay[devicesList[appSetting.deviceNum]] as Dictionary<string, int>;
             foreach (string m in dp.Keys)
             {
                 if (deviceParameters.ContainsKey(m))
@@ -357,9 +360,16 @@ namespace OdemControl
             {
                 confFiles[f].Clear();
                 if (f == commonFile)
-                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices." + f + ".txt");
+                {
+                    fln = "OdemControl.Devices." + f + ".txt";
+                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
+                }
                 else
-                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + f + ".txt");
+                {
+                    fln = resourceName + f + ".txt";
+                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
+                }
+                LogMessage("Update file: " + fln);
                 if (stream == null)
                 {
                     MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
