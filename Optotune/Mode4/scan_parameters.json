@@ -9,18 +9,18 @@
             "y_file": "waveformY.csv"
         },
         "line_counts": {
-            "x_lines": 373,
-            "y_lines": 373
+            "x_lines": 404,
+            "y_lines": 404
         }
     },
   "selected_parameters": {
-    "mirror_frequency_hz": 2500.0,
-    "achieved_total_fpga_points_to_use": 9106,
-    "mirror_points_per_axis": 373
+    "mirror_frequency_hz": 2000.0,
+    "achieved_total_fpga_points_to_use": 12329,
+    "mirror_points_per_axis": 404
   },
     "user_entered_parameters": {
-        "horizontal_fov": 60.0,
-        "pixel_angle_h": 0.013,
+        "horizontal_fov": 88.0,
+        "pixel_angle_h": 0.015,
         "vertical_step_angle": 0.24,
         "number_lines": 80,
         "round_percent": 0.05
