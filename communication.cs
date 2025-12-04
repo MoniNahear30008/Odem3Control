@@ -27,7 +27,6 @@ namespace OdemControl
         {
             LogMessage("Disconnecting from device...");
             isConnected = false;
-            timer2.Stop();
             client.Close();
             ssh.Disconnect();
             connect.Text = "Connect";
@@ -41,6 +40,7 @@ namespace OdemControl
         }
         private async void ConnectToDevice()
         {
+            timer1.Stop();
             if (isConnected)
             {
                 LogMessage("Disconnecting from device...");
@@ -65,9 +65,8 @@ namespace OdemControl
                         isConnected = true;
                         stream = client?.GetStream();
                         client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-                        if (KeepAlive.Checked)
-                            timer2.Start();
                         ReadAllTemp();
+                        timer1.Start();
                     }
                 }
 

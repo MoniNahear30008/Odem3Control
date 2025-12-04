@@ -214,7 +214,6 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
-            timer2.Stop();
             configuring = true;
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
@@ -242,8 +241,6 @@ namespace OdemControl
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             configuring = false;
-            if (KeepAlive.Checked)
-                timer2.Start();
         }
         public static byte[] GetBytesBigEndian(uint value)
         {
@@ -631,15 +628,24 @@ namespace OdemControl
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (configuring) return;
-            readTempCounter -= 10;
-            ReadIntProg.Value = Math.Max(0, ReadIntProg.Value - 10);
-            if (readTempCounter <= 0)
+            if (configuring || !isConnected) return;
+
+            if (autoTemp.Checked)
             {
-                ReadIntProg.Value = (int)ReadInt.Value * 60;
-                readTempCounter = 60 * (int)ReadInt.Value;
-                ReadAllTemp();
+                readTempCounter -= 10;
+                ReadIntProg.Value = Math.Max(0, ReadIntProg.Value - 10);
+                if (readTempCounter <= 0)
+                {
+                    ReadIntProg.Value = (int)ReadInt.Value * 60;
+                    readTempCounter = 60 * (int)ReadInt.Value;
+                    ReadAllTemp();
+                }
+                else
+                    PingDevice();
             }
+            else
+                PingDevice();
+
         }
         private void autoTemp_CheckedChanged(object sender, EventArgs e)
         {
@@ -666,23 +672,8 @@ namespace OdemControl
             }
         }
 
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-            if (KeepAlive.Checked && isConnected)
-                PingDevice();
-        }
-
         private void KeepAlive_CheckedChanged(object sender, EventArgs e)
         {
-            if (KeepAlive.Checked)
-            {
-                if (isConnected)
-                    timer2.Start();
-            }
-            else
-            {
-                timer2.Stop();
-            }
         }
     }
 
