@@ -62,9 +62,13 @@ namespace OdemControl
 
         private void SetVars()
         {
-            string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
-              .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
-              .ToString() ?? "No IPv4 found";
+            //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
+            //  .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
+            //  .ToString() ?? "No IPv4 found";
+
+            string path = @"C:\Lidwave";
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
 
             tempTable.Rows.Add("PIC", "");
             tempTable.Rows.Add("Optotune", "");
@@ -334,12 +338,6 @@ namespace OdemControl
             if (loggingEnabled)
             {
                 string path = @"C:\Lidwave";
-
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                //                string logFileName = path + "\\OdemLog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
                 string logFileName = path + "\\OdemLog_.txt";
                 try
                 {

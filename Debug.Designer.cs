@@ -33,18 +33,20 @@
             wrOTDelay = new Button();
             OTDelay = new NumericUpDown();
             Monitor = new TabPage();
+            showVer = new RadioButton();
+            showCom = new RadioButton();
             AutoScroll = new CheckBox();
             MonitorView = new RichTextBox();
-            pwBox = new GroupBox();
-            pw = new TextBox();
             tabPage1 = new TabPage();
             label1 = new Label();
+            pwBox = new GroupBox();
+            pw = new TextBox();
             dbgControl.SuspendLayout();
             Control.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             Monitor.SuspendLayout();
-            pwBox.SuspendLayout();
             tabPage1.SuspendLayout();
+            pwBox.SuspendLayout();
             SuspendLayout();
             // 
             // dbgControl
@@ -95,6 +97,8 @@
             // 
             // Monitor
             // 
+            Monitor.Controls.Add(showVer);
+            Monitor.Controls.Add(showCom);
             Monitor.Controls.Add(AutoScroll);
             Monitor.Controls.Add(MonitorView);
             Monitor.Location = new Point(4, 24);
@@ -104,6 +108,29 @@
             Monitor.TabIndex = 1;
             Monitor.Text = "Monitor";
             Monitor.UseVisualStyleBackColor = true;
+            // 
+            // showVer
+            // 
+            showVer.AutoSize = true;
+            showVer.Location = new Point(205, 6);
+            showVer.Name = "showVer";
+            showVer.Size = new Size(68, 19);
+            showVer.TabIndex = 2;
+            showVer.Text = "Versions";
+            showVer.UseVisualStyleBackColor = true;
+            // 
+            // showCom
+            // 
+            showCom.AutoSize = true;
+            showCom.Checked = true;
+            showCom.Location = new Point(124, 6);
+            showCom.Name = "showCom";
+            showCom.Size = new Size(62, 19);
+            showCom.TabIndex = 2;
+            showCom.TabStop = true;
+            showCom.Text = "Comm";
+            showCom.UseVisualStyleBackColor = true;
+            showCom.CheckedChanged += showCom_CheckedChanged;
             // 
             // AutoScroll
             // 
@@ -127,25 +154,6 @@
             MonitorView.TabIndex = 0;
             MonitorView.Text = "";
             // 
-            // pwBox
-            // 
-            pwBox.Controls.Add(pw);
-            pwBox.Location = new Point(315, 110);
-            pwBox.Name = "pwBox";
-            pwBox.Size = new Size(200, 75);
-            pwBox.TabIndex = 6;
-            pwBox.TabStop = false;
-            pwBox.Text = "Password";
-            // 
-            // pw
-            // 
-            pw.Location = new Point(23, 33);
-            pw.Name = "pw";
-            pw.PasswordChar = '*';
-            pw.Size = new Size(159, 23);
-            pw.TabIndex = 0;
-            pw.KeyDown += pw_KeyDown;
-            // 
             // tabPage1
             // 
             tabPage1.Controls.Add(label1);
@@ -168,6 +176,25 @@
             label1.TabIndex = 0;
             label1.Text = "Under construction";
             // 
+            // pwBox
+            // 
+            pwBox.Controls.Add(pw);
+            pwBox.Location = new Point(315, 110);
+            pwBox.Name = "pwBox";
+            pwBox.Size = new Size(200, 75);
+            pwBox.TabIndex = 6;
+            pwBox.TabStop = false;
+            pwBox.Text = "Password";
+            // 
+            // pw
+            // 
+            pw.Location = new Point(23, 33);
+            pw.Name = "pw";
+            pw.PasswordChar = '*';
+            pw.Size = new Size(159, 23);
+            pw.TabIndex = 0;
+            pw.KeyDown += pw_KeyDown;
+            // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -184,10 +211,10 @@
             ((System.ComponentModel.ISupportInitialize)OTDelay).EndInit();
             Monitor.ResumeLayout(false);
             Monitor.PerformLayout();
-            pwBox.ResumeLayout(false);
-            pwBox.PerformLayout();
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            pwBox.ResumeLayout(false);
+            pwBox.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -203,5 +230,7 @@
         private CheckBox AutoScroll;
         private TabPage tabPage1;
         private Label label1;
+        private RadioButton showVer;
+        private RadioButton showCom;
     }
 }
