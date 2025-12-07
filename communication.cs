@@ -162,10 +162,19 @@ namespace OdemControl
             {
                 DevieLost();
             }
-            byte[] TxBuf = data.ToArray();
+
             try
             {
+                byte[] TxBuf = data.ToArray();
                 stream.Write(TxBuf);
+            }
+            catch
+            {
+                DevieLost();
+            }
+
+            try
+            {
 
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
@@ -177,16 +186,18 @@ namespace OdemControl
                     LogMessage("Ping response: " + tx);
                     pingLost = 10;
                 }
-                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 9)))
-                {
-                    pingLost--;
-                    if (pingLost == 0)
-                        DevieLost();
-                }
+                //if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 9)))
+                //{
+                //    pingLost--;
+                //    if (pingLost == 0)
+                //        DevieLost();
+                //}
             }
             catch (IOException)
             {
-                DevieLost();
+                pingLost--;
+                if (pingLost == 0)
+                    DevieLost();
             }
         }
         private byte[] SerWriteRegBuf(uint add, List<uint> vals)
@@ -526,7 +537,7 @@ namespace OdemControl
                     string tx = "";
                     for (int i = 0; i < count; i++)
                         tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Streaming command response: " + tx);
+                    LogMessage("Run command response: " + tx);
                 }
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
                     return "";
@@ -854,7 +865,6 @@ namespace OdemControl
                 LogMessage("Straem command write: " + tx);
             }
 
-            byte[] TxBuf = data.ToArray();
             if (stream.CanWrite == false)
             {
                 DevieLost();
@@ -862,9 +872,17 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 1000;
+                byte[] TxBuf = data.ToArray();
                 stream.Write(TxBuf);
+            }
+            catch (Exception ex)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
 
+            try
+            {
                 byte[] buffer = new byte[1024];
                 int count = stream.Read(buffer, 0, buffer.Length);
                 if (dataLoggingEnabled)

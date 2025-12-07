@@ -933,6 +933,7 @@ namespace OdemControl
         SET_SPUR,
         SET_RETRO_LEVEL,
         SET_CHIRP_WAVEFORM,
+        SET_DAC_CONFIG,
         SET_CHIRP_GAIN,
         SET_PM_CONTROL,
         SET_SOA_EN,

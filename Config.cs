@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OdemControl
 {
@@ -163,6 +164,21 @@ namespace OdemControl
                         {
                             LogMessage("Configuring Error: " + Error);
                             MessageBox.Show("Error sending AWG waveform:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        confState++;
+                        break;
+
+                    case (int)confStates.SET_DAC_CONFIG:
+                        LogMessage("Configuring: SET_DAC_CONFIG");
+                        if (debugmodeEnabled)
+                            deviceState.Text = "Configuring: SET_DAC_CONFIG";
+                        this.Refresh();
+                        Error = ConfigDACs();
+                        if (Error.Length > 0)
+                        {
+                            LogMessage("Configuring Error: " + Error);
+                            MessageBox.Show("Error sending SET_CHIRP_GAIN:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
                         confState++;
@@ -495,6 +511,32 @@ namespace OdemControl
                         break;
                 }
             }
+        }
+        private string ConfigDACs()
+        {
+            string Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(7, 0x4B, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+
+            return "";
         }
 
     }
