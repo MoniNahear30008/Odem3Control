@@ -8,7 +8,7 @@ namespace OdemControl
     public partial class Form1
     {
         // Sensitivity --> Normal: 0x81010E3C; High: 0x80010F3c	
-        List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x80010F3c };
+        List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x81010F3c };
         public Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
         {
             {(int)confStates.SEND_CAPTURE_DELAY, 0xFF200024 },
@@ -17,12 +17,12 @@ namespace OdemControl
             {(int)confStates.SET_RANGE, 0xFF20007C},
             {(int)confStates.SET_SPUR, 0xFF200074},
             {(int)confStates.SET_RETRO_LEVEL, 0xFF200070},
-            {(int)confStates.SET_VECTOR_1, 0xFF200028},
-            {(int)confStates.SET_VECTOR_2, 0xFF20002C},
-            {(int)confStates.SET_VECTOR_3, 0xFF248000},
-            {(int)confStates.SET_VECTOR_4, 0xFF248200},
-            {(int)confStates.SET_VECTOR_5, 0xFF340000},
-            {(int)confStates.SET_VECTOR_6, 0xFF346000},
+            {(int)confStates.SET_VECTOR_1, 0xFF200028},         // badGoodIndxs_High
+            {(int)confStates.SET_VECTOR_2, 0xFF20002C},         // badGoodIndxs_Low
+            {(int)confStates.SET_VECTOR_3, 0xFF248000},         // 128Bins_Final
+            {(int)confStates.SET_VECTOR_4, 0xFF248200},         // 128Bins_Final
+            {(int)confStates.SET_VECTOR_5, 0xFF340000},         // blackmanHarris_DEC
+            {(int)confStates.SET_VECTOR_6, 0xFF346000},         // 2kWin
             {(int)confStates.SET_OT_DELAY, 0xFF20003C}
         };
         public int lastOTdelay = 0;
@@ -105,7 +105,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: multiplication";
                         this.Refresh();
-                        uint rangeMult = 0x00000408;
+                        uint rangeMult = 0x00000404;
                         if (appSetting.sensitivity == 1)
                             rangeMult = 0x00000101;
                         Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { rangeMult });

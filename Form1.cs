@@ -415,7 +415,11 @@ namespace OdemControl
                     return;
                 }
                 string pname = parts[0].Trim();
-                uint pval = uint.Parse(parts[1]);
+                uint pval = 0;
+                if (parts[1].Contains("0x"))
+                    pval = uint.Parse(parts[1].Replace("0x",""), System.Globalization.NumberStyles.HexNumber);
+                else
+                    pval = uint.Parse(parts[1]);
                 if (deviceParameters.ContainsKey(pname))
                     deviceParameters[pname] = (int)pval;
                 else

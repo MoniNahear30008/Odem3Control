@@ -421,7 +421,6 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
 
                 byte[] buffer = new byte[1024];
@@ -893,7 +892,6 @@ namespace OdemControl
 
             return "";
         }
-    
         private string ReadRegFromOT(uint sys, uint reg, out double val)
         {
             val = 0;
