@@ -116,17 +116,94 @@ namespace OdemControl
             ModeParams.Rows.Add("Lines per frame", ".. °");
             ModeParams.Rows.Add("frame rate", ".. FPS");
 
-            // Get scan modes from json file
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.json");
+            // Get scan modes from csv file
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             StreamReader reader = new StreamReader(stream);
-            string json = reader.ReadToEnd();
-            scanModes = JsonSerializer.Deserialize<Dictionary<string, scanMode>>(json);
-            modes = scanModes.Keys.ToList();
+            string allmodes = reader.ReadToEnd();
+            List<string> allmodesList = allmodes.Split("\r\n").ToList();
+            modes = allmodesList[0].Split(",").ToList();
+            modes.RemoveRange(0, 2);
+            int mn = 1;
+            foreach (string m in modes)
+            {
+                scanModes.Add(m, new scanMode());
+                scanModes[m].modeNum = mn;
+                scanModes[m].folder = "Mode" + mn.ToString();
+                mn++;
+            }
+            List<string> modes1 = scanModes.Keys.ToList();
+            for (int l = 1; l < allmodesList.Count; l++)
+            {
+                if (allmodesList[l].Contains(",,")) continue;
+                if (allmodesList[l].Contains("Mirror"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].mirror = int.Parse(nl[np++]);
+
+                }
+                else if (allmodesList[l].Contains("points"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].nPoints = int.Parse(nl[np++]);
+
+                }
+                else if (allmodesList[l].Contains("Horizontal FOV"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].hFOV = int.Parse(nl[np++].Split(" ")[0]);
+
+                }
+                else if (allmodesList[l].Contains("Horizontal res"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].hRes = double.Parse(nl[np++].Split(" ")[0]);
+                }
+                else if (allmodesList[l].Contains("Vertical FOV"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].vFOV = int.Parse(nl[np++].Split(" ")[0]);
+
+                }
+                else if (allmodesList[l].Contains("Vertical res"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].vRes = double.Parse(nl[np++].Split(" ")[0]);
+                }
+                else if (allmodesList[l].Contains("Lines per frame"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].lines = int.Parse(nl[np++].Split(" ")[0]);
+
+                }
+                else if (allmodesList[l].Contains("Frame rate"))
+                {
+                    List<string> nl = allmodesList[l].Split(',').ToList();
+                    int np = 2;
+                    foreach (string m in modes1)
+                        scanModes[m].fRate = int.Parse(nl[np++].Split(" ")[0]);
+
+                }
+            }
+
             foreach (string m in scanModes.Keys)
             {
                 scanMode.Items.Add(m);

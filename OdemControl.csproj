@@ -68,7 +68,6 @@
     <None Remove="Optotune\Mode5\waveformX.csv" />
     <None Remove="Optotune\Mode5\waveformY.csv" />
     <None Remove="Optotune\modes_params.csv" />
-    <None Remove="Optotune\modes_params.json" />
     <None Remove="Optotune\OT_Delay.csv" />
     <None Remove="version.txt" />
   </ItemGroup>
@@ -125,7 +124,6 @@
     <EmbeddedResource Include="Optotune\Mode5\waveformX.csv" />
     <EmbeddedResource Include="Optotune\Mode5\waveformY.csv" />
     <EmbeddedResource Include="Optotune\modes_params.csv" />
-    <EmbeddedResource Include="Optotune\modes_params.json" />
     <EmbeddedResource Include="Optotune\OT_Delay.csv" />
     <EmbeddedResource Include="version.txt" />
   </ItemGroup>
