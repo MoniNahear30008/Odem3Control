@@ -1,0 +1,33 @@
+,,Device ID -->,SN0051,SN0052,SN0053,SN0054,SN0055,SN0056
+Step,Description,Register,,,,,,
+1,Capture_Delay ,0xFF200024,3200,3200,3200,3200,3200,3200
+2,Reset DSP,0xFF200010,0x4100004,,,,,
+3,DSP Control Write,0xFF200010,Sensitivity --> Normal: 0x81010E3C; High: 0x81010F3C,,,,,
+4,CFAR Multiplication,0xFF20007C,Normal: 0x00000404; High: 0x00000101 (according to Sensetivity selection),,,,,
+5,Spurs & NN filter,0xFF200074,Normal: 0x20023C78; High: 0x00003C78 (according to Sensetivity selection),,,,,
+6,Retro level,0xFF200070,10000,,,,,
+7,Chirp AWG waveform,SPI write,From file per device - AWG.txt,,,,,
+8,Chirp AWG gain,"I2C (Ch:3, Dev:0x4B, Reg:0x1C)",0x7000,0x7000,0x7000,0x7000,0x7000,0x7000
+9,PM1 Control,"I2C (Ch:3, Dev:0x4A, Reg:0x1C)",0,,,,,
+10,PM2 Control,"I2C (Ch:3, Dev:0x48, Reg:0x1C)",0,,,,,
+11,SOA enable,SPI write,2 (0 to disable),,,,,
+12,Load SSH driver,SSH,,,,,,
+13,LO,"I2C (Ch:7, Dev:0x4B, Reg:0x1C)",0x7000,0x7000,0x7000,0x7000,0x7000,0x7000
+14,TxSOA1,"I2C (Ch:7, Dev:0x4A, Reg:0x19)",0x2050,0x2050,0x2050,0x2050,0x2050,0x2050
+15,TxSOA2,"I2C (Ch:7, Dev:0x4A, Reg:0x1C)",0x5050,0x5050,0x5050,0x5050,0x5050,0x5050
+16,Tx3_0_9,"I2C (Ch:7, Dev:0x49, Reg:0x19)",0x5050,0x5050,0x5050,0x5050,0x5050,0x5050
+17,Tx3_10_19,"I2C (Ch:7, Dev:0x49, Reg:0x1C)",0x5050,0x5050,0x5050,0x5050,0x5050,0x5050
+18,Tx3_20_29,"I2C (Ch:7, Dev:0x48, Reg:0x19)",0x5050,0x5050,0x5050,0x5050,0x5050,0x5050
+19,Tx3_30_39,"I2C (Ch:7, Dev:0x48, Reg:0x1C)",0x5050,0x5050,0x5050,0x5050,0x5050,0x5050
+20,Vector 1,0xFF200028,From file per device - badGoodIndxs_High,,,,,
+21,Vector 2,0xFF20002C,From file per device - badGoodIndxs_Low,,,,,
+22,Vector 3,0xFF248000,From file per device - 128Bins_Final,,,,,
+23,Vector 4,0xFF248200,From file per device - 128Bins_Final,,,,,
+24,Vector 5,0xFF340000,All devices --> blackmanHarris_DEC,,,,,
+25,Vector 6,0xFF346000,From file per device - 2kWin,,,,,
+26,Optotune X,Send file (SSTP), WaveformX according to scan mode,,,,,
+27,Optotune Y,Send file (SSTP), WaveformY according to scan mode,,,,,
+28,Scan parameters,Send file (SSTP),scan_parameters.json according to scan mode,,,,,
+29,Run Optotune,SPI write,Run automatically in the device,,,,,
+30,Write OT delay,0xFF20003C,Per device per mode,,,,,
+31,Start/Stop streaming, write,"Command 5; sub command 1 start, 2 stop",,,,,

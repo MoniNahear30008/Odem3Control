@@ -45,6 +45,7 @@ namespace OdemControl
         string version = "1.00.00";
         bool EnablePing = true;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
+        Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
 
         public Form1(string mode)
@@ -61,7 +62,6 @@ namespace OdemControl
 
             SetVars();
         }
-
         private void SetVars()
         {
             //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
@@ -97,6 +97,20 @@ namespace OdemControl
                 }
             }
 
+
+            // Get scan modes from csv file
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.Devices_Params.csv");
+            if (stream == null)
+            {
+                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            StreamReader reader = new StreamReader(stream);
+            string allparams = reader.ReadToEnd();
+            List<string> paramsList = allparams.Split("\r\n").ToList();
+            List<string> dvs = paramsList[0].Substring(paramsList[0].IndexOf("SN")).Split(',').ToList();
+
+
             // configuration files dictionaries
             confFiles.Add("badGoodIndxs_High", new List<uint>());
             confFiles.Add("badGoodIndxs_Low", new List<uint>());
@@ -117,13 +131,13 @@ namespace OdemControl
             ModeParams.Rows.Add("frame rate", ".. FPS");
 
             // Get scan modes from csv file
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            StreamReader reader = new StreamReader(stream);
+            reader = new StreamReader(stream);
             string allmodes = reader.ReadToEnd();
             List<string> allmodesList = allmodes.Split("\r\n").ToList();
             modes = allmodesList[0].Split(",").ToList();
@@ -270,7 +284,6 @@ namespace OdemControl
             else
                 appSetting.sensitivity = 1;
         }
-
         private void rangeChanged(object sender, EventArgs e)
         {
             if (RangeNormal.Checked)
@@ -330,9 +343,7 @@ namespace OdemControl
 
                 foreach (string n in lc)
                     wfFiles[f].Add(BitConverter.SingleToUInt32Bits(float.Parse(n)));
-
             }
-
         }
         private void confDev_Click(object sender, EventArgs e)
         {
@@ -372,7 +383,6 @@ namespace OdemControl
                 Array.Reverse(bytes);
             return bytes;
         }
-
         private void debugMode_Click(object sender, EventArgs e)
         {
             dataLoggingEnabled = true;
@@ -469,7 +479,6 @@ namespace OdemControl
                     confFiles[f].Add(uint.Parse(n));
             }
         }
-
         private void OpenLogFile()
         {
             if (loggingEnabled)
@@ -832,7 +841,6 @@ namespace OdemControl
                 timer1.Stop();
             }
         }
-
         private void KeepAlive_CheckedChanged(object sender, EventArgs e)
         {
         }
