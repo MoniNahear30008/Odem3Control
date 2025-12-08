@@ -56,7 +56,7 @@ namespace OdemControl
             }
             else
             {
-                ConnectNow();
+                await ConnectNow();
 
                 if (isConnected)
                 {
@@ -77,7 +77,7 @@ namespace OdemControl
                 }
             }
         }
-        private async void ConnectNow()
+        private async Task ConnectNow()
         {
             if (client != null)
                 client.Close();

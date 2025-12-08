@@ -27,11 +27,12 @@ namespace OdemControl
         };
         public int lastOTdelay = 0;
 
-        private void cofigdevice()
+        private async Task cofigdeviceAsync()
         {
             string Error = "";
             while (confState != (int)confStates.DONE)
             {
+                string stateName = Enum.GetName(typeof(confStates), confState);
                 switch (confState)
                 {
                     case (int)confStates.IDLE:
@@ -490,7 +491,7 @@ namespace OdemControl
                             deviceState.Text = "Start Odem (~40Sec)";
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
                         // Close and reopen client due to left over messages in buffer
-                        ConnectNow();
+                        await ConnectNow();
                         optoStat.Visible = false;
                         this.Refresh();
                         if (Error.Length > 0)
@@ -539,5 +540,41 @@ namespace OdemControl
             return "";
         }
 
+    }
+    public enum confStates
+    {
+        IDLE,
+        STOP_OT,
+        RESET_DSP,
+        SET_SENSITIVITY,
+        SEND_CAPTURE_DELAY,
+        SET_RANGE,
+        SET_SPUR,
+        SET_RETRO_LEVEL,
+        SET_CHIRP_WAVEFORM,
+        SET_DAC_CONFIG,
+        SET_CHIRP_GAIN,
+        SET_PM_CONTROL,
+        SET_SOA_EN,
+        LOAD_SSH_DRIVER,
+        SET_LO,
+        SET_TX_SOA1,
+        SET_TX_SOA2,
+        SET_TX3_0_9,
+        SET_TX3_10_19,
+        SET_TX3_20_29,
+        SET_TX3_30_39,
+        SET_VECTOR_1,
+        SET_VECTOR_2,
+        SET_VECTOR_3,
+        SET_VECTOR_4,
+        SET_VECTOR_5,
+        SET_VECTOR_6,
+        LOAD_FILES,
+        SET_OT_DELAY,
+        RUN_OPTOTUNE_CALIBRATION,
+//        RESET_DSP,
+//        SET_SENSITIVITY,
+        DONE
     }
 }

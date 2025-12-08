@@ -359,6 +359,10 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
+            ConfigNow();
+        }
+        private async void ConfigNow()
+        { 
             configuring = true;
             pingLost = 10;
             this.Cursor = Cursors.WaitCursor;
@@ -368,7 +372,7 @@ namespace OdemControl
             appSetting.Update(true);
             //UpdateConfFiles();
             confState = (int)confStates.IDLE;
-            cofigdevice();
+            await cofigdeviceAsync();
             if (confState == (int)confStates.DONE)
             {
                 deviceState.Text = "Device ready";
@@ -427,15 +431,11 @@ namespace OdemControl
             reader = new StreamReader(stream);
             string content = reader.ReadToEnd();
             lc = content.Split("\r\n").ToList();
-            lc.RemoveAt(lc.Count() - 1);
             foreach (string n in lc)
             {
                 string[] parts = n.Split(',');
                 if (parts.Length != 2)
-                {
-                    MessageBox.Show("Failed to read general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                    continue;
                 string pname = parts[0].Trim();
                 uint pval = 0;
                 if (parts[1].Contains("0x"))
@@ -966,40 +966,5 @@ namespace OdemControl
             folder = "";
             modeNum = 0;
         }
-    }
-
-    public enum confStates
-    {
-        IDLE,
-        STOP_OT,
-        SEND_CAPTURE_DELAY,
-        RESET_DSP,
-        SET_SENSITIVITY,
-        SET_RANGE,
-        SET_SPUR,
-        SET_RETRO_LEVEL,
-        SET_CHIRP_WAVEFORM,
-        SET_DAC_CONFIG,
-        SET_CHIRP_GAIN,
-        SET_PM_CONTROL,
-        SET_SOA_EN,
-        LOAD_SSH_DRIVER,
-        SET_LO,
-        SET_TX_SOA1,
-        SET_TX_SOA2,
-        SET_TX3_0_9,
-        SET_TX3_10_19,
-        SET_TX3_20_29,
-        SET_TX3_30_39,
-        SET_VECTOR_1,
-        SET_VECTOR_2,
-        SET_VECTOR_3,
-        SET_VECTOR_4,
-        SET_VECTOR_5,
-        SET_VECTOR_6,
-        LOAD_FILES,
-        SET_OT_DELAY,
-        RUN_OPTOTUNE_CALIBRATION,
-        DONE
     }
 }
