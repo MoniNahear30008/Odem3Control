@@ -8,7 +8,6 @@ namespace OdemControl
 {
     public partial class Form1
     {
-        // Sensitivity --> Normal: 0x81010E3C; High: 0x80010F3c	
         List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x81010F3c };
         public Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
         {

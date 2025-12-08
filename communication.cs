@@ -85,7 +85,6 @@ namespace OdemControl
             Task connectTask = client.ConnectAsync(_ipAddress, _port);
             if (await Task.WhenAny(connectTask, Task.Delay(10000)) == connectTask)
             {
-                // Connected successfully
                 if (client.Connected)
                 {
                     isConnected = true;
@@ -94,8 +93,6 @@ namespace OdemControl
                     stream.ReadTimeout = 10000;
                     ssh = new SshClient("192.168.2.24", "root", "");
                     ssh.Connect();
-                    //ReadAllTemp();
-                    //timer1.Start();
                 }
             }
         }
@@ -727,7 +724,6 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
-
         private string LoadHHSDriver()
         {
             var result = ssh.CreateCommand($"lsmod").Execute().Trim();

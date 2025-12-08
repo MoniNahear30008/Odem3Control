@@ -42,12 +42,14 @@ namespace OdemControl
         int readTempCounter = 0;
         bool configuring = false;
         Debug db = null;
-        string version = "1.00.00";
         bool EnablePing = true;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
         bool dbgMode = true;
+
+        string version = "0.01.00";
+
         public Form1(string mode)
         {
             InitializeComponent();

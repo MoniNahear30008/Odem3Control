@@ -18,7 +18,6 @@ namespace OdemControl
             InitializeComponent();
             this.mainfrm = mainfrm;
             MonitorView.Clear();
-            dbgControl.SelectedTab = Monitor;
             OTDelay.Value = mainfrm.lastOTdelay;
             if (nopw)
             {
@@ -65,6 +64,8 @@ namespace OdemControl
 
         private void wrOTDelay_Click(object sender, EventArgs e)
         {
+            if (!mainfrm.isConnected) return;
+
             mainfrm.LogMessage("Configuring: Set OT Delay");
             string mode = mainfrm.modes[mainfrm.appSetting.scanModeNum];
             int nPoints = mainfrm.scanModes[mode].nPoints;
@@ -101,6 +102,40 @@ namespace OdemControl
         private void clr_Click(object sender, EventArgs e)
         {
             MonitorView.Clear();
+        }
+
+        private void WriteReg_Click(object sender, EventArgs e)
+        {
+            if (!mainfrm.isConnected) return;
+            uint add = 0;
+            if (!uint.TryParse(regAdd.Text, System.Globalization.NumberStyles.HexNumber, null, out add))
+            {
+                regAdd.Text = "FF000000";
+                MessageBox.Show("Register address must be Hex number");
+                return;
+            }
+
+            uint val = 0;
+            if (regVal.Text.StartsWith("0x"))
+            {
+                if (!uint.TryParse(regVal.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out val))
+                {
+                    regVal.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+            else
+            {
+                if (!uint.TryParse(regVal.Text, out val))
+                {
+                    regVal.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+
+            string err = mainfrm.WriteRegWaitResp(add, new List<uint>() { val });
         }
     }
 }
