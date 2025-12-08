@@ -47,7 +47,7 @@ namespace OdemControl
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
-
+        bool dbgMode = true;
         public Form1(string mode)
         {
             InitializeComponent();
@@ -61,6 +61,16 @@ namespace OdemControl
                 OpenLogFile();
 
             SetVars();
+
+
+            if (dbgMode)
+            {
+                dataLoggingEnabled = true;
+                debugMode.Enabled = false;
+                db = new Debug(this, true);
+                db.StartPosition = FormStartPosition.CenterParent;
+                db.Show(this);
+            }
         }
         private void SetVars()
         {
@@ -387,7 +397,7 @@ namespace OdemControl
         {
             dataLoggingEnabled = true;
             debugMode.Enabled = false;
-            db = new Debug(this);
+            db = new Debug(this, false);
             db.StartPosition = FormStartPosition.CenterParent;
             db.Show(this);
         }
@@ -527,7 +537,7 @@ namespace OdemControl
         private void ReadAllTemp()
         {
             if (!isConnected) return;
-
+            //return;
             bool tooHat = false;
             bool picHat = false;
             bool lasercold = false;
@@ -761,7 +771,9 @@ namespace OdemControl
                 MessageBox.Show("Laser temperature too low.\nPlease wait until the laser warms up.", "Laser Temperature", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            stream.ReadTimeout = 50000;
             string Error = StreamingCmd(true);
+            stream.ReadTimeout = 10000;
             if (Error.Length > 0)
             {
                 LogMessage("Streaming command: " + Error);
@@ -810,11 +822,11 @@ namespace OdemControl
                     readTempCounter = 60 * (int)ReadInt.Value;
                     ReadAllTemp();
                 }
-                else
-                    PingDevice();
+                //else
+                //    PingDevice();
             }
-            else
-                PingDevice();
+            //else
+            //    PingDevice();
 
         }
         private void autoTemp_CheckedChanged(object sender, EventArgs e)

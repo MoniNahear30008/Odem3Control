@@ -28,7 +28,8 @@ namespace OdemControl
             LogMessage("Disconnecting from device...");
             isConnected = false;
             client.Close();
-            ssh.Disconnect();
+            if (ssh != null)
+                ssh.Disconnect();
             connect.Text = "Connect";
             deviceState.Text = "DisConnected";
             deviceState.ForeColor = Color.Red;
@@ -65,6 +66,7 @@ namespace OdemControl
                         isConnected = true;
                         stream = client?.GetStream();
                         client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+                        stream.ReadTimeout = 10000;
                         ReadAllTemp();
                         timer1.Start();
                     }
@@ -231,36 +233,15 @@ namespace OdemControl
             try
             {
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Write Reg response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 1))
-                {
-                    LogMessage("Reg write pass");
-                    return "";
-                }
-                else
-                {
-                    LogMessage("Reg write fail");
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    if (loggingEnabled)
-                        LogMessage("Reg write response: " + s);
-                    return s;
-                }
             }
             catch (IOException)
             {
                 DevieLost();
                 return "Device not reponding";
             }
+
+            string res = WaitRespose(1);
+            return res;
         }
         private string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
         {
@@ -326,32 +307,15 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("I2C write response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 7))
-                    return "";
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
                 DevieLost();
                 return "Device not reponding";
             }
+            string res = WaitRespose(7);
+            return res;
         }
         public string SPISOAControl(uint val)
         {
@@ -377,24 +341,7 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("SOA write response: " + tx);
-                }
-                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 10)))
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
@@ -402,7 +349,8 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            return "";
+            string res = WaitRespose(10);
+            return res;
         }
         private string SPIWriteAWGWaitResp(List<uint> vals)
         {
@@ -433,28 +381,16 @@ namespace OdemControl
             try
             {
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("AWG write response: " + tx);
-                }
-                if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 11)))
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
                 DevieLost();
                 return "Device not reponding";
             }
+
+            string res = WaitRespose(11);
+            if (res != "")
+                return res;
 
             data.Clear();
             data.Add(0x0A);         // command
@@ -479,30 +415,15 @@ namespace OdemControl
             try
             {
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("AWG gain response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 10))
-                    return "";
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
                 DevieLost();
                 return "Device not reponding";
             }
+            res = WaitRespose(10);
+            return res;
+
         }
         private string SendStopCmd()
         {
@@ -529,24 +450,6 @@ namespace OdemControl
             try
             {
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Run command response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
-                    return "";
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
@@ -554,8 +457,10 @@ namespace OdemControl
                 return"Device not reponding";
             }
 
+            string res = WaitRespose(4);
+            return res;
         }
-        private void SendRunCmd(int mode)
+        private string SendRunCmd(int mode)
         {
             List<byte> data = new List<byte>();
             data.Add(0x04);         // command
@@ -577,6 +482,7 @@ namespace OdemControl
             if (stream.CanWrite == false)
             {
                 DevieLost();
+                return "Device not reponding";
             }
             try
             {
@@ -585,50 +491,41 @@ namespace OdemControl
             catch (IOException)
             {
                 DevieLost();
+                return "Device not reponding";
             }
 
             try
             {
-                //                stream.ReadTimeout = 1000;
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Streaming command response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 4))
-                    return;
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return;
-                }
             }
             catch (IOException)
             {
                 DevieLost();
-                return;// "Device not reponding";
+                return "Device not reponding";
             }
+
+            string res = WaitRespose(4);
+            return res;
 
         }
         private string RunOpto(int mode)
         {
             if (!isConnected) return "Device not connected";
-            SendRunCmd(mode);
             optoStat.Maximum = 7;
             optoStat.Value = 0;
             optoStat.Visible = true;
-            string res = WaitOptoDone();
+            stream.ReadTimeout = 500000;
+            // Send command and wait progress
+            string res = SendRunCmd(mode);
+            stream.ReadTimeout = 10000;
+            if (res != "")
+                return res;
+            // Wait ACK
+//            res = WaitRespose(4);
             optoStat.Visible = false;
             return res;
         }
-        private string WaitOptoDone()
+        private string WaitRespose(int cmd)
         { 
             int stepNum = 0;
             int NumSteps = 7;
@@ -644,6 +541,25 @@ namespace OdemControl
                         byte[] buffer = new byte[1024];
                         int count = stream.Read(buffer, 0, buffer.Length);
                         resp.AddRange(new List<byte>(buffer.Take(count)));
+                        // ACK/NACK respons
+                        if (resp.Count >= 8)
+                        {
+                            if ((resp[0] == 0) && (resp[1] == cmd))
+                            {
+                                LogMessage("Command pass");
+                                return "";
+                            }
+                            else if (resp[0] == 1)
+                            {
+                                LogMessage("Command fail");
+                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                                if (loggingEnabled)
+                                    LogMessage("Reg write response: " + s);
+                                return s;
+
+                            }
+                        }
                         while (resp.Count > 17)
                         {
                             int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];
@@ -727,7 +643,6 @@ namespace OdemControl
             }
             try
             {
-//                stream.ReadTimeout = 10000;
                 stream.Write(TxBuf);
 
                 byte[] buffer = new byte[1024];
@@ -738,13 +653,6 @@ namespace OdemControl
                     for (int i = 0; i < count; i++)
                         tx += buffer[i].ToString("X2") + " ";
                     LogMessage("I2C read response: " + tx);
-                }
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("I2C response: " + tx);
                 }
 
                 if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 8))
@@ -782,6 +690,78 @@ namespace OdemControl
                 return "Device not reponding";
             }
         }
+        private string WaitReadRespose(int cmd)
+        {
+            int stepNum = 0;
+            int NumSteps = 7;
+
+            List<byte> resp = new List<byte>();
+            try
+            {
+                while (true)
+                {
+                    while (true)
+                    {
+                        this.Refresh();
+                        byte[] buffer = new byte[1024];
+                        int count = stream.Read(buffer, 0, buffer.Length);
+                        resp.AddRange(new List<byte>(buffer.Take(count)));
+                        // ACK/NACK respons
+                        if (resp.Count >= 8)
+                        {
+                            if ((resp[0] == 0) && (resp[1] == cmd))
+                            {
+                                LogMessage("Command pass");
+                                return "";
+                            }
+                            else if (resp[0] == 1)
+                            {
+                                LogMessage("Command fail");
+                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                                if (loggingEnabled)
+                                    LogMessage("Reg write response: " + s);
+                                return s;
+
+                            }
+                        }
+                        while (resp.Count > 17)
+                        {
+                            int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];
+                            if (resp.Count < (ml + 12))
+                                continue;
+                            if ((resp[0] == 2) && (resp[1] == 9))
+                            {
+                                stepNum = (int)resp[11];
+                                NumSteps = (int)resp[15];
+                                int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
+                                string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
+                                LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
+                                resp.RemoveRange(0, ml + 12);
+
+                                optoStat.Value = stepNum;
+                                this.Refresh();
+                                if (stepNum == NumSteps)
+                                {
+                                    return "";
+                                }
+                            }
+                            else
+                            {
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml);
+                                return s;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
+        }
+
         private string LoadHHSDriver()
         {
             var result = ssh.CreateCommand($"lsmod").Execute().Trim();
@@ -881,34 +861,8 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            try
-            {
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Streaming command response: " + tx);
-                }
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 5))
-                    return "";
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-
-            return "";
+            string res = WaitRespose(5);
+            return res;
         }
         private string ReadRegFromOT(uint sys, uint reg, out double val)
         {

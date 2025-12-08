@@ -13,13 +13,18 @@ namespace OdemControl
     public partial class Debug : Form
     {
         Form1 mainfrm;
-        public Debug(Form1 mainfrm)
+        public Debug(Form1 mainfrm, bool nopw)
         {
             InitializeComponent();
             this.mainfrm = mainfrm;
             MonitorView.Clear();
             dbgControl.SelectedTab = Monitor;
             OTDelay.Value = mainfrm.lastOTdelay;
+            if (nopw)
+            {
+                pwBox.Visible = false;
+                dbgControl.Visible = true;
+            }
             //int y = 0;
             //int x = 1 / y;
         }
