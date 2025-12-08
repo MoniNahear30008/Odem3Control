@@ -542,40 +542,62 @@ namespace OdemControl
             bool picHat = false;
             bool lasercold = false;
             string msg = "Temperature readings: ";
+            string err = "";
+            double t = 0;
+
+            string not = "";
+
             foreach (DataGridViewRow row in tempTable.Rows)
             {
                 row.Cells[1].Value = "";
-                double t = 0;
                 string sensor = row.Cells[0].Value.ToString();
+                row.Cells[0].Style.ForeColor = Color.Black;
                 switch (sensor)
                 {
                     case "PIC":
-                        t = ReadPICtemp();
-                        row.Cells[1].Value = t.ToString("0.00") + " °c";
-                        msg += sensor + ": " + t.ToString("0.00") + " °c; ";
-                        if ((t >= 47) && (t <= 59))
-                            row.Cells[1].Style.ForeColor = Color.Green;
+                        err = ReadPICtemp(out t);
+                        if (err == "")
+                        {
+                            row.Cells[1].Value = t.ToString("0.00") + " °c";
+                            msg += sensor + ": " + t.ToString("0.00") + " °c; ";
+                            if ((t >= 47) && (t <= 59))
+                                row.Cells[1].Style.ForeColor = Color.Green;
+                            else
+                            {
+                                row.Cells[1].Style.ForeColor = Color.Red;
+                                picHat = true;
+                            }
+                        }
                         else
                         {
-                            row.Cells[1].Style.ForeColor = Color.Red;
-                            picHat = true;
+                            row.Cells[0].Style.ForeColor = Color.Orange;
+                            not += "PIC, ";
                         }
                         break;
+
                     case "Laser":
-                        t = readLaserTemp();
-                        row.Cells[1].Value = t.ToString("0.00") + " °c";
-                        msg += sensor + ": " + t.ToString("0.00") + " °c; ";
-                        if (t > 58)
+                        err = readLaserTemp(out t);
+                        if (err == "")
                         {
-                            row.Cells[1].Style.ForeColor = Color.Red;
-                            tooHat = true;
+                            row.Cells[1].Value = t.ToString("0.00") + " °c";
+                            msg += sensor + ": " + t.ToString("0.00") + " °c; ";
+                            if (t > 58)
+                            {
+                                row.Cells[1].Style.ForeColor = Color.Red;
+                                tooHat = true;
+                            }
+                            else if (t >= 52)
+                                row.Cells[1].Style.ForeColor = Color.Green;
+                            else
+                            {
+                                row.Cells[1].Style.ForeColor = Color.Orange;
+                                lasercold = true;
+                            }
                         }
-                        else if (t >= 52)
-                            row.Cells[1].Style.ForeColor = Color.Green;
                         else
                         {
-                            row.Cells[1].Style.ForeColor = Color.Orange;
-                            lasercold = true;
+                            row.Cells[0].Style.ForeColor = Color.Orange;
+                            not += "Laser, ";
                         }
                         break;
 
@@ -583,7 +605,10 @@ namespace OdemControl
                         double ottemp = 0;
                         string oterr = readOMTemp(out ottemp);
                         if (oterr != "")
-                            MessageBox.Show("Can not read Optotune temerature");
+                        {
+                            row.Cells[0].Style.ForeColor = Color.Orange;
+                            not += "Optotune, ";
+                        }
                         else
                         {
                             msg += sensor + ": " + ottemp.ToString("0.00") + " °c; ";
@@ -601,9 +626,12 @@ namespace OdemControl
 
                     case "Main Board":
                         double temp = 0;
-                        string err = readMBTemp(out temp);
+                        err = readMBTemp(out temp);
                         if (err != "")
-                            MessageBox.Show("Can not read main boad temerature");
+                        {
+                            row.Cells[0].Style.ForeColor = Color.Orange;
+                            not += "Main board, ";
+                        }
                         else
                         {
                             msg += sensor + ": " + temp.ToString("0.00") + " °c; ";
@@ -618,6 +646,10 @@ namespace OdemControl
                         }
                         break;
                 }
+            }
+            if (not.Length > 0)
+            {
+                MessageBox.Show("Fail to read " +not, "Temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             tempTable.ClearSelection();
             LogMessage(msg);
@@ -638,17 +670,18 @@ namespace OdemControl
         {
             ReadAllTemp();
         }
-        private double ReadPICtemp()
+        private string ReadPICtemp(out double temp)
         {
-            List<uint> temp;
-            string err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
-            if (temp == null)
-                return 0;
+            temp = 0;
+            List<uint> t;
+            string err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out t);
+            if (err != "")
+                return err;
             double vref = 2.45;
             double r1 = 5.6;
             double r2 = 2.0;
             double r3 = 47.0;
-            double vtempout = ((double)temp[0] / 4095 * 2.5);
+            double vtempout = ((double)t[0] / 4095 * 2.5);
             double term1 = 2 * r1 * r2 * vtempout;
             double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
             double term2 = vref * term2_inner;
@@ -669,22 +702,22 @@ namespace OdemControl
             double ln_term = (1 / B) * ln_ratio;
             double inv_temp_kelvin = inv_t0 + ln_term;
             double temp_kelvin = 1 / inv_temp_kelvin;
-            double t = temp_kelvin - 273.15;
-            return t;
+            temp = temp_kelvin - 273.15;
+            return "";
         }
-        private double readLaserTemp()
+        private string readLaserTemp(out double temp)
         {
+            temp = 0;
             string err = "";
-            List<uint> temp;
-            double t = 0;
-            err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out temp);
+            List<uint> t;
+            err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out t);
             if (err == "")
             {
                 double r1 = 5.6;
                 double r2 = 2.0;
                 double r3 = 47;
                 double vref = 2.45;
-                double vtempout = ((double)temp[0] / 4095.0) * 2.5;
+                double vtempout = ((double)t[0] / 4095.0) * 2.5;
                 double term1 = 2 * r1 * r2 * vtempout;
                 double term2_inner = r1 * r2 - r2 * r3 + r1 * r3;
                 double term2 = vref * term2_inner;
@@ -711,9 +744,9 @@ namespace OdemControl
                 double inv_temp_kelvin = inv_t0 + ln_term;
                 double temp_kelvin = 1 / inv_temp_kelvin;
 
-                t = temp_kelvin - 273.15;
+                temp = temp_kelvin - 273.15;
             }
-            return t;
+            return err;
         }
         private string readOMTemp(out double temp)
         {
@@ -822,11 +855,11 @@ namespace OdemControl
                     readTempCounter = 60 * (int)ReadInt.Value;
                     ReadAllTemp();
                 }
-                //else
-                //    PingDevice();
+                else
+                    PingDevice();
             }
-            //else
-            //    PingDevice();
+            else
+                PingDevice();
 
         }
         private void autoTemp_CheckedChanged(object sender, EventArgs e)
@@ -846,12 +879,11 @@ namespace OdemControl
                 timer1.Interval = 10000;
                 readTempCounter = 60 * (int)ReadInt.Value;
                 ReadAllTemp();
-                timer1.Start();
             }
-            else
-            {
-                timer1.Stop();
-            }
+//            else
+//            {
+////                timer1.Stop();
+//            }
         }
         private void KeepAlive_CheckedChanged(object sender, EventArgs e)
         {

@@ -490,6 +490,8 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Start Odem (~40Sec)";
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
+                        // Close and reopen client due to left over messages in buffer
+                        ConnectNow();
                         optoStat.Visible = false;
                         this.Refresh();
                         if (Error.Length > 0)
@@ -498,9 +500,6 @@ namespace OdemControl
                             MessageBox.Show("Error sending Run opto:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
-                        // Clean ODEM buffer
-                        List<uint> temp;
-                        string res = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
                         confState++;
                         break;
 

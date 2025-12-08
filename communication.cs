@@ -56,24 +56,8 @@ namespace OdemControl
             }
             else
             {
-                client = new TcpClient();
-                Task connectTask = client.ConnectAsync(_ipAddress, _port);
-                if (await Task.WhenAny(connectTask, Task.Delay(10000)) == connectTask)
-                {
-                    // Connected successfully
-                    if (client.Connected)
-                    {
-                        isConnected = true;
-                        stream = client?.GetStream();
-                        client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-                        stream.ReadTimeout = 10000;
-                        ReadAllTemp();
-                        timer1.Start();
-                    }
-                }
+                ConnectNow();
 
-
-                // Simulate a connection attempt
                 if (isConnected)
                 {
                     devices.Enabled = false;
@@ -81,9 +65,8 @@ namespace OdemControl
                     deviceState.Text = "Connected";
                     deviceState.ForeColor = Color.Green;
                     mainBox.Enabled = true;
-                    ssh = new SshClient("192.168.2.24", "root", "");
-                    ssh.Connect();
                     autoTempControl();
+                    timer1.Start();
                 }
                 else
                 {
@@ -91,6 +74,28 @@ namespace OdemControl
                     connect.Text = "Connect";
                     deviceState.Text = "Disconnected";
                     deviceState.ForeColor = Color.Red;
+                }
+            }
+        }
+        private async void ConnectNow()
+        {
+            if (client != null)
+                client.Close();
+            client = new TcpClient();
+            Task connectTask = client.ConnectAsync(_ipAddress, _port);
+            if (await Task.WhenAny(connectTask, Task.Delay(10000)) == connectTask)
+            {
+                // Connected successfully
+                if (client.Connected)
+                {
+                    isConnected = true;
+                    stream = client?.GetStream();
+//                    client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+                    stream.ReadTimeout = 10000;
+                    ssh = new SshClient("192.168.2.24", "root", "");
+                    ssh.Connect();
+                    //ReadAllTemp();
+                    //timer1.Start();
                 }
             }
         }
@@ -147,18 +152,13 @@ namespace OdemControl
         }
         private void PingDevice()
         {
+//            return;
             List<byte> data = new List<byte>();
             data.Add(0x09);         // Write command
             data.Add(0x00);         // Reserved
             data.AddRange(new List<byte>() { 0, 0, 0, 0 });
             data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            if (dataLoggingEnabled)
-            {
-                string tx = "01 00 ";
-                foreach (byte b in data.Skip(2))
-                    tx += b.ToString("X2") + " ";
-                LogMessage("Ping: " + tx);
-            }
+            LogMessage("Ping device");
 
             if (stream.CanWrite == false)
             {
@@ -172,35 +172,20 @@ namespace OdemControl
             }
             catch
             {
-                DevieLost();
+                pingLost--;
+                if (pingLost == 0)
+                    DevieLost();
             }
 
-            try
-            {
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("Ping response: " + tx);
-                    pingLost = 10;
-                }
-                //if (!((count >= 8) && (buffer[0] == 0) && (buffer[1] == 9)))
-                //{
-                //    pingLost--;
-                //    if (pingLost == 0)
-                //        DevieLost();
-                //}
-            }
-            catch (IOException)
+            string res = WaitWriteRespose(9, false);
+            if (res != "")
             {
                 pingLost--;
                 if (pingLost == 0)
                     DevieLost();
             }
+
+
         }
         private byte[] SerWriteRegBuf(uint add, List<uint> vals)
         {
@@ -240,7 +225,7 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            string res = WaitRespose(1);
+            string res = WaitWriteRespose(1);
             return res;
         }
         private string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
@@ -314,7 +299,7 @@ namespace OdemControl
                 DevieLost();
                 return "Device not reponding";
             }
-            string res = WaitRespose(7);
+            string res = WaitWriteRespose(7);
             return res;
         }
         public string SPISOAControl(uint val)
@@ -349,7 +334,7 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            string res = WaitRespose(10);
+            string res = WaitWriteRespose(10);
             return res;
         }
         private string SPIWriteAWGWaitResp(List<uint> vals)
@@ -388,7 +373,7 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            string res = WaitRespose(11);
+            string res = WaitWriteRespose(11);
             if (res != "")
                 return res;
 
@@ -421,7 +406,7 @@ namespace OdemControl
                 DevieLost();
                 return "Device not reponding";
             }
-            res = WaitRespose(10);
+            res = WaitWriteRespose(10);
             return res;
 
         }
@@ -457,7 +442,7 @@ namespace OdemControl
                 return"Device not reponding";
             }
 
-            string res = WaitRespose(4);
+            string res = WaitWriteRespose(4);
             return res;
         }
         private string SendRunCmd(int mode)
@@ -504,7 +489,7 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            string res = WaitRespose(4);
+            string res = WaitWriteRespose(4);
             return res;
 
         }
@@ -521,7 +506,7 @@ namespace OdemControl
             optoStat.Visible = false;
             return res;
         }
-        private string WaitRespose(int cmd, bool waitmsg = true)
+        private string WaitWriteRespose(int cmd, bool waitmsg = true)
         { 
             int stepNum = 0;
             int NumSteps = 7;
@@ -588,11 +573,13 @@ namespace OdemControl
             }
             catch (IOException)
             {
-                DevieLost();
+                if (waitmsg)
+                      DevieLost();
                 return "Device not reponding";
+    
             }
         }
-        private string ReadI2C(uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals)
+        private string ReadI2C(uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals, bool waitmsg = true)
         {
             vals = null;
             if (!isConnected)
@@ -648,10 +635,10 @@ namespace OdemControl
                 return "Device not reponding";
             }
             
-            string res = WaitReadRespose(8, option, out vals);
+            string res = WaitReadRespose(8, option, out vals, waitmsg);
             return res;
         }
-        private string WaitReadRespose(int cmd, uint option, out List<uint> vals)
+        private string WaitReadRespose(int cmd, uint option, out List<uint> vals, bool waitmsg = true)
         {
             vals = null;
             int stepNum = 0;
@@ -735,7 +722,8 @@ namespace OdemControl
             }
             catch (IOException)
             {
-                DevieLost();
+                if (waitmsg)
+                    DevieLost();
                 return "Device not reponding";
             }
         }
@@ -839,7 +827,7 @@ namespace OdemControl
                 return "Device not reponding";
             }
 
-            string res = WaitRespose(5);
+            string res = WaitWriteRespose(5);
             return res;
         }
         private string ReadRegFromOT(uint sys, uint reg, out double val)
