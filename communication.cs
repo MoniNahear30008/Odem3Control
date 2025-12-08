@@ -518,14 +518,10 @@ namespace OdemControl
             // Send command and wait progress
             string res = SendRunCmd(mode);
             stream.ReadTimeout = 10000;
-            if (res != "")
-                return res;
-            // Wait ACK
-//            res = WaitRespose(4);
             optoStat.Visible = false;
             return res;
         }
-        private string WaitRespose(int cmd)
+        private string WaitRespose(int cmd, bool waitmsg = true)
         { 
             int stepNum = 0;
             int NumSteps = 7;
@@ -644,44 +640,6 @@ namespace OdemControl
             try
             {
                 stream.Write(TxBuf);
-
-                byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
-                if (dataLoggingEnabled)
-                {
-                    string tx = "";
-                    for (int i = 0; i < count; i++)
-                        tx += buffer[i].ToString("X2") + " ";
-                    LogMessage("I2C read response: " + tx);
-                }
-
-                if ((count >= 8) && (buffer[0] == 0) && (buffer[1] == 8))
-                {
-                    vals = new List<uint>();
-                    int nvals = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    int idx = 8;
-                    if ((option & 0xC) == 0)
-                    {
-                        for (int n = 0; n < nvals; n++)
-                            vals.Add((uint)buffer[idx + n]);
-                    }
-                    else
-                    {
-                        for (int n = 0; n < nvals; n += 2)
-                        {
-                            vals.Add(((uint)buffer[idx + n] << 8) + (uint)buffer[idx + n + 1]);
-                        }
-
-                    }
-                    return "";
-
-                }
-                else
-                {
-                    int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                    string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                    return s;
-                }
             }
             catch (IOException)
             {
@@ -689,9 +647,13 @@ namespace OdemControl
                 DevieLost();
                 return "Device not reponding";
             }
+            
+            string res = WaitReadRespose(8, option, out vals);
+            return res;
         }
-        private string WaitReadRespose(int cmd)
+        private string WaitReadRespose(int cmd, uint option, out List<uint> vals)
         {
+            vals = null;
             int stepNum = 0;
             int NumSteps = 7;
 
@@ -707,11 +669,26 @@ namespace OdemControl
                         int count = stream.Read(buffer, 0, buffer.Length);
                         resp.AddRange(new List<byte>(buffer.Take(count)));
                         // ACK/NACK respons
-                        if (resp.Count >= 8)
+                        if (resp.Count >= 10)
                         {
                             if ((resp[0] == 0) && (resp[1] == cmd))
                             {
-                                LogMessage("Command pass");
+                                vals = new List<uint>();
+                                int nvals = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                                int idx = 8;
+                                if ((option & 0xC) == 0)
+                                {
+                                    for (int n = 0; n < nvals; n++)
+                                        vals.Add((uint)buffer[idx + n]);
+                                }
+                                else
+                                {
+                                    for (int n = 0; n < nvals; n += 2)
+                                    {
+                                        vals.Add(((uint)buffer[idx + n] << 8) + (uint)buffer[idx + n + 1]);
+                                    }
+
+                                }
                                 return "";
                             }
                             else if (resp[0] == 1)
@@ -725,6 +702,7 @@ namespace OdemControl
 
                             }
                         }
+
                         while (resp.Count > 17)
                         {
                             int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];

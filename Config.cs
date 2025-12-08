@@ -498,12 +498,13 @@ namespace OdemControl
                             MessageBox.Show("Error sending Run opto:\n" + Error, "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return;
                         }
+                        // Clean ODEM buffer
+                        List<uint> temp;
+                        string res = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out temp);
                         confState++;
                         break;
 
                     case (int)confStates.DONE:
-                        deviceState.Text = "Device ready";
-                        this.Refresh();
                         break;
 
                     default:
