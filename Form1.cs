@@ -49,32 +49,46 @@ namespace OdemControl
         bool dbgMode = true;
 
         string version = "0.01.00";
+        Dictionary<Control, Rectangle> originalRects;
+        Size originalFormSize;
+        float scanModeFontSize;
+        float tempFontSize;
+        float modeFontSize;
+
 
         public Form1(string mode)
         {
             InitializeComponent();
 
+            appSetting = new appSettings();
+
+            originalFormSize = this.Size;
+            modeFontSize = scanMode.Font.Size;
+            scanModeFontSize = ModeParams.Font.Size;
+            tempFontSize = tempTable.Font.Size;
+            originalRects = new Dictionary<Control, Rectangle>();
+            foreach (Control c in this.Controls)
+            {
+                originalRects.Add(c, new Rectangle());
+                originalRects[c] = c.Bounds;
+            }
+            this.Size = new Size(appSetting.width, appSetting.height);
+
+            this.Resize += Form1_Resize;
+
             this.Text = "Odem Control - Version " + version;
-            debugMode.Visible = mode.Contains("-d");
-            debugmodeEnabled = mode.Contains("-d");
-            loggingEnabled = mode.Contains("-l");
-            dataLoggingEnabled = mode.Contains("-le");
+            dbgMode |= mode.Contains("-d");
+            debugMode.Visible = dbgMode;
+            debugmodeEnabled = dbgMode;
+            loggingEnabled = mode.Contains("-l") || dbgMode;
+            dataLoggingEnabled = mode.Contains("-le") || dbgMode;
             if (loggingEnabled)
                 OpenLogFile();
 
-            SetVars();
+            SetVars(mode);
 
-
-            if (dbgMode)
-            {
-                dataLoggingEnabled = true;
-                debugMode.Enabled = false;
-                db = new Debug(this, true);
-                db.StartPosition = FormStartPosition.CenterParent;
-                db.Show(this);
-            }
         }
-        private void SetVars()
+        private void SetVars(string mode)
         {
             //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
             //  .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
@@ -84,13 +98,11 @@ namespace OdemControl
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            tempTable.Rows.Add("PIC", "");
-            tempTable.Rows.Add("Optotune", "");
+            tempTable.Rows.Add("Optical chip", "");
+            tempTable.Rows.Add("Scanner", "");
             tempTable.Rows.Add("Main Board", "");
             tempTable.Rows.Add("Laser", "");
             tempTable.ClearSelection();
-
-            appSetting = new appSettings();
 
             IPAddredd.Text = _ipAddress;
             IPPort.Text = _port.ToString();
@@ -280,13 +292,6 @@ namespace OdemControl
             else
                 sensitivityHigh.Checked = true;
 
-            if (appSetting.range == 0)
-                RangeNormal.Checked = true;
-            else if (appSetting.range == 1)
-                RangeExt.Checked = true;
-            else
-                rangeMax.Checked = true;
-
             devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
@@ -296,19 +301,15 @@ namespace OdemControl
             else
                 appSetting.sensitivity = 1;
         }
-        private void rangeChanged(object sender, EventArgs e)
-        {
-            if (RangeNormal.Checked)
-                appSetting.range = 0;
-            else if (RangeExt.Checked)
-                appSetting.range = 1;
-            else
-                appSetting.range = 2;
-        }
         private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             updateScanMode(scanMode.SelectedIndex);
-            streamBox.Enabled = false;
+            streamBix(false);
+        }
+        private void streamBix(bool enable)
+        {
+            sStart.Enabled = enable;
+            sStop.Enabled = enable;
         }
         private void updateScanMode(int mode)
         {
@@ -362,7 +363,7 @@ namespace OdemControl
             ConfigNow();
         }
         private async void ConfigNow()
-        { 
+        {
             configuring = true;
             pingLost = 10;
             this.Cursor = Cursors.WaitCursor;
@@ -378,14 +379,14 @@ namespace OdemControl
                 deviceState.Text = "Device ready";
                 deviceState.ForeColor = Color.Lime;
                 LogMessage("Configuring: Done");
-                streamBox.Enabled = true;
+                streamBix(true);
             }
             else
             {
                 deviceState.Text = "Device configuration error";
                 deviceState.ForeColor = Color.Red;
                 LogMessage("Configuring: Error");
-                streamBox.Enabled = false;
+                streamBix(false);
             }
 
             this.Cursor = Cursors.Default;
@@ -439,7 +440,7 @@ namespace OdemControl
                 string pname = parts[0].Trim();
                 uint pval = 0;
                 if (parts[1].Contains("0x"))
-                    pval = uint.Parse(parts[1].Replace("0x",""), System.Globalization.NumberStyles.HexNumber);
+                    pval = uint.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
                 else
                     pval = uint.Parse(parts[1]);
                 if (deviceParameters.ContainsKey(pname))
@@ -514,7 +515,8 @@ namespace OdemControl
         {
             if (db != null)
             {
-                db.UpdateMonitor(message);
+                if (!db.IsDisposed)
+                    db.UpdateMonitor(message);
             }
 
             if (loggingEnabled && logFile != null)
@@ -548,7 +550,6 @@ namespace OdemControl
             double t = 0;
 
             string not = "";
-
             foreach (DataGridViewRow row in tempTable.Rows)
             {
                 row.Cells[1].Value = "";
@@ -556,7 +557,7 @@ namespace OdemControl
                 row.Cells[0].Style.ForeColor = Color.Black;
                 switch (sensor)
                 {
-                    case "PIC":
+                    case "Optical chip":
                         err = ReadPICtemp(out t);
                         if (err == "")
                         {
@@ -573,7 +574,7 @@ namespace OdemControl
                         else
                         {
                             row.Cells[0].Style.ForeColor = Color.Orange;
-                            not += "PIC, ";
+                            not += "Optical chip, ";
                         }
                         break;
 
@@ -603,13 +604,13 @@ namespace OdemControl
                         }
                         break;
 
-                    case "Optotune":
+                    case "Scanner":
                         double ottemp = 0;
                         string oterr = readOMTemp(out ottemp);
                         if (oterr != "")
                         {
                             row.Cells[0].Style.ForeColor = Color.Orange;
-                            not += "Optotune, ";
+                            not += "Scanner, ";
                         }
                         else
                         {
@@ -651,7 +652,7 @@ namespace OdemControl
             }
             if (not.Length > 0)
             {
-                MessageBox.Show("Fail to read " +not, "Temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Fail to read " + not, "Temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             tempTable.ClearSelection();
             LogMessage(msg);
@@ -882,13 +883,43 @@ namespace OdemControl
                 readTempCounter = 60 * (int)ReadInt.Value;
                 ReadAllTemp();
             }
-//            else
-//            {
-////                timer1.Stop();
-//            }
+            //            else
+            //            {
+            ////                timer1.Stop();
+            //            }
         }
         private void KeepAlive_CheckedChanged(object sender, EventArgs e)
         {
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            float xRatio = (float)this.Width / originalFormSize.Width;
+            float yRatio = (float)this.Height / originalFormSize.Height;
+
+            foreach (Control c in this.Controls)
+            {
+                Rectangle r = originalRects[c];
+                c.Bounds = new Rectangle(
+                    (int)(r.X * xRatio),
+                    (int)(r.Y * yRatio),
+                    (int)(r.Width * xRatio),
+                    (int)(r.Height * yRatio)
+                );
+            }
+
+            float scale = (float)this.Width / originalFormSize.Width;
+            float newSize = scanModeFontSize * scale;
+            ModeParams.Font = new Font(ModeParams.Font.FontFamily, newSize);
+            newSize = tempFontSize * scale;
+            tempTable.Font = new Font(tempTable.Font.FontFamily, newSize);
+            newSize = modeFontSize * scale;
+            scanMode.Font = new Font(scanMode.Font.FontFamily, newSize);
+            this.ActiveControl = null;
+
+            appSetting.width = this.Width;
+            appSetting.height = this.Height;
+            appSetting.Update(true);
         }
     }
 
@@ -898,12 +929,16 @@ namespace OdemControl
         public int scanModeNum;
         public int sensitivity;
         public int range;
+        public int width;
+        public int height;
         public appSettings()
         {
             deviceNum = Properties.Settings.Default.deviceNum;
             scanModeNum = Properties.Settings.Default.scanmode;
             sensitivity = Math.Min(1, Properties.Settings.Default.sensitivity);
             range = Math.Min(2, Properties.Settings.Default.range);
+            width = Properties.Settings.Default.width;
+            height = Properties.Settings.Default.hight;
         }
         public void Update(bool save)
         {
@@ -911,6 +946,8 @@ namespace OdemControl
             Properties.Settings.Default.scanmode = scanModeNum;
             Properties.Settings.Default.sensitivity = sensitivity;
             Properties.Settings.Default.range = range;
+            Properties.Settings.Default.width = width;
+            Properties.Settings.Default.hight = height;
             if (save)
                 Properties.Settings.Default.Save();
         }

@@ -33,11 +33,17 @@ namespace OdemControl
             connect.Text = "Connect";
             deviceState.Text = "DisConnected";
             deviceState.ForeColor = Color.Red;
-            mainBox.Enabled = false;
+            streamBix(false);
+            mainBoxEnable(false);
             devices.Enabled = true;
             foreach (DataGridViewRow row in tempTable.Rows)
                 row.Cells[1].Value = "";
 
+        }
+        private void mainBoxEnable(bool enable)
+        {
+            scanMode.Enabled = enable;
+            ModeParams.Enabled = enable;
         }
         private async void ConnectToDevice()
         {
@@ -51,7 +57,7 @@ namespace OdemControl
                 connect.Text = "Connect";
                 deviceState.Text = "DisConnected";
                 deviceState.ForeColor = Color.Red;
-                mainBox.Enabled = false;
+                mainBoxEnable(false);
                 devices.Enabled = true;
             }
             else
@@ -64,7 +70,7 @@ namespace OdemControl
                     connect.Text = "Disconnect";
                     deviceState.Text = "Connected";
                     deviceState.ForeColor = Color.Green;
-                    mainBox.Enabled = true;
+                    mainBoxEnable(true);
                     autoTempControl();
                     timer1.Start();
                 }
