@@ -134,16 +134,20 @@ namespace OdemControl
                 int idx = mode.IndexOf("-dev ");
                 if (idx >= 0)
                 {
-                    string dev = mode.Substring(mode.Length - idx - 7).Substring(0, 6).ToUpper();
-                    if (devicesList.Contains(dev))
+                    string dev = mode.Substring(idx + 5);
+                    if (dev.Length > 5)
                     {
-                        devicesList.Clear();
-                        deviceID.Clear();
-                        devicesList.Add(dev);
-                        deviceID.Add(dev);
-                        devices.Items.Add(dev);
-                        devices.Enabled = false;
-                        nodev = false;
+                        dev = dev.Substring(0, 6).ToUpper();
+                        if (devicesList.Contains(dev))
+                        {
+                            devicesList.Clear();
+                            deviceID.Clear();
+                            devicesList.Add(dev);
+                            deviceID.Add(dev);
+                            devices.Items.Add(dev);
+                            devices.Enabled = false;
+                            nodev = false;
+                        }
                     }
                 }
             }
