@@ -2,7 +2,7 @@
   "profiles": {
     "OdemControl": {
       "commandName": "Project",
-      "commandLineArgs": "-dev SN0056"
+      "commandLineArgs": "-dev SN0066"
     }
   }
 }

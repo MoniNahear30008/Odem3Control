@@ -63,6 +63,7 @@
             label3 = new Label();
             timer1 = new System.Windows.Forms.Timer(components);
             label1 = new Label();
+            timer2 = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -415,6 +416,10 @@
             label1.TabIndex = 15;
             label1.Text = "Sensitivity";
             // 
+            // timer2
+            // 
+            timer2.Tick += timer2_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -497,5 +502,6 @@
         private DataGridViewTextBoxColumn Column2;
         private DataGridViewTextBoxColumn Column3;
         private DataGridViewTextBoxColumn Column4;
+        private System.Windows.Forms.Timer timer2;
     }
 }

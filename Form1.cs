@@ -46,7 +46,7 @@ namespace OdemControl
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
-        bool dbgMode = true;
+        bool dbgMode = false;
 
         string version = "0.01.00";
         Dictionary<Control, Rectangle> originalRects;
@@ -77,7 +77,7 @@ namespace OdemControl
             this.Resize += Form1_Resize;
 
             this.Text = "Odem Control - Version " + version;
-            dbgMode |= mode.Contains("-d");
+            dbgMode |= mode.Contains("-dbg");
             debugMode.Visible = dbgMode;
             debugmodeEnabled = dbgMode;
             loggingEnabled = mode.Contains("-l") || dbgMode;
@@ -88,12 +88,7 @@ namespace OdemControl
             bool nodv = SetVars(mode);
 
             if (nodv)
-            {
-                this.Enabled = false;
-                MessageBox.Show("Wrong or missing device ID in command line\n\nUsage: OdemControl -Dev SNXXXX\nSNXXXX can be found on device", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-            }
-
+                timer2.Start();
         }
         private bool SetVars(string mode)
         {
@@ -128,7 +123,6 @@ namespace OdemControl
             }
 
             bool nodev = false;
-            dbgMode = false;
             if (dbgMode)
             {
                 foreach (string devName in devicesList)
@@ -982,6 +976,14 @@ namespace OdemControl
             appSetting.width = this.Width;
             appSetting.height = this.Height;
             appSetting.Update(true);
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            timer2.Stop();
+            this.Enabled = false;
+            MessageBox.Show("Wrong or missing device ID in command line\n\nUsage: OdemControl -Dev SNXXXX\nSNXXXX can be found on device", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            this.Close();
         }
     }
 
