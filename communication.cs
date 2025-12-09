@@ -33,7 +33,7 @@ namespace OdemControl
             connect.Text = "Connect";
             deviceState.Text = "DisConnected";
             deviceState.ForeColor = Color.Red;
-            streamBix(false);
+            streamBox(false);
             mainBoxEnable(false);
             devices.Enabled = true;
             foreach (DataGridViewRow row in tempTable.Rows)

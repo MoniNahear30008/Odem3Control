@@ -54,7 +54,7 @@ namespace OdemControl
         float scanModeFontSize;
         float tempFontSize;
         float modeFontSize;
-
+        bool deviceConfigured = false;
 
         public Form1(string mode)
         {
@@ -85,10 +85,17 @@ namespace OdemControl
             if (loggingEnabled)
                 OpenLogFile();
 
-            SetVars(mode);
+            bool nodv = SetVars(mode);
+
+            if (nodv)
+            {
+                this.Enabled = false;
+                MessageBox.Show("Wrong or missing device ID in command line\n\nUsage: OdemControl -Dev SNXXXX\nSNXXXX can be found on device", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
 
         }
-        private void SetVars(string mode)
+        private bool SetVars(string mode)
         {
             //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
             //  .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
@@ -117,17 +124,47 @@ namespace OdemControl
                     string devName = r.Split('.')[2];
                     devicesList.Add(devName);
                     deviceID.Add(devName);
-                    devices.Items.Add(devName);
                 }
             }
 
+            bool nodev = false;
+            dbgMode = false;
+            if (dbgMode)
+            {
+                foreach (string devName in devicesList)
+                    devices.Items.Add(devName);
+            }
+            else
+            {
+                nodev = true;
+                int idx = mode.IndexOf("-dev ");
+                if (idx >= 0)
+                {
+                    string dev = mode.Substring(mode.Length - idx - 7).Substring(0, 6).ToUpper();
+                    if (devicesList.Contains(dev))
+                    {
+                        devicesList.Clear();
+                        deviceID.Clear();
+                        devicesList.Add(dev);
+                        deviceID.Add(dev);
+                        devices.Items.Add(dev);
+                        devices.Enabled = false;
+                        nodev = false;
+                    }
+                }
+            }
+
+            if (nodev)
+            {
+                return true;
+            }
 
             // Get scan modes from csv file
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.Devices_Params.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
             StreamReader reader = new StreamReader(stream);
             string allparams = reader.ReadToEnd();
@@ -159,7 +196,7 @@ namespace OdemControl
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
             reader = new StreamReader(stream);
             string allmodes = reader.ReadToEnd();
@@ -248,14 +285,13 @@ namespace OdemControl
                 deviceParameters.Add(m, 0);
             }
             scanMode.SelectedIndex = Math.Min(appSetting.scanModeNum, modes.Count() - 1);
-            updateScanMode(scanMode.SelectedIndex);
 
             // Get OT delay
             stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.OT_Delay.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
             reader = new StreamReader(stream);
             string otd = reader.ReadToEnd();
@@ -292,7 +328,10 @@ namespace OdemControl
             else
                 sensitivityHigh.Checked = true;
 
+            if (devicesList.Count == 1)
+                appSetting.deviceNum = 0;
             devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
+            return false;
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
         {
@@ -303,10 +342,16 @@ namespace OdemControl
         }
         private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (deviceConfigured)
+            {
+                MessageBox.Show("Please restart device and reconnect before changing scan mode");
+                DevieLost();
+                return;
+            }
             updateScanMode(scanMode.SelectedIndex);
-            streamBix(false);
+            streamBox(false);
         }
-        private void streamBix(bool enable)
+        private void streamBox(bool enable)
         {
             sStart.Enabled = enable;
             sStop.Enabled = enable;
@@ -321,6 +366,7 @@ namespace OdemControl
             ModeParams.Rows[3].Cells[1].Value = scanModes[modeName].vRes.ToString() + " °";
             ModeParams.Rows[4].Cells[1].Value = scanModes[modeName].lines.ToString();
             ModeParams.Rows[5].Cells[1].Value = scanModes[modeName].fRate.ToString() + " FPS";
+            ModeParams.ClearSelection();
 
             string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".";
             List<string> files = wfFiles.Keys.ToList();
@@ -379,16 +425,16 @@ namespace OdemControl
                 deviceState.Text = "Device ready";
                 deviceState.ForeColor = Color.Lime;
                 LogMessage("Configuring: Done");
-                streamBix(true);
+                streamBox(true);
             }
             else
             {
                 deviceState.Text = "Device configuration error";
                 deviceState.ForeColor = Color.Red;
                 LogMessage("Configuring: Error");
-                streamBix(false);
+                streamBox(false);
             }
-
+            deviceConfigured = true;
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             configuring = false;
@@ -410,6 +456,12 @@ namespace OdemControl
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (deviceConfigured)
+            {
+                MessageBox.Show("Please restart device and reconnect before changing device");
+                DevieLost();
+                return;
+            }
             appSetting.deviceNum = devices.SelectedIndex;
             UpdateConfFiles();
         }
@@ -823,7 +875,16 @@ namespace OdemControl
                 deviceState.Text = "Steaming";
                 deviceState.ForeColor = Color.Green;
                 scanMode.Enabled = false;
+                DisableConf(false);
             }
+        }
+        private void DisableConf(bool enable)
+        {
+            scanMode.Enabled = enable;
+            SensitivityNormal.Enabled = enable;
+            sensitivityHigh.Enabled = enable;
+            confDev.Enabled = enable;
+            connect.Enabled = enable;
         }
         private void sStop_Click(object sender, EventArgs e)
         {
@@ -841,6 +902,7 @@ namespace OdemControl
                 deviceState.Text = "Steaming stopped";
                 deviceState.ForeColor = Color.Orange;
                 scanMode.Enabled = true;
+                DisableConf(true);
             }
 
         }

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>lidwave.ico</ApplicationIcon>
+    <ApplicationIcon>lidwave_dark.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,7 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="lidwave.ico" />
+    <Content Include="lidwave_dark.ico" />
   </ItemGroup>
 
   <ItemGroup>
