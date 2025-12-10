@@ -94,5 +94,17 @@ namespace OdemControl.Properties {
                 this["hight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Macamor#7~")]
+        public string dbgPW {
+            get {
+                return ((string)(this["dbgPW"]));
+            }
+            set {
+                this["dbgPW"] = value;
+            }
+        }
     }
 }

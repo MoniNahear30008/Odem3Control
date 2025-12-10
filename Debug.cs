@@ -49,7 +49,7 @@ namespace OdemControl
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (pw.Text == "macamor")
+                if (pw.Text == mainfrm.appSetting.dbgPW)
                 {
                     pwBox.Visible = false;
                     dbgControl.Visible = true;

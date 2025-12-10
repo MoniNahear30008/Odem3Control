@@ -20,5 +20,8 @@
     <Setting Name="hight" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
+    <Setting Name="dbgPW" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Macamor#7~</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

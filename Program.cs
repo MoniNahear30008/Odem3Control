@@ -13,14 +13,10 @@ namespace OdemControl
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-            string arg = "";
-            foreach (string a in args)
-                arg += a + " ";
-
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1(arg.ToLower()));
+            Application.Run(new Form1());
         }
 
         static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)

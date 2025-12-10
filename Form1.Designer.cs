@@ -113,9 +113,9 @@
             label2.AutoSize = true;
             label2.Location = new Point(15, 50);
             label2.Name = "label2";
-            label2.Size = new Size(50, 15);
+            label2.Size = new Size(54, 15);
             label2.TabIndex = 7;
-            label2.Text = "Devie ID";
+            label2.Text = "Devie SN";
             toolTip1.SetToolTip(label2, "Need to select according to Lidwave support");
             // 
             // IPAddredd

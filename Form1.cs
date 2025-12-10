@@ -55,13 +55,17 @@ namespace OdemControl
         float tempFontSize;
         float modeFontSize;
         bool deviceConfigured = false;
+        string iniDev = "";
 
-        public Form1(string mode)
+        public Form1()
         {
             InitializeComponent();
 
-            appSetting = new appSettings();
+            string path = @"C:\Lidwave";
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
 
+            appSetting = new appSettings();
             originalFormSize = this.Size;
             modeFontSize = scanMode.Font.Size;
             scanModeFontSize = ModeParams.Font.Size;
@@ -73,32 +77,56 @@ namespace OdemControl
                 originalRects[c] = c.Bounds;
             }
             this.Size = new Size(appSetting.width, appSetting.height);
-
             this.Resize += Form1_Resize;
 
             this.Text = "Odem Control - Version " + version;
-            dbgMode |= mode.Contains("-dbg");
+
+            Getini();
             debugMode.Visible = dbgMode;
             debugmodeEnabled = dbgMode;
-            loggingEnabled = mode.Contains("-l") || dbgMode;
-            dataLoggingEnabled = mode.Contains("-le") || dbgMode;
+            loggingEnabled |= dbgMode;
+            dataLoggingEnabled |= dbgMode;
             if (loggingEnabled)
                 OpenLogFile();
 
-            bool nodv = SetVars(mode);
+            bool nodv = SetVars();
 
             if (nodv)
                 timer2.Start();
         }
-        private bool SetVars(string mode)
+        private void Getini()
+        {
+            if (!File.Exists("C:\\Lidwave\\Odem.ini"))
+                File.Create("C:\\Lidwave\\Odem.ini");
+
+            long size = new FileInfo("C:\\Lidwave\\Odem.ini").Length;
+            if (size == 0)
+                return;
+
+            string[] lines = File.ReadAllLines("C:\\Lidwave\\Odem.ini");
+            if (lines.Length == 0)
+                return;
+            foreach (string l in lines)
+            {
+                if (l == "-dbg")
+                    dbgMode = true;
+                else if (l == "-le")
+                {
+                    dataLoggingEnabled = true;
+                    loggingEnabled = true;
+                }
+                else if (l == "-l")
+                    loggingEnabled = true;
+                else if (l.StartsWith("SN"))
+                    iniDev = l;
+            }
+
+        }
+        private bool SetVars()
         {
             //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
             //  .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
             //  .ToString() ?? "No IPv4 found";
-
-            string path = @"C:\Lidwave";
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
 
             tempTable.Rows.Add("Optical chip", "");
             tempTable.Rows.Add("Scanner", "");
@@ -131,24 +159,15 @@ namespace OdemControl
             else
             {
                 nodev = true;
-                int idx = mode.IndexOf("-dev ");
-                if (idx >= 0)
+                if (devicesList.Contains(iniDev))
                 {
-                    string dev = mode.Substring(idx + 5);
-                    if (dev.Length > 5)
-                    {
-                        dev = dev.Substring(0, 6).ToUpper();
-                        if (devicesList.Contains(dev))
-                        {
-                            devicesList.Clear();
-                            deviceID.Clear();
-                            devicesList.Add(dev);
-                            deviceID.Add(dev);
-                            devices.Items.Add(dev);
-                            devices.Enabled = false;
-                            nodev = false;
-                        }
-                    }
+                    devicesList.Clear();
+                    deviceID.Clear();
+                    devicesList.Add(iniDev);
+                    deviceID.Add(iniDev);
+                    devices.Items.Add(iniDev);
+                    devices.Enabled = false;
+                    nodev = false;
                 }
             }
 
@@ -986,7 +1005,7 @@ namespace OdemControl
         {
             timer2.Stop();
             this.Enabled = false;
-            MessageBox.Show("Wrong or missing device ID in command line\n\nUsage: OdemControl -Dev SNXXXX\nSNXXXX can be found on device", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
             this.Close();
         }
     }
@@ -999,6 +1018,7 @@ namespace OdemControl
         public int range;
         public int width;
         public int height;
+        public string dbgPW;
         public appSettings()
         {
             deviceNum = Properties.Settings.Default.deviceNum;
@@ -1007,6 +1027,7 @@ namespace OdemControl
             range = Math.Min(2, Properties.Settings.Default.range);
             width = Properties.Settings.Default.width;
             height = Properties.Settings.Default.hight;
+            dbgPW = Properties.Settings.Default.dbgPW;
         }
         public void Update(bool save)
         {
@@ -1016,6 +1037,7 @@ namespace OdemControl
             Properties.Settings.Default.range = range;
             Properties.Settings.Default.width = width;
             Properties.Settings.Default.hight = height;
+            Properties.Settings.Default.dbgPW = dbgPW;
             if (save)
                 Properties.Settings.Default.Save();
         }
