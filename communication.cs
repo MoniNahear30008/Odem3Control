@@ -27,7 +27,8 @@ namespace OdemControl
         {
             LogMessage("Disconnecting from device...");
             isConnected = false;
-            client.Close();
+            if (client != null)
+                client.Close();
             if (ssh != null)
                 ssh.Disconnect();
             connect.Text = "Connect";
