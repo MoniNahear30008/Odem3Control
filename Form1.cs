@@ -48,7 +48,7 @@ namespace OdemControl
         int pingLost = 0;
         bool dbgMode = false;
 
-        string version = "0.01.00";
+        string version = "1.00.00";
         Dictionary<Control, Rectangle> originalRects;
         Size originalFormSize;
         float scanModeFontSize;
