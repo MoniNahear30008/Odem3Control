@@ -36,7 +36,7 @@ namespace OdemControl
                 switch (confState)
                 {
                     case (int)confStates.IDLE:
-                        LogMessage("Start devive configuring");
+                        LogMessage("Start device configuring");
                         deviceState.Text = "Configuring device";
                         this.Refresh();
                         confState++;

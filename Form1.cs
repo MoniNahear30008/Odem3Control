@@ -48,12 +48,9 @@ namespace OdemControl
         int pingLost = 0;
         bool dbgMode = false;
 
-        string version = "1.01.00";
+        string version = "1.01.01";
         Dictionary<Control, Rectangle> originalRects;
         Size originalFormSize;
-        float scanModeFontSize;
-        float tempFontSize;
-        float modeFontSize;
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
@@ -70,18 +67,20 @@ namespace OdemControl
             this.Text = "ODEM Control by Lidwave. Version: " + version;
 
             appSetting = new appSettings();
+
             originalFormSize = this.Size;
-            modeFontSize = scanMode.Font.Size;
-            scanModeFontSize = ModeParams.Font.Size;
-            tempFontSize = tempTable.Font.Size;
             originalRects = new Dictionary<Control, Rectangle>();
             foreach (Control c in this.Controls)
             {
                 originalRects.Add(c, new Rectangle());
                 originalRects[c] = c.Bounds;
             }
-            this.Size = new Size(appSetting.width, appSetting.height);
-            this.Resize += Form1_Resize;
+
+            //this.Size = new Size(appSetting.width, appSetting.height);
+            //originalFormSize = this.Size;
+            //this.Size = new Size(appSetting.width, appSetting.height);
+            //originalFormSize = this.Size;
+            //this.Resize += Form1_Resize;
 
             Getini();
             dbgMode |= forceDbgMode;
@@ -358,6 +357,13 @@ namespace OdemControl
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
         {
+            if (deviceConfigured)
+            {
+                MessageBox.Show("Please restart device and reconnect before changing scan mode");
+                DevieLost();
+                return;
+            }
+
             if (SensitivityNormal.Checked)
                 appSetting.sensitivity = 0;
             else
@@ -429,6 +435,11 @@ namespace OdemControl
         }
         private void confDev_Click(object sender, EventArgs e)
         {
+            if (!isConnected)
+            {
+                MessageBox.Show("Device not connected");
+                return;
+            }
             ConfigNow();
         }
         private async void ConfigNow()
@@ -1002,13 +1013,6 @@ namespace OdemControl
                 );
             }
 
-            //float scale = (float)this.Width / originalFormSize.Width;
-            //float newSize = scanModeFontSize * scale;
-            //ModeParams.Font = new Font(ModeParams.Font.FontFamily, newSize);
-            //newSize = tempFontSize * scale;
-            //tempTable.Font = new Font(tempTable.Font.FontFamily, newSize);
-            //newSize = modeFontSize * scale;
-            //scanMode.Font = new Font(scanMode.Font.FontFamily, newSize);
             this.ActiveControl = null;
 
             appSetting.width = this.Width;

@@ -64,21 +64,33 @@
             timer1 = new System.Windows.Forms.Timer(components);
             label1 = new Label();
             timer2 = new System.Windows.Forms.Timer(components);
+            splitContainer1 = new SplitContainer();
+            splitContainer2 = new SplitContainer();
+            groupBox1 = new GroupBox();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ModeParams).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
+            splitContainer2.Panel2.SuspendLayout();
+            splitContainer2.SuspendLayout();
+            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
-            statusStrip1.Location = new Point(0, 621);
+            statusStrip1.Location = new Point(0, 547);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 15, 0);
-            statusStrip1.Size = new Size(704, 24);
+            statusStrip1.Size = new Size(782, 24);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -99,7 +111,7 @@
             // 
             // connect
             // 
-            connect.Location = new Point(13, 13);
+            connect.Location = new Point(33, 16);
             connect.Margin = new Padding(4, 3, 4, 3);
             connect.Name = "connect";
             connect.Size = new Size(105, 31);
@@ -111,7 +123,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(19, 70);
+            label2.Location = new Point(39, 73);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(74, 21);
@@ -121,7 +133,7 @@
             // 
             // IPAddredd
             // 
-            IPAddredd.Location = new Point(141, 14);
+            IPAddredd.Location = new Point(161, 17);
             IPAddredd.Margin = new Padding(4, 3, 4, 3);
             IPAddredd.Name = "IPAddredd";
             IPAddredd.ReadOnly = true;
@@ -131,7 +143,7 @@
             // 
             // IPPort
             // 
-            IPPort.Location = new Point(311, 14);
+            IPPort.Location = new Point(331, 17);
             IPPort.Margin = new Padding(4, 3, 4, 3);
             IPPort.Name = "IPPort";
             IPPort.ReadOnly = true;
@@ -143,7 +155,7 @@
             // devices
             // 
             devices.FormattingEnabled = true;
-            devices.Location = new Point(100, 66);
+            devices.Location = new Point(120, 69);
             devices.Margin = new Padding(4, 3, 4, 3);
             devices.Name = "devices";
             devices.Size = new Size(158, 29);
@@ -153,16 +165,16 @@
             // 
             // ReadIntProg
             // 
-            ReadIntProg.Location = new Point(513, 218);
+            ReadIntProg.Location = new Point(81, 182);
             ReadIntProg.Margin = new Padding(4);
             ReadIntProg.Name = "ReadIntProg";
-            ReadIntProg.Size = new Size(215, 21);
+            ReadIntProg.Size = new Size(177, 21);
             ReadIntProg.TabIndex = 14;
             // 
             // ReadIntText
             // 
             ReadIntText.AutoSize = true;
-            ReadIntText.Location = new Point(591, 193);
+            ReadIntText.Location = new Point(159, 154);
             ReadIntText.Margin = new Padding(4, 0, 4, 0);
             ReadIntText.Name = "ReadIntText";
             ReadIntText.Size = new Size(59, 21);
@@ -171,7 +183,7 @@
             // 
             // ReadInt
             // 
-            ReadInt.Location = new Point(519, 188);
+            ReadInt.Location = new Point(81, 150);
             ReadInt.Margin = new Padding(4);
             ReadInt.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             ReadInt.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -183,7 +195,7 @@
             // 
             // checkT
             // 
-            checkT.Location = new Point(566, 183);
+            checkT.Location = new Point(119, 151);
             checkT.Margin = new Padding(4);
             checkT.Name = "checkT";
             checkT.Size = new Size(66, 41);
@@ -198,12 +210,12 @@
             autoTemp.AutoSize = true;
             autoTemp.Checked = true;
             autoTemp.CheckState = CheckState.Checked;
-            autoTemp.Location = new Point(509, 155);
+            autoTemp.Location = new Point(80, 122);
             autoTemp.Margin = new Padding(4);
             autoTemp.Name = "autoTemp";
-            autoTemp.Size = new Size(229, 25);
+            autoTemp.Size = new Size(152, 25);
             autoTemp.TabIndex = 10;
-            autoTemp.Text = "Auto temperature read every";
+            autoTemp.Text = "Auto temperature\r\n";
             autoTemp.UseVisualStyleBackColor = true;
             autoTemp.CheckedChanged += autoTemp_CheckedChanged;
             // 
@@ -218,12 +230,12 @@
             tempTable.ColumnHeadersVisible = false;
             tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
             tempTable.Enabled = false;
-            tempTable.Location = new Point(509, 248);
+            tempTable.Location = new Point(66, 223);
             tempTable.Margin = new Padding(4);
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(164, 202);
+            tempTable.Size = new Size(179, 136);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -245,17 +257,18 @@
             ModeParams.AllowUserToAddRows = false;
             ModeParams.AllowUserToDeleteRows = false;
             ModeParams.AllowUserToResizeRows = false;
+            ModeParams.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             ModeParams.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             ModeParams.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             ModeParams.ColumnHeadersVisible = false;
             ModeParams.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2 });
-            ModeParams.Location = new Point(15, 196);
+            ModeParams.Location = new Point(17, 160);
             ModeParams.Margin = new Padding(4, 3, 4, 3);
             ModeParams.Name = "ModeParams";
             ModeParams.ReadOnly = true;
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(269, 273);
+            ModeParams.Size = new Size(269, 205);
             ModeParams.TabIndex = 1;
             // 
             // Column1
@@ -278,8 +291,9 @@
             // 
             // scanMode
             // 
+            scanMode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             scanMode.FormattingEnabled = true;
-            scanMode.Location = new Point(14, 150);
+            scanMode.Location = new Point(17, 125);
             scanMode.Margin = new Padding(4, 3, 4, 3);
             scanMode.Name = "scanMode";
             scanMode.Size = new Size(269, 29);
@@ -288,7 +302,8 @@
             // 
             // confDev
             // 
-            confDev.Location = new Point(311, 347);
+            confDev.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            confDev.Location = new Point(311, 302);
             confDev.Margin = new Padding(4, 3, 4, 3);
             confDev.Name = "confDev";
             confDev.Size = new Size(122, 63);
@@ -299,8 +314,9 @@
             // 
             // sensitivityHigh
             // 
+            sensitivityHigh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             sensitivityHigh.AutoSize = true;
-            sensitivityHigh.Location = new Point(330, 262);
+            sensitivityHigh.Location = new Point(333, 202);
             sensitivityHigh.Margin = new Padding(4, 3, 4, 3);
             sensitivityHigh.Name = "sensitivityHigh";
             sensitivityHigh.Size = new Size(61, 25);
@@ -310,9 +326,10 @@
             // 
             // SensitivityNormal
             // 
+            SensitivityNormal.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             SensitivityNormal.AutoSize = true;
             SensitivityNormal.Checked = true;
-            SensitivityNormal.Location = new Point(330, 213);
+            SensitivityNormal.Location = new Point(333, 167);
             SensitivityNormal.Margin = new Padding(4, 3, 4, 3);
             SensitivityNormal.Name = "SensitivityNormal";
             SensitivityNormal.Size = new Size(81, 25);
@@ -324,11 +341,12 @@
             // 
             // streaming
             // 
+            streaming.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             streaming.AutoSize = true;
             streaming.BackColor = Color.Green;
             streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             streaming.ForeColor = Color.White;
-            streaming.Location = new Point(242, 545);
+            streaming.Location = new Point(311, 82);
             streaming.Margin = new Padding(4, 0, 4, 0);
             streaming.Name = "streaming";
             streaming.Size = new Size(182, 25);
@@ -341,7 +359,7 @@
             coldLaser.AutoSize = true;
             coldLaser.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             coldLaser.ForeColor = Color.Orange;
-            coldLaser.Location = new Point(183, 508);
+            coldLaser.Location = new Point(186, 25);
             coldLaser.Margin = new Padding(4, 0, 4, 0);
             coldLaser.Name = "coldLaser";
             coldLaser.Size = new Size(345, 19);
@@ -351,11 +369,12 @@
             // 
             // sStop
             // 
+            sStop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             sStop.BackColor = Color.Red;
             sStop.Enabled = false;
             sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(522, 535);
+            sStop.Location = new Point(580, 69);
             sStop.Margin = new Padding(4, 3, 4, 3);
             sStop.Name = "sStop";
             sStop.Size = new Size(181, 55);
@@ -366,10 +385,11 @@
             // 
             // sStart
             // 
+            sStart.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             sStart.BackColor = Color.Green;
             sStart.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(19, 535);
+            sStart.Location = new Point(33, 69);
             sStart.Margin = new Padding(4, 3, 4, 3);
             sStart.Name = "sStart";
             sStart.Size = new Size(181, 55);
@@ -380,7 +400,7 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(289, 66);
+            debugMode.Location = new Point(110, 79);
             debugMode.Margin = new Padding(4, 3, 4, 3);
             debugMode.Name = "debugMode";
             debugMode.Size = new Size(108, 32);
@@ -394,10 +414,10 @@
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
             pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
-            pictureBox1.Location = new Point(432, 14);
+            pictureBox1.Location = new Point(12, 16);
             pictureBox1.Margin = new Padding(4, 3, 4, 3);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(259, 50);
+            pictureBox1.Size = new Size(286, 50);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
@@ -405,7 +425,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(265, 17);
+            label3.Location = new Point(285, 20);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
             label3.Size = new Size(38, 21);
@@ -419,8 +439,9 @@
             // 
             // label1
             // 
+            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(330, 178);
+            label1.Location = new Point(333, 132);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(81, 21);
@@ -431,36 +452,79 @@
             // 
             timer2.Tick += timer2_Tick;
             // 
+            // splitContainer1
+            // 
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 0);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(splitContainer2);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(groupBox1);
+            splitContainer1.Size = new Size(782, 547);
+            splitContainer1.SplitterDistance = 402;
+            splitContainer1.TabIndex = 16;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 0);
+            splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(ModeParams);
+            splitContainer2.Panel1.Controls.Add(label3);
+            splitContainer2.Panel1.Controls.Add(label1);
+            splitContainer2.Panel1.Controls.Add(IPPort);
+            splitContainer2.Panel1.Controls.Add(scanMode);
+            splitContainer2.Panel1.Controls.Add(IPAddredd);
+            splitContainer2.Panel1.Controls.Add(sensitivityHigh);
+            splitContainer2.Panel1.Controls.Add(devices);
+            splitContainer2.Panel1.Controls.Add(confDev);
+            splitContainer2.Panel1.Controls.Add(label2);
+            splitContainer2.Panel1.Controls.Add(SensitivityNormal);
+            splitContainer2.Panel1.Controls.Add(connect);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(ReadInt);
+            splitContainer2.Panel2.Controls.Add(debugMode);
+            splitContainer2.Panel2.Controls.Add(pictureBox1);
+            splitContainer2.Panel2.Controls.Add(autoTemp);
+            splitContainer2.Panel2.Controls.Add(tempTable);
+            splitContainer2.Panel2.Controls.Add(checkT);
+            splitContainer2.Panel2.Controls.Add(ReadIntProg);
+            splitContainer2.Panel2.Controls.Add(ReadIntText);
+            splitContainer2.Size = new Size(782, 402);
+            splitContainer2.SplitterDistance = 466;
+            splitContainer2.TabIndex = 0;
+            // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(sStart);
+            groupBox1.Controls.Add(coldLaser);
+            groupBox1.Controls.Add(sStop);
+            groupBox1.Controls.Add(streaming);
+            groupBox1.Dock = DockStyle.Fill;
+            groupBox1.Location = new Point(0, 0);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(782, 141);
+            groupBox1.TabIndex = 14;
+            groupBox1.TabStop = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(9F, 21F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightGray;
-            ClientSize = new Size(704, 645);
-            Controls.Add(label1);
-            Controls.Add(sensitivityHigh);
-            Controls.Add(confDev);
-            Controls.Add(SensitivityNormal);
-            Controls.Add(ReadIntProg);
-            Controls.Add(ReadIntText);
-            Controls.Add(scanMode);
-            Controls.Add(ReadInt);
-            Controls.Add(ModeParams);
-            Controls.Add(checkT);
-            Controls.Add(coldLaser);
-            Controls.Add(autoTemp);
-            Controls.Add(streaming);
-            Controls.Add(tempTable);
-            Controls.Add(sStop);
-            Controls.Add(pictureBox1);
-            Controls.Add(debugMode);
-            Controls.Add(label3);
-            Controls.Add(sStart);
-            Controls.Add(IPPort);
-            Controls.Add(IPAddredd);
-            Controls.Add(devices);
-            Controls.Add(label2);
-            Controls.Add(connect);
+            ClientSize = new Size(782, 571);
+            Controls.Add(splitContainer1);
             Controls.Add(statusStrip1);
             Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -468,13 +532,24 @@
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ODEM Control by Lidwave";
-            Resize += Form1_Resize;
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).EndInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).EndInit();
             ((System.ComponentModel.ISupportInitialize)ModeParams).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel1.PerformLayout();
+            splitContainer2.Panel2.ResumeLayout(false);
+            splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -515,5 +590,8 @@
         private DataGridViewTextBoxColumn Column3;
         private DataGridViewTextBoxColumn Column4;
         private System.Windows.Forms.Timer timer2;
+        private SplitContainer splitContainer1;
+        private SplitContainer splitContainer2;
+        private GroupBox groupBox1;
     }
 }

@@ -15,10 +15,10 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="width" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1600</Value>
+      <Value Profile="(Default)">680</Value>
     </Setting>
     <Setting Name="hight" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">700</Value>
+      <Value Profile="(Default)">720</Value>
     </Setting>
     <Setting Name="dbgPW" Type="System.String" Scope="User">
       <Value Profile="(Default)">Macamor#7~</Value>

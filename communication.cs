@@ -432,7 +432,9 @@ namespace OdemControl
             byte[] TxBuf = data.ToArray();
             if (stream.CanWrite == false)
             {
+                LogMessage("Streamer write error");
                 DevieLost();
+                return "Device not reponding";
             }
 
             try
@@ -441,6 +443,7 @@ namespace OdemControl
             }
             catch (IOException)
             {
+                LogMessage("Streamer write error");
                 DevieLost();
                 return"Device not reponding";
             }
