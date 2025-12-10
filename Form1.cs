@@ -13,6 +13,9 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
+        public bool forceDbgMode = false;
+        string version = "1.01.01";
+
         public appSettings appSetting;
         public bool isConnected = false;
         public List<string> deviceID = new List<string>();
@@ -48,13 +51,9 @@ namespace OdemControl
         int pingLost = 0;
         bool dbgMode = false;
 
-        string version = "1.01.01";
-        Dictionary<Control, Rectangle> originalRects;
-        Size originalFormSize;
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
-        public bool forceDbgMode = false;
 
         public Form1()
         {
@@ -67,20 +66,6 @@ namespace OdemControl
             this.Text = "ODEM Control by Lidwave. Version: " + version;
 
             appSetting = new appSettings();
-
-            originalFormSize = this.Size;
-            originalRects = new Dictionary<Control, Rectangle>();
-            foreach (Control c in this.Controls)
-            {
-                originalRects.Add(c, new Rectangle());
-                originalRects[c] = c.Bounds;
-            }
-
-            //this.Size = new Size(appSetting.width, appSetting.height);
-            //originalFormSize = this.Size;
-            //this.Size = new Size(appSetting.width, appSetting.height);
-            //originalFormSize = this.Size;
-            //this.Resize += Form1_Resize;
 
             Getini();
             dbgMode |= forceDbgMode;
@@ -997,29 +982,6 @@ namespace OdemControl
                 ReadAllTemp();
             }
         }
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            float xRatio = (float)this.Width / originalFormSize.Width;
-            float yRatio = (float)this.Height / originalFormSize.Height;
-
-            foreach (Control c in this.Controls)
-            {
-                Rectangle r = originalRects[c];
-                c.Bounds = new Rectangle(
-                    (int)(r.X * xRatio),
-                    (int)(r.Y * yRatio),
-                    (int)(r.Width * xRatio),
-                    (int)(r.Height * yRatio)
-                );
-            }
-
-            this.ActiveControl = null;
-
-            appSetting.width = this.Width;
-            appSetting.height = this.Height;
-            appSetting.Update(true);
-        }
-
         private void timer2_Tick(object sender, EventArgs e)
         {
             timer2.Stop();
