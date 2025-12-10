@@ -75,34 +75,34 @@
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { deviceState, optoStat });
-            statusStrip1.Location = new Point(0, 439);
+            statusStrip1.Location = new Point(0, 621);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Padding = new Padding(1, 0, 12, 0);
-            statusStrip1.Size = new Size(584, 22);
+            statusStrip1.Padding = new Padding(1, 0, 15, 0);
+            statusStrip1.Size = new Size(704, 24);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
             // deviceState
             // 
-            deviceState.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            deviceState.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             deviceState.ForeColor = Color.Red;
             deviceState.Name = "deviceState";
-            deviceState.Size = new Size(92, 17);
+            deviceState.Size = new Size(115, 19);
             deviceState.Text = "Disconnected";
             // 
             // optoStat
             // 
             optoStat.Maximum = 36;
             optoStat.Name = "optoStat";
-            optoStat.Size = new Size(100, 20);
+            optoStat.Size = new Size(129, 28);
             optoStat.Visible = false;
             // 
             // connect
             // 
-            connect.Location = new Point(10, 9);
-            connect.Margin = new Padding(3, 2, 3, 2);
+            connect.Location = new Point(13, 13);
+            connect.Margin = new Padding(4, 3, 4, 3);
             connect.Name = "connect";
-            connect.Size = new Size(82, 22);
+            connect.Size = new Size(105, 31);
             connect.TabIndex = 1;
             connect.Text = "Connect";
             connect.UseVisualStyleBackColor = true;
@@ -111,30 +111,31 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(15, 50);
+            label2.Location = new Point(19, 70);
+            label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
-            label2.Size = new Size(54, 15);
+            label2.Size = new Size(74, 21);
             label2.TabIndex = 7;
             label2.Text = "Devie SN";
             toolTip1.SetToolTip(label2, "Need to select according to Lidwave support");
             // 
             // IPAddredd
             // 
-            IPAddredd.Location = new Point(110, 10);
-            IPAddredd.Margin = new Padding(3, 2, 3, 2);
+            IPAddredd.Location = new Point(141, 14);
+            IPAddredd.Margin = new Padding(4, 3, 4, 3);
             IPAddredd.Name = "IPAddredd";
             IPAddredd.ReadOnly = true;
-            IPAddredd.Size = new Size(92, 23);
+            IPAddredd.Size = new Size(117, 29);
             IPAddredd.TabIndex = 10;
             toolTip1.SetToolTip(IPAddredd, "Fix IP in this version");
             // 
             // IPPort
             // 
-            IPPort.Location = new Point(242, 10);
-            IPPort.Margin = new Padding(3, 2, 3, 2);
+            IPPort.Location = new Point(311, 14);
+            IPPort.Margin = new Padding(4, 3, 4, 3);
             IPPort.Name = "IPPort";
             IPPort.ReadOnly = true;
-            IPPort.Size = new Size(54, 23);
+            IPPort.Size = new Size(68, 29);
             IPPort.TabIndex = 9;
             IPPort.TextAlign = HorizontalAlignment.Right;
             toolTip1.SetToolTip(IPPort, "Fix Port in this version");
@@ -142,46 +143,50 @@
             // devices
             // 
             devices.FormattingEnabled = true;
-            devices.Location = new Point(78, 47);
-            devices.Margin = new Padding(3, 2, 3, 2);
+            devices.Location = new Point(100, 66);
+            devices.Margin = new Padding(4, 3, 4, 3);
             devices.Name = "devices";
-            devices.Size = new Size(124, 23);
+            devices.Size = new Size(158, 29);
             devices.TabIndex = 8;
             toolTip1.SetToolTip(devices, "Will automatic detected in future versions");
             devices.SelectedIndexChanged += devices_SelectedIndexChanged;
             // 
             // ReadIntProg
             // 
-            ReadIntProg.Location = new Point(399, 156);
+            ReadIntProg.Location = new Point(513, 218);
+            ReadIntProg.Margin = new Padding(4);
             ReadIntProg.Name = "ReadIntProg";
-            ReadIntProg.Size = new Size(167, 15);
+            ReadIntProg.Size = new Size(215, 21);
             ReadIntProg.TabIndex = 14;
             // 
             // ReadIntText
             // 
             ReadIntText.AutoSize = true;
-            ReadIntText.Location = new Point(460, 138);
+            ReadIntText.Location = new Point(591, 193);
+            ReadIntText.Margin = new Padding(4, 0, 4, 0);
             ReadIntText.Name = "ReadIntText";
-            ReadIntText.Size = new Size(45, 15);
+            ReadIntText.Size = new Size(59, 21);
             ReadIntText.TabIndex = 12;
             ReadIntText.Text = "Minute";
             // 
             // ReadInt
             // 
-            ReadInt.Location = new Point(404, 134);
+            ReadInt.Location = new Point(519, 188);
+            ReadInt.Margin = new Padding(4);
             ReadInt.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             ReadInt.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             ReadInt.Name = "ReadInt";
-            ReadInt.Size = new Size(48, 23);
+            ReadInt.Size = new Size(62, 29);
             ReadInt.TabIndex = 11;
             ReadInt.TextAlign = HorizontalAlignment.Right;
             ReadInt.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // checkT
             // 
-            checkT.Location = new Point(440, 131);
+            checkT.Location = new Point(566, 183);
+            checkT.Margin = new Padding(4);
             checkT.Name = "checkT";
-            checkT.Size = new Size(51, 29);
+            checkT.Size = new Size(66, 41);
             checkT.TabIndex = 8;
             checkT.Text = "Read";
             checkT.UseVisualStyleBackColor = true;
@@ -193,9 +198,10 @@
             autoTemp.AutoSize = true;
             autoTemp.Checked = true;
             autoTemp.CheckState = CheckState.Checked;
-            autoTemp.Location = new Point(396, 111);
+            autoTemp.Location = new Point(509, 155);
+            autoTemp.Margin = new Padding(4);
             autoTemp.Name = "autoTemp";
-            autoTemp.Size = new Size(177, 19);
+            autoTemp.Size = new Size(229, 25);
             autoTemp.TabIndex = 10;
             autoTemp.Text = "Auto temperature read every";
             autoTemp.UseVisualStyleBackColor = true;
@@ -212,11 +218,12 @@
             tempTable.ColumnHeadersVisible = false;
             tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
             tempTable.Enabled = false;
-            tempTable.Location = new Point(396, 177);
+            tempTable.Location = new Point(509, 248);
+            tempTable.Margin = new Padding(4);
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(164, 144);
+            tempTable.Size = new Size(164, 202);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -242,13 +249,13 @@
             ModeParams.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             ModeParams.ColumnHeadersVisible = false;
             ModeParams.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2 });
-            ModeParams.Location = new Point(12, 140);
-            ModeParams.Margin = new Padding(3, 2, 3, 2);
+            ModeParams.Location = new Point(15, 196);
+            ModeParams.Margin = new Padding(4, 3, 4, 3);
             ModeParams.Name = "ModeParams";
             ModeParams.ReadOnly = true;
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(209, 195);
+            ModeParams.Size = new Size(269, 273);
             ModeParams.TabIndex = 1;
             // 
             // Column1
@@ -272,19 +279,19 @@
             // scanMode
             // 
             scanMode.FormattingEnabled = true;
-            scanMode.Location = new Point(11, 107);
-            scanMode.Margin = new Padding(3, 2, 3, 2);
+            scanMode.Location = new Point(14, 150);
+            scanMode.Margin = new Padding(4, 3, 4, 3);
             scanMode.Name = "scanMode";
-            scanMode.Size = new Size(210, 23);
+            scanMode.Size = new Size(269, 29);
             scanMode.TabIndex = 0;
             scanMode.SelectedIndexChanged += scanMode_SelectedIndexChanged;
             // 
             // confDev
             // 
-            confDev.Location = new Point(242, 248);
-            confDev.Margin = new Padding(3, 2, 3, 2);
+            confDev.Location = new Point(311, 347);
+            confDev.Margin = new Padding(4, 3, 4, 3);
             confDev.Name = "confDev";
-            confDev.Size = new Size(95, 45);
+            confDev.Size = new Size(122, 63);
             confDev.TabIndex = 3;
             confDev.Text = "Configure device";
             confDev.UseVisualStyleBackColor = true;
@@ -293,10 +300,10 @@
             // sensitivityHigh
             // 
             sensitivityHigh.AutoSize = true;
-            sensitivityHigh.Location = new Point(257, 187);
-            sensitivityHigh.Margin = new Padding(3, 2, 3, 2);
+            sensitivityHigh.Location = new Point(330, 262);
+            sensitivityHigh.Margin = new Padding(4, 3, 4, 3);
             sensitivityHigh.Name = "sensitivityHigh";
-            sensitivityHigh.Size = new Size(51, 19);
+            sensitivityHigh.Size = new Size(61, 25);
             sensitivityHigh.TabIndex = 0;
             sensitivityHigh.Text = "High";
             sensitivityHigh.UseVisualStyleBackColor = true;
@@ -305,10 +312,10 @@
             // 
             SensitivityNormal.AutoSize = true;
             SensitivityNormal.Checked = true;
-            SensitivityNormal.Location = new Point(257, 152);
-            SensitivityNormal.Margin = new Padding(3, 2, 3, 2);
+            SensitivityNormal.Location = new Point(330, 213);
+            SensitivityNormal.Margin = new Padding(4, 3, 4, 3);
             SensitivityNormal.Name = "SensitivityNormal";
-            SensitivityNormal.Size = new Size(65, 19);
+            SensitivityNormal.Size = new Size(81, 25);
             SensitivityNormal.TabIndex = 0;
             SensitivityNormal.TabStop = true;
             SensitivityNormal.Text = "Normal";
@@ -321,7 +328,8 @@
             streaming.BackColor = Color.Green;
             streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             streaming.ForeColor = Color.White;
-            streaming.Location = new Point(188, 389);
+            streaming.Location = new Point(242, 545);
+            streaming.Margin = new Padding(4, 0, 4, 0);
             streaming.Name = "streaming";
             streaming.Size = new Size(182, 25);
             streaming.TabIndex = 1;
@@ -331,11 +339,12 @@
             // coldLaser
             // 
             coldLaser.AutoSize = true;
-            coldLaser.Font = new Font("Arial", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            coldLaser.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             coldLaser.ForeColor = Color.Orange;
-            coldLaser.Location = new Point(142, 363);
+            coldLaser.Location = new Point(183, 508);
+            coldLaser.Margin = new Padding(4, 0, 4, 0);
             coldLaser.Name = "coldLaser";
-            coldLaser.Size = new Size(287, 16);
+            coldLaser.Size = new Size(345, 19);
             coldLaser.TabIndex = 13;
             coldLaser.Text = "Laser is warming up - Do not start streaming";
             coldLaser.Visible = false;
@@ -344,12 +353,12 @@
             // 
             sStop.BackColor = Color.Red;
             sStop.Enabled = false;
-            sStop.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(406, 382);
-            sStop.Margin = new Padding(3, 2, 3, 2);
+            sStop.Location = new Point(522, 535);
+            sStop.Margin = new Padding(4, 3, 4, 3);
             sStop.Name = "sStop";
-            sStop.Size = new Size(141, 39);
+            sStop.Size = new Size(181, 55);
             sStop.TabIndex = 0;
             sStop.Text = "Stop streaming";
             sStop.UseVisualStyleBackColor = false;
@@ -358,12 +367,12 @@
             // sStart
             // 
             sStart.BackColor = Color.Green;
-            sStart.Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            sStart.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(15, 382);
-            sStart.Margin = new Padding(3, 2, 3, 2);
+            sStart.Location = new Point(19, 535);
+            sStart.Margin = new Padding(4, 3, 4, 3);
             sStart.Name = "sStart";
-            sStart.Size = new Size(141, 39);
+            sStart.Size = new Size(181, 55);
             sStart.TabIndex = 0;
             sStart.Text = "Start streaming";
             sStart.UseVisualStyleBackColor = false;
@@ -371,10 +380,10 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(225, 47);
-            debugMode.Margin = new Padding(3, 2, 3, 2);
+            debugMode.Location = new Point(289, 66);
+            debugMode.Margin = new Padding(4, 3, 4, 3);
             debugMode.Name = "debugMode";
-            debugMode.Size = new Size(84, 23);
+            debugMode.Size = new Size(108, 32);
             debugMode.TabIndex = 6;
             debugMode.Text = "Debug";
             debugMode.UseVisualStyleBackColor = true;
@@ -385,10 +394,10 @@
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
             pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
-            pictureBox1.Location = new Point(336, 10);
-            pictureBox1.Margin = new Padding(3, 2, 3, 2);
+            pictureBox1.Location = new Point(432, 14);
+            pictureBox1.Margin = new Padding(4, 3, 4, 3);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(237, 53);
+            pictureBox1.Size = new Size(259, 50);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
@@ -396,9 +405,10 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(206, 12);
+            label3.Location = new Point(265, 17);
+            label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new Size(29, 15);
+            label3.Size = new Size(38, 21);
             label3.TabIndex = 11;
             label3.Text = "Port";
             // 
@@ -410,9 +420,10 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(257, 127);
+            label1.Location = new Point(330, 178);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(60, 15);
+            label1.Size = new Size(81, 21);
             label1.TabIndex = 15;
             label1.Text = "Sensitivity";
             // 
@@ -422,10 +433,10 @@
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(9F, 21F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightGray;
-            ClientSize = new Size(584, 461);
+            ClientSize = new Size(704, 645);
             Controls.Add(label1);
             Controls.Add(sensitivityHigh);
             Controls.Add(confDev);
@@ -451,8 +462,9 @@
             Controls.Add(label2);
             Controls.Add(connect);
             Controls.Add(statusStrip1);
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(3, 2, 3, 2);
+            Margin = new Padding(4, 3, 4, 3);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ODEM Control by Lidwave";

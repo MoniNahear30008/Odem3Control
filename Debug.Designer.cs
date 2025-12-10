@@ -59,6 +59,13 @@
             MonitorView = new RichTextBox();
             splitContainer1 = new SplitContainer();
             timer1 = new System.Windows.Forms.Timer(components);
+            tableLayoutPanel1 = new TableLayoutPanel();
+            label4 = new Label();
+            cCaptureDelay = new TextBox();
+            label5 = new Label();
+            cSensitivity = new TextBox();
+            label6 = new Label();
+            textBox1 = new TextBox();
             dbgControl.SuspendLayout();
             Control.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
@@ -68,6 +75,7 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
             // dbgControl
@@ -266,6 +274,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(tableLayoutPanel1);
             tabPage1.Controls.Add(label1);
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
@@ -388,6 +397,89 @@
             timer1.Interval = 2000;
             timer1.Tick += timer1_Tick;
             // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48.46154F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 51.53846F));
+            tableLayoutPanel1.Controls.Add(label4, 0, 0);
+            tableLayoutPanel1.Controls.Add(cCaptureDelay, 1, 0);
+            tableLayoutPanel1.Controls.Add(label5, 0, 1);
+            tableLayoutPanel1.Controls.Add(cSensitivity, 1, 1);
+            tableLayoutPanel1.Controls.Add(label6, 0, 2);
+            tableLayoutPanel1.Controls.Add(textBox1, 1, 2);
+            tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            tableLayoutPanel1.Location = new Point(17, 6);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.Padding = new Padding(5);
+            tableLayoutPanel1.RowCount = 6;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel1.Size = new Size(271, 164);
+            tableLayoutPanel1.TabIndex = 1;
+            // 
+            // label4
+            // 
+            label4.Anchor = AnchorStyles.Left;
+            label4.AutoSize = true;
+            label4.Location = new Point(9, 15);
+            label4.Name = "label4";
+            label4.Size = new Size(81, 15);
+            label4.TabIndex = 0;
+            label4.Text = "Cupture delay";
+            // 
+            // cCaptureDelay
+            // 
+            cCaptureDelay.Anchor = AnchorStyles.None;
+            cCaptureDelay.Location = new Point(148, 11);
+            cCaptureDelay.Name = "cCaptureDelay";
+            cCaptureDelay.Size = new Size(100, 23);
+            cCaptureDelay.TabIndex = 1;
+            cCaptureDelay.Text = "3200";
+            // 
+            // label5
+            // 
+            label5.Anchor = AnchorStyles.Left;
+            label5.AutoSize = true;
+            label5.Location = new Point(9, 49);
+            label5.Name = "label5";
+            label5.Size = new Size(60, 15);
+            label5.TabIndex = 0;
+            label5.Text = "Sensitivity";
+            // 
+            // cSensitivity
+            // 
+            cSensitivity.Anchor = AnchorStyles.None;
+            cSensitivity.Location = new Point(154, 45);
+            cSensitivity.Name = "cSensitivity";
+            cSensitivity.Size = new Size(88, 23);
+            cSensitivity.TabIndex = 1;
+            cSensitivity.Text = "0x81010E3C";
+            // 
+            // label6
+            // 
+            label6.Anchor = AnchorStyles.Left;
+            label6.AutoSize = true;
+            label6.Location = new Point(9, 82);
+            label6.Name = "label6";
+            label6.Size = new Size(112, 15);
+            label6.TabIndex = 0;
+            label6.Text = "CFAR Multiplication";
+            // 
+            // textBox1
+            // 
+            textBox1.Anchor = AnchorStyles.None;
+            textBox1.Location = new Point(154, 78);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(88, 23);
+            textBox1.TabIndex = 1;
+            textBox1.Text = "0x00000404";
+            // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -411,6 +503,8 @@
             splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -445,5 +539,12 @@
         private ComboBox vecList;
         private Label vecReg;
         private Label VecFln;
+        private TableLayoutPanel tableLayoutPanel1;
+        private Label label4;
+        private TextBox cCaptureDelay;
+        private Label label5;
+        private TextBox cSensitivity;
+        private Label label6;
+        private TextBox textBox1;
     }
 }

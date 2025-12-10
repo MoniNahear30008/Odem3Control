@@ -1,1 +1,7 @@
-12/12/25: Version 1.00.00: Baseline
+12/12/25: Version 1.01.00: 
+	- Update SN0052 parameters and files
+	- Impove GUI
+	- New debug features
+
+======================================
+10/12/25: Version 1.00.00: Baseline

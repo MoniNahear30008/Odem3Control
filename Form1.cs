@@ -48,7 +48,7 @@ namespace OdemControl
         int pingLost = 0;
         bool dbgMode = false;
 
-        string version = "1.00.00";
+        string version = "1.01.00";
         Dictionary<Control, Rectangle> originalRects;
         Size originalFormSize;
         float scanModeFontSize;
@@ -57,7 +57,7 @@ namespace OdemControl
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
-        public bool forceDbgMode = true;
+        public bool forceDbgMode = false;
 
         public Form1()
         {
@@ -66,6 +66,8 @@ namespace OdemControl
             string path = @"C:\Lidwave";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
+
+            this.Text = "ODEM Control by Lidwave. Version: " + version;
 
             appSetting = new appSettings();
             originalFormSize = this.Size;
@@ -80,8 +82,6 @@ namespace OdemControl
             }
             this.Size = new Size(appSetting.width, appSetting.height);
             this.Resize += Form1_Resize;
-
-            this.Text = "Odem Control - Version " + version;
 
             Getini();
             dbgMode |= forceDbgMode;
@@ -446,7 +446,7 @@ namespace OdemControl
             if (confState == (int)confStates.DONE)
             {
                 deviceState.Text = "Device ready";
-                deviceState.ForeColor = Color.Lime;
+                deviceState.ForeColor = Color.Green;
                 LogMessage("Configuring: Done");
                 streamBox(true);
             }
@@ -985,15 +985,7 @@ namespace OdemControl
                 readTempCounter = 60 * (int)ReadInt.Value;
                 ReadAllTemp();
             }
-            //            else
-            //            {
-            ////                timer1.Stop();
-            //            }
         }
-        private void KeepAlive_CheckedChanged(object sender, EventArgs e)
-        {
-        }
-
         private void Form1_Resize(object sender, EventArgs e)
         {
             float xRatio = (float)this.Width / originalFormSize.Width;
@@ -1010,13 +1002,13 @@ namespace OdemControl
                 );
             }
 
-            float scale = (float)this.Width / originalFormSize.Width;
-            float newSize = scanModeFontSize * scale;
-            ModeParams.Font = new Font(ModeParams.Font.FontFamily, newSize);
-            newSize = tempFontSize * scale;
-            tempTable.Font = new Font(tempTable.Font.FontFamily, newSize);
-            newSize = modeFontSize * scale;
-            scanMode.Font = new Font(scanMode.Font.FontFamily, newSize);
+            //float scale = (float)this.Width / originalFormSize.Width;
+            //float newSize = scanModeFontSize * scale;
+            //ModeParams.Font = new Font(ModeParams.Font.FontFamily, newSize);
+            //newSize = tempFontSize * scale;
+            //tempTable.Font = new Font(tempTable.Font.FontFamily, newSize);
+            //newSize = modeFontSize * scale;
+            //scanMode.Font = new Font(scanMode.Font.FontFamily, newSize);
             this.ActiveControl = null;
 
             appSetting.width = this.Width;
