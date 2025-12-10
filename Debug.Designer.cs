@@ -28,29 +28,42 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             dbgControl = new TabControl();
             Control = new TabPage();
+            VecFln = new Label();
+            vecReg = new Label();
+            label3 = new Label();
+            I2Cdest = new Label();
+            vecList = new ComboBox();
+            I2CsList = new ComboBox();
+            RegsNames = new ComboBox();
+            I2Cval = new TextBox();
             regVal = new TextBox();
             regAdd = new TextBox();
             label2 = new Label();
-            pwBox = new GroupBox();
-            pw = new TextBox();
+            WrVec = new Button();
+            WriteI2C = new Button();
             WriteReg = new Button();
+            resetDSP = new Button();
             wrOTDelay = new Button();
             OTDelay = new NumericUpDown();
             tabPage1 = new TabPage();
             label1 = new Label();
+            pwBox = new GroupBox();
+            pw = new TextBox();
             clr = new Button();
             showVer = new RadioButton();
             showCom = new RadioButton();
             AutoScroll = new CheckBox();
             MonitorView = new RichTextBox();
             splitContainer1 = new SplitContainer();
+            timer1 = new System.Windows.Forms.Timer(components);
             dbgControl.SuspendLayout();
             Control.SuspendLayout();
-            pwBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             tabPage1.SuspendLayout();
+            pwBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -65,37 +78,118 @@
             dbgControl.Location = new Point(0, 0);
             dbgControl.Name = "dbgControl";
             dbgControl.SelectedIndex = 0;
-            dbgControl.Size = new Size(850, 193);
+            dbgControl.Size = new Size(850, 266);
             dbgControl.TabIndex = 5;
             dbgControl.Visible = false;
             // 
             // Control
             // 
+            Control.Controls.Add(VecFln);
+            Control.Controls.Add(vecReg);
+            Control.Controls.Add(label3);
+            Control.Controls.Add(I2Cdest);
+            Control.Controls.Add(vecList);
+            Control.Controls.Add(I2CsList);
+            Control.Controls.Add(RegsNames);
+            Control.Controls.Add(I2Cval);
             Control.Controls.Add(regVal);
-            Control.Controls.Add(pwBox);
             Control.Controls.Add(regAdd);
             Control.Controls.Add(label2);
+            Control.Controls.Add(WrVec);
+            Control.Controls.Add(WriteI2C);
             Control.Controls.Add(WriteReg);
+            Control.Controls.Add(resetDSP);
             Control.Controls.Add(wrOTDelay);
             Control.Controls.Add(OTDelay);
             Control.Location = new Point(4, 24);
             Control.Name = "Control";
             Control.Padding = new Padding(3);
-            Control.Size = new Size(842, 165);
+            Control.Size = new Size(842, 238);
             Control.TabIndex = 0;
             Control.Text = "Control";
             Control.UseVisualStyleBackColor = true;
             // 
+            // VecFln
+            // 
+            VecFln.AutoSize = true;
+            VecFln.Location = new Point(414, 163);
+            VecFln.Name = "VecFln";
+            VecFln.Size = new Size(138, 15);
+            VecFln.TabIndex = 13;
+            VecFln.Text = "Double click to select file";
+            VecFln.MouseDoubleClick += VecFln_MouseDoubleClick;
+            // 
+            // vecReg
+            // 
+            vecReg.AutoSize = true;
+            vecReg.Location = new Point(322, 163);
+            vecReg.Name = "vecReg";
+            vecReg.Size = new Size(16, 15);
+            vecReg.TabIndex = 12;
+            vecReg.Text = "...";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(466, 117);
+            label3.Name = "label3";
+            label3.Size = new Size(35, 15);
+            label3.TabIndex = 11;
+            label3.Text = "Value";
+            // 
+            // I2Cdest
+            // 
+            I2Cdest.AutoSize = true;
+            I2Cdest.Location = new Point(302, 116);
+            I2Cdest.Name = "I2Cdest";
+            I2Cdest.Size = new Size(119, 15);
+            I2Cdest.TabIndex = 10;
+            I2Cdest.Text = "Ch: ...; Dev: ...; Reg: ...";
+            // 
+            // vecList
+            // 
+            vecList.FormattingEnabled = true;
+            vecList.Location = new Point(156, 159);
+            vecList.Name = "vecList";
+            vecList.Size = new Size(148, 23);
+            vecList.TabIndex = 9;
+            vecList.SelectedIndexChanged += vecList_SelectedIndexChanged;
+            // 
+            // I2CsList
+            // 
+            I2CsList.FormattingEnabled = true;
+            I2CsList.Location = new Point(156, 112);
+            I2CsList.Name = "I2CsList";
+            I2CsList.Size = new Size(135, 23);
+            I2CsList.TabIndex = 9;
+            I2CsList.SelectedIndexChanged += I2CsList_SelectedIndexChanged;
+            // 
+            // RegsNames
+            // 
+            RegsNames.FormattingEnabled = true;
+            RegsNames.Location = new Point(156, 69);
+            RegsNames.Name = "RegsNames";
+            RegsNames.Size = new Size(135, 23);
+            RegsNames.TabIndex = 9;
+            RegsNames.SelectedIndexChanged += RegsNames_SelectedIndexChanged;
+            // 
+            // I2Cval
+            // 
+            I2Cval.Location = new Point(510, 112);
+            I2Cval.Name = "I2Cval";
+            I2Cval.Size = new Size(82, 23);
+            I2Cval.TabIndex = 8;
+            // 
             // regVal
             // 
-            regVal.Location = new Point(341, 69);
+            regVal.Location = new Point(490, 69);
             regVal.Name = "regVal";
             regVal.Size = new Size(82, 23);
             regVal.TabIndex = 8;
             // 
             // regAdd
             // 
-            regAdd.Location = new Point(206, 69);
+            regAdd.Location = new Point(355, 69);
             regAdd.Name = "regAdd";
             regAdd.Size = new Size(73, 23);
             regAdd.TabIndex = 8;
@@ -103,30 +197,31 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(152, 73);
+            label2.Location = new Point(301, 73);
             label2.Name = "label2";
             label2.Size = new Size(183, 15);
             label2.TabIndex = 7;
             label2.Text = "Addr: 0x                                   Value";
             // 
-            // pwBox
+            // WrVec
             // 
-            pwBox.Controls.Add(pw);
-            pwBox.Location = new Point(443, 40);
-            pwBox.Name = "pwBox";
-            pwBox.Size = new Size(200, 75);
-            pwBox.TabIndex = 6;
-            pwBox.TabStop = false;
-            pwBox.Text = "Password";
+            WrVec.Location = new Point(19, 159);
+            WrVec.Name = "WrVec";
+            WrVec.Size = new Size(127, 23);
+            WrVec.TabIndex = 6;
+            WrVec.Text = "Write Vactor";
+            WrVec.UseVisualStyleBackColor = true;
+            WrVec.Click += WrVec_Click;
             // 
-            // pw
+            // WriteI2C
             // 
-            pw.Location = new Point(23, 33);
-            pw.Name = "pw";
-            pw.PasswordChar = '*';
-            pw.Size = new Size(159, 23);
-            pw.TabIndex = 0;
-            pw.KeyDown += pw_KeyDown;
+            WriteI2C.Location = new Point(19, 112);
+            WriteI2C.Name = "WriteI2C";
+            WriteI2C.Size = new Size(127, 23);
+            WriteI2C.TabIndex = 6;
+            WriteI2C.Text = "Write via I2C";
+            WriteI2C.UseVisualStyleBackColor = true;
+            WriteI2C.Click += WriteI2C_Click;
             // 
             // WriteReg
             // 
@@ -137,6 +232,16 @@
             WriteReg.Text = "Write Register";
             WriteReg.UseVisualStyleBackColor = true;
             WriteReg.Click += WriteReg_Click;
+            // 
+            // resetDSP
+            // 
+            resetDSP.Location = new Point(325, 24);
+            resetDSP.Name = "resetDSP";
+            resetDSP.Size = new Size(127, 23);
+            resetDSP.TabIndex = 6;
+            resetDSP.Text = "Reset DSP";
+            resetDSP.UseVisualStyleBackColor = true;
+            resetDSP.Click += resetDSP_Click;
             // 
             // wrOTDelay
             // 
@@ -165,7 +270,7 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(842, 183);
+            tabPage1.Size = new Size(842, 238);
             tabPage1.TabIndex = 2;
             tabPage1.Text = "Custom setting";
             tabPage1.UseVisualStyleBackColor = true;
@@ -180,6 +285,25 @@
             label1.Size = new Size(235, 29);
             label1.TabIndex = 0;
             label1.Text = "Under construction";
+            // 
+            // pwBox
+            // 
+            pwBox.Controls.Add(pw);
+            pwBox.Location = new Point(306, 142);
+            pwBox.Name = "pwBox";
+            pwBox.Size = new Size(200, 75);
+            pwBox.TabIndex = 6;
+            pwBox.TabStop = false;
+            pwBox.Text = "Password";
+            // 
+            // pw
+            // 
+            pw.Location = new Point(23, 33);
+            pw.Name = "pw";
+            pw.PasswordChar = '*';
+            pw.Size = new Size(159, 23);
+            pw.TabIndex = 0;
+            pw.KeyDown += pw_KeyDown;
             // 
             // clr
             // 
@@ -232,7 +356,7 @@
             MonitorView.Location = new Point(9, 32);
             MonitorView.Name = "MonitorView";
             MonitorView.ReadOnly = true;
-            MonitorView.Size = new Size(834, 242);
+            MonitorView.Size = new Size(834, 349);
             MonitorView.TabIndex = 0;
             MonitorView.Text = "";
             // 
@@ -249,20 +373,26 @@
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(pwBox);
             splitContainer1.Panel2.Controls.Add(MonitorView);
             splitContainer1.Panel2.Controls.Add(clr);
             splitContainer1.Panel2.Controls.Add(showVer);
             splitContainer1.Panel2.Controls.Add(AutoScroll);
             splitContainer1.Panel2.Controls.Add(showCom);
-            splitContainer1.Size = new Size(850, 474);
-            splitContainer1.SplitterDistance = 193;
+            splitContainer1.Size = new Size(850, 654);
+            splitContainer1.SplitterDistance = 266;
             splitContainer1.TabIndex = 6;
+            // 
+            // timer1
+            // 
+            timer1.Interval = 2000;
+            timer1.Tick += timer1_Tick;
             // 
             // Debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(850, 474);
+            ClientSize = new Size(850, 654);
             Controls.Add(splitContainer1);
             Margin = new Padding(3, 2, 3, 2);
             Name = "Debug";
@@ -271,11 +401,11 @@
             dbgControl.ResumeLayout(false);
             Control.ResumeLayout(false);
             Control.PerformLayout();
-            pwBox.ResumeLayout(false);
-            pwBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).EndInit();
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            pwBox.ResumeLayout(false);
+            pwBox.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             splitContainer1.Panel2.PerformLayout();
@@ -303,5 +433,17 @@
         private TextBox regAdd;
         private Label label2;
         private SplitContainer splitContainer1;
+        private System.Windows.Forms.Timer timer1;
+        private Button resetDSP;
+        private ComboBox RegsNames;
+        private Button WriteI2C;
+        private ComboBox I2CsList;
+        private Label I2Cdest;
+        private Label label3;
+        private TextBox I2Cval;
+        private Button WrVec;
+        private ComboBox vecList;
+        private Label vecReg;
+        private Label VecFln;
     }
 }

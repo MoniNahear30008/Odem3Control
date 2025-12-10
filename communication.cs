@@ -231,7 +231,7 @@ namespace OdemControl
             string res = WaitWriteRespose(1);
             return res;
         }
-        private string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
+        public string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
         {
             if (!isConnected) return "Device not connected";
 
