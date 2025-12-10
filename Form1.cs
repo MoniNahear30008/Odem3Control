@@ -56,6 +56,8 @@ namespace OdemControl
         float modeFontSize;
         bool deviceConfigured = false;
         string iniDev = "";
+        int connectCnt = 0;
+        public bool forceDbgMode = true;
 
         public Form1()
         {
@@ -82,6 +84,7 @@ namespace OdemControl
             this.Text = "Odem Control - Version " + version;
 
             Getini();
+            dbgMode |= forceDbgMode;
             debugMode.Visible = dbgMode;
             debugmodeEnabled = dbgMode;
             loggingEnabled |= dbgMode;
@@ -90,6 +93,9 @@ namespace OdemControl
                 OpenLogFile();
 
             bool nodv = SetVars();
+
+            if (forceDbgMode)
+                StartDbg();
 
             if (nodv)
                 timer2.Start();
@@ -465,9 +471,11 @@ namespace OdemControl
         }
         private void debugMode_Click(object sender, EventArgs e)
         {
-            dataLoggingEnabled = true;
-            debugMode.Enabled = false;
-            db = new Debug(this, false);
+            StartDbg();
+        }
+        private void StartDbg()
+        {
+            db = new Debug(this);
             db.StartPosition = FormStartPosition.CenterParent;
             db.Show(this);
         }
@@ -866,7 +874,22 @@ namespace OdemControl
         }
         private void connect_Click(object sender, EventArgs e)
         {
+            bool tryconnect = !isConnected;
+            this.Enabled = false;
+            this.Cursor = Cursors.WaitCursor;
             ConnectToDevice();
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+            if (!isConnected && tryconnect)
+            {
+                connectCnt++;
+                if (connectCnt == 5)
+                {
+                    MessageBox.Show("Fail to connect.\n\nRestart the App and/or ODEM\nand try again");
+                }
+            }
+            else
+                connectCnt = 0;
         }
         private void sStart_Click(object sender, EventArgs e)
         {

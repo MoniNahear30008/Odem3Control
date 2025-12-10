@@ -500,7 +500,7 @@ namespace OdemControl
         {
             if (!isConnected) return "Device not connected";
             optoStat.Maximum = 7;
-            optoStat.Value = 0;
+            optoStat.Value = 1;
             optoStat.Visible = true;
             stream.ReadTimeout = 500000;
             // Send command and wait progress

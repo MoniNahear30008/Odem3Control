@@ -486,9 +486,8 @@ namespace OdemControl
                         break;
 
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
-                        LogMessage("Configuring: Run opto");
-                        if (debugmodeEnabled)
-                            deviceState.Text = "Start Odem (~40Sec)";
+                        LogMessage("Start Odem (~40Sec)");
+                        deviceState.Text = "Start Odem (~40Sec)";
                         Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
                         // Close and reopen client due to left over messages in buffer
                         await ConnectNow();
