@@ -235,7 +235,7 @@
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(179, 136);
+            tempTable.Size = new Size(179, 165);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -268,7 +268,7 @@
             ModeParams.ReadOnly = true;
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(269, 205);
+            ModeParams.Size = new Size(269, 228);
             ModeParams.TabIndex = 1;
             // 
             // Column1
