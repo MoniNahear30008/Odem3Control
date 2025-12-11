@@ -14,7 +14,7 @@ namespace OdemControl
     public partial class Form1 : Form
     {
         public bool forceDbgMode = false;
-        string version = "1.01.01";
+        string version = "1.01.02";
 
         public appSettings appSetting;
         public bool isConnected = false;
