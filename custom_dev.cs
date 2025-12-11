@@ -179,6 +179,8 @@ namespace OdemControl
                 MessageBox.Show("Not all files selected or not exist");
                 return;
             }
+
+            parent.mainfrm.deviceParameters["Capture_Delay"] = 0;
         }
     }
 }

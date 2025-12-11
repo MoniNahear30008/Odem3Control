@@ -15,7 +15,7 @@ namespace OdemControl
     public partial class Debug : Form
     {
         custom_dev cdev;
-        Form1 mainfrm;
+        public Form1 mainfrm;
         string pushed = "";
         Dictionary<string, uint> WriteRegsAdd = new Dictionary<string, uint>()
         {

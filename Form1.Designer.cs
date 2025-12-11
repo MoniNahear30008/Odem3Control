@@ -230,7 +230,7 @@
             tempTable.ColumnHeadersVisible = false;
             tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
             tempTable.Enabled = false;
-            tempTable.Location = new Point(66, 223);
+            tempTable.Location = new Point(79, 211);
             tempTable.Margin = new Padding(4);
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
@@ -479,25 +479,25 @@
             // splitContainer2.Panel1
             // 
             splitContainer2.Panel1.Controls.Add(ModeParams);
-            splitContainer2.Panel1.Controls.Add(label3);
             splitContainer2.Panel1.Controls.Add(label1);
-            splitContainer2.Panel1.Controls.Add(IPPort);
             splitContainer2.Panel1.Controls.Add(scanMode);
-            splitContainer2.Panel1.Controls.Add(IPAddredd);
             splitContainer2.Panel1.Controls.Add(sensitivityHigh);
-            splitContainer2.Panel1.Controls.Add(devices);
             splitContainer2.Panel1.Controls.Add(confDev);
-            splitContainer2.Panel1.Controls.Add(label2);
             splitContainer2.Panel1.Controls.Add(SensitivityNormal);
+            splitContainer2.Panel1.Controls.Add(label3);
+            splitContainer2.Panel1.Controls.Add(IPPort);
+            splitContainer2.Panel1.Controls.Add(IPAddredd);
+            splitContainer2.Panel1.Controls.Add(devices);
+            splitContainer2.Panel1.Controls.Add(label2);
             splitContainer2.Panel1.Controls.Add(connect);
             // 
             // splitContainer2.Panel2
             // 
+            splitContainer2.Panel2.Controls.Add(tempTable);
             splitContainer2.Panel2.Controls.Add(ReadInt);
             splitContainer2.Panel2.Controls.Add(debugMode);
             splitContainer2.Panel2.Controls.Add(pictureBox1);
             splitContainer2.Panel2.Controls.Add(autoTemp);
-            splitContainer2.Panel2.Controls.Add(tempTable);
             splitContainer2.Panel2.Controls.Add(checkT);
             splitContainer2.Panel2.Controls.Add(ReadIntProg);
             splitContainer2.Panel2.Controls.Add(ReadIntText);
@@ -520,8 +520,7 @@
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(9F, 21F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.LightGray;
             ClientSize = new Size(782, 571);
             Controls.Add(splitContainer1);

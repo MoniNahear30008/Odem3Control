@@ -13,8 +13,8 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        public bool forceDbgMode = true ;
-        string version = "1.01.02";
+        public bool forceDbgMode = false;
+        string version = "1.01.03";
 
         public appSettings appSetting;
         public bool isConnected = false;
@@ -30,6 +30,18 @@ namespace OdemControl
         {
             {"Capture_Delay" ,3600},
             {"Chirp_AWG_gain",7000},
+            {"LO",7000},
+            {"TxSOA1",2050},
+            {"TxSOA2",5050},
+            {"Tx3_0_9",5050},
+            {"Tx3_10_19",5050},
+            {"Tx3_20_29",5050},
+            {"Tx3_30_39",5050},
+        };
+        public Dictionary<string, int> GeneralParameters = new Dictionary<string, int>()
+        {
+            {"Sensitivity" ,3600},
+            {"CFAR",7000},
             {"LO",7000},
             {"TxSOA1",2050},
             {"TxSOA2",5050},
