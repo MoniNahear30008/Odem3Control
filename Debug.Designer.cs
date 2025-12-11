@@ -51,12 +51,12 @@
             MonitorView = new RichTextBox();
             splitContainer1 = new SplitContainer();
             groupBox1 = new GroupBox();
+            startCustom = new Button();
             VecFln = new Label();
             vecReg = new Label();
             vecList = new ComboBox();
             WrVec = new Button();
             timer1 = new System.Windows.Forms.Timer(components);
-            startCustom = new Button();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             pwBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -308,6 +308,16 @@
             groupBox1.TabStop = false;
             groupBox1.Visible = false;
             // 
+            // startCustom
+            // 
+            startCustom.Location = new Point(736, 133);
+            startCustom.Name = "startCustom";
+            startCustom.Size = new Size(88, 45);
+            startCustom.TabIndex = 18;
+            startCustom.Text = "Start Custom Device";
+            startCustom.UseVisualStyleBackColor = true;
+            startCustom.Click += startCustom_Click;
+            // 
             // VecFln
             // 
             VecFln.AutoSize = true;
@@ -316,6 +326,7 @@
             VecFln.Size = new Size(138, 15);
             VecFln.TabIndex = 17;
             VecFln.Text = "Double click to select file";
+            VecFln.MouseDoubleClick += VecFln_MouseDoubleClick;
             // 
             // vecReg
             // 
@@ -347,16 +358,6 @@
             // 
             timer1.Interval = 2000;
             timer1.Tick += timer1_Tick;
-            // 
-            // startCustom
-            // 
-            startCustom.Location = new Point(736, 133);
-            startCustom.Name = "startCustom";
-            startCustom.Size = new Size(88, 45);
-            startCustom.TabIndex = 18;
-            startCustom.Text = "Start Custom Device";
-            startCustom.UseVisualStyleBackColor = true;
-            startCustom.Click += startCustom_Click;
             // 
             // Debug
             // 

@@ -313,7 +313,6 @@ namespace OdemControl
                 string[] lines = File.ReadAllLines(path);
                 foreach (string l in lines)
                     VecData.Add(uint.Parse(l));
-
             }
         }
 

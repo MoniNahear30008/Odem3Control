@@ -13,7 +13,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        public bool forceDbgMode = false;
+        public bool forceDbgMode = true ;
         string version = "1.01.02";
 
         public appSettings appSetting;
