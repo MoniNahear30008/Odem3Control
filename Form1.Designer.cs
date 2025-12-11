@@ -126,9 +126,9 @@
             label2.Location = new Point(39, 73);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
-            label2.Size = new Size(74, 21);
+            label2.Size = new Size(81, 21);
             label2.TabIndex = 7;
-            label2.Text = "Devie SN";
+            label2.Text = "Device SN";
             toolTip1.SetToolTip(label2, "Need to select according to Lidwave support");
             // 
             // IPAddredd
@@ -520,7 +520,8 @@
             // 
             // Form1
             // 
-            AutoScaleMode = AutoScaleMode.None;
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.LightGray;
             ClientSize = new Size(782, 571);
             Controls.Add(splitContainer1);

@@ -14,7 +14,7 @@ namespace OdemControl
     public partial class Form1 : Form
     {
         public bool forceDbgMode = false;
-        string version = "1.01.03";
+        string version = "1.02.00";
 
         public appSettings appSetting;
         public bool isConnected = false;
@@ -40,15 +40,13 @@ namespace OdemControl
         };
         public Dictionary<string, int> GeneralParameters = new Dictionary<string, int>()
         {
-            {"Sensitivity" ,3600},
-            {"CFAR",7000},
-            {"LO",7000},
-            {"TxSOA1",2050},
-            {"TxSOA2",5050},
-            {"Tx3_0_9",5050},
-            {"Tx3_10_19",5050},
-            {"Tx3_20_29",5050},
-            {"Tx3_30_39",5050},
+            {"Sensitivity" ,0},
+            {"CFAR",0},
+            {"Spurs",0},
+            {"Retro",10000},
+            {"PM1",0 },
+            {"PM2",0 },
+            {"SOA",0 }
         };
         bool loggingEnabled = false;
         bool debugmodeEnabled = false;

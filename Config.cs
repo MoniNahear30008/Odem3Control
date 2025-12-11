@@ -215,7 +215,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_PM2_CONTROL";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { 1 });
+                        Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { 0 });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
