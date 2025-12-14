@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1
     {
-        List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x81010F3c };
+        public List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x81010F3c };
         public Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
         {
             {(int)confStates.SEND_CAPTURE_DELAY, 0xFF200024 },
@@ -106,10 +106,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: multiplication";
                         this.Refresh();
-                        uint rangeMult = 0x00000404;
-                        if (appSetting.sensitivity == 1)
-                            rangeMult = 0x00000101;
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { rangeMult });
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RANGE], new List<uint> { (uint)GeneralParameters["CFAR"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -124,10 +121,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: Spurs & NN filter";
                         this.Refresh();
-                        uint filt = 0x20023C78;
-                        if (appSetting.sensitivity == 1)
-                            filt = 0x00003C78;
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_SPUR], new List<uint> { filt });
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_SPUR], new List<uint> { (uint)GeneralParameters["Spurs"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -143,7 +137,7 @@ namespace OdemControl
                             deviceState.Text = "Configuring: Retro level";
                         this.Refresh();
 
-                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RETRO_LEVEL], new List<uint> { 10000 });
+                        Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_RETRO_LEVEL], new List<uint> { (uint)GeneralParameters["Retro"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -204,7 +198,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_PM1_CONTROL";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1C, new List<uint> { 0 });
+                        Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1C, new List<uint> { (uint)GeneralParameters["PM1"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -215,7 +209,7 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_PM2_CONTROL";
                         this.Refresh();
-                        Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { 0 });
+                        Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { (uint)GeneralParameters["PM2"] });
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -231,7 +225,7 @@ namespace OdemControl
                             deviceState.Text = "Configuring: Enable SOA";
                         this.Refresh();
 
-                        Error = SPISOAControl(2);
+                        Error = SPISOAControl((uint)GeneralParameters["SOA"]);
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -471,7 +465,7 @@ namespace OdemControl
                         this.Refresh();
                         string mode = modes[appSetting.scanModeNum];
                         int nPoints = scanModes[mode].nPoints;
-                        lastOTdelay = deviceParameters[mode];
+                        lastOTdelay = GeneralParameters["OTD"];
                         uint iotd = (uint)Math.Abs(lastOTdelay);
                         if (lastOTdelay < 0)
                             iotd = (uint)(nPoints - iotd);
@@ -538,7 +532,6 @@ namespace OdemControl
 
             return "";
         }
-
     }
     public enum confStates
     {
@@ -572,8 +565,6 @@ namespace OdemControl
         LOAD_FILES,
         SET_OT_DELAY,
         RUN_OPTOTUNE_CALIBRATION,
-//        RESET_DSP,
-//        SET_SENSITIVITY,
         DONE
     }
 }

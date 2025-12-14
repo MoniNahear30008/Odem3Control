@@ -1,4 +1,14 @@
-12/12/25: Version 1.01.00: 
+===========================================
+14/12/25: Version 1.03.00: 
+	- async connect
+	- Custom device configuration
+
+===========================================
+12/12/25: Version 1.02.00: 
+	- Fix GUI for any screen resolution
+
+======================================
+11/12/25: Version 1.01.00: 
 	- Update SN0052 parameters and files
 	- Impove GUI
 	- New debug features

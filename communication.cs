@@ -46,7 +46,7 @@ namespace OdemControl
             scanMode.Enabled = enable;
             ModeParams.Enabled = enable;
         }
-        private async void ConnectToDevice()
+        private async Task ConnectToDevice()
         {
             timer1.Stop();
             if (isConnected)
@@ -90,13 +90,12 @@ namespace OdemControl
                 client.Close();
             client = new TcpClient();
             Task connectTask = client.ConnectAsync(_ipAddress, _port);
-            if (await Task.WhenAny(connectTask, Task.Delay(10000)) == connectTask)
+            if (await Task.WhenAny(connectTask, Task.Delay(1000)) == connectTask)
             {
                 if (client.Connected)
                 {
                     isConnected = true;
                     stream = client?.GetStream();
-//                    client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
                     stream.ReadTimeout = 10000;
                     ssh = new SshClient("192.168.2.24", "root", "");
                     ssh.Connect();

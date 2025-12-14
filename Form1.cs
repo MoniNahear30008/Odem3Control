@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.Design.AxImporter;
 
@@ -14,14 +15,14 @@ namespace OdemControl
     public partial class Form1 : Form
     {
         public bool forceDbgMode = false;
-        string version = "1.02.00";
+        string version = "1.03.00";
 
         public appSettings appSetting;
         public bool isConnected = false;
         public List<string> deviceID = new List<string>();
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
-        Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
+        public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
         Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
         string scanParamsJson = "";
         private List<string> devicesList = new List<string>();
@@ -46,7 +47,8 @@ namespace OdemControl
             {"Retro",10000},
             {"PM1",0 },
             {"PM2",0 },
-            {"SOA",0 }
+            {"SOA",0 },
+            {"OTD", 0 }
         };
         bool loggingEnabled = false;
         bool debugmodeEnabled = false;
@@ -108,7 +110,9 @@ namespace OdemControl
                 return;
             foreach (string l in lines)
             {
-                if (l == "-dbg")
+                if (l == "-forcedbg")
+                    forceDbgMode = true;
+                else if (l == "-dbg")
                     dbgMode = true;
                 else if (l == "-le")
                 {
@@ -435,9 +439,27 @@ namespace OdemControl
                 MessageBox.Show("Device not connected");
                 return;
             }
+            GeneralParameters["Sensitivity"] = (int)sensitivity[appSetting.sensitivity];
+            if (appSetting.sensitivity == 1)
+            {
+                GeneralParameters["CFAR"] = 0x00000101;
+                GeneralParameters["Spurs"] = 0x00003C78;
+            }
+            else
+            {
+                GeneralParameters["CFAR"] = 0x00000404;
+                GeneralParameters["Spurs"] = 0x20023C78;
+            }
+
+            GeneralParameters["Retro"] = 10000;
+            GeneralParameters["PM1"] = 0;
+            GeneralParameters["PM2"] = 0;
+            GeneralParameters["SOA"] = 2;
+
+            GeneralParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
             ConfigNow();
         }
-        private async void ConfigNow()
+        public async void ConfigNow()
         {
             configuring = true;
             pingLost = 10;
@@ -446,7 +468,6 @@ namespace OdemControl
             deviceState.Text = "";
             deviceState.ForeColor = Color.Black;
             appSetting.Update(true);
-            //UpdateConfFiles();
             confState = (int)confStates.IDLE;
             await cofigdeviceAsync();
             if (confState == (int)confStates.DONE)
@@ -544,7 +565,6 @@ namespace OdemControl
 
             // Get common file
             string commonFile = "blackmanHarris_DEC";
-
             foreach (string f in files)
             {
                 confFiles[f].Clear();
@@ -878,12 +898,12 @@ namespace OdemControl
             temp = (double)mtmp * 0.0625;
             return "";
         }
-        private void connect_Click(object sender, EventArgs e)
+        private async void connect_Click(object sender, EventArgs e)
         {
             bool tryconnect = !isConnected;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
-            ConnectToDevice();
+            await ConnectToDevice();
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             if (!isConnected && tryconnect)
