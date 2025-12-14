@@ -35,7 +35,7 @@ namespace OdemControl
         }
         static void HandleExc(string msg, string st)
         {
-            MessageBox.Show("Unhendled excption occured: " + msg + "\n\nPlease send c:\\lidwave\\Exceptions.txt\nand decription of the action that caused it to support@lidwave.com");
+            MessageBox.Show("Unhandled excption occured: " + msg + "\n\nPlease send c:\\lidwave\\Exceptions.txt\nand decription of the action that caused it to support@lidwave.com");
             StreamWriter sw = new StreamWriter("c:\\lidwave\\Exceptions.txt", true, Encoding.ASCII);
 
             string ver = Application.ProductVersion;

@@ -15,7 +15,7 @@ namespace OdemControl
     public partial class Form1 : Form
     {
         public bool forceDbgMode = false;
-        string version = "1.03.00";
+        string version = "1.04.00";
 
         public appSettings appSetting;
         public bool isConnected = false;
@@ -78,6 +78,10 @@ namespace OdemControl
             this.Text = "ODEM Control by Lidwave. Version: " + version;
 
             appSetting = new appSettings();
+
+            // Generate exection
+            //int y = 0;
+            //int x = 1 / y;
 
             Getini();
             dbgMode |= forceDbgMode;
