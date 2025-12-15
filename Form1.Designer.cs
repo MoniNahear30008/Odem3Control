@@ -573,7 +573,7 @@
         private TextBox IPAddredd;
         public Button debugMode;
         private PictureBox pictureBox1;
-        private DataGridView ModeParams;
+        public DataGridView ModeParams;
         private Button checkT;
         private ToolStripProgressBar optoStat;
         private System.Windows.Forms.Timer timer1;

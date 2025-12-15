@@ -23,8 +23,6 @@ namespace OdemControl
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
         public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
-        Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
-        string scanParamsJson = "";
         private List<string> devicesList = new List<string>();
         int confState = (int)confStates.IDLE;
         public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
@@ -62,7 +60,6 @@ namespace OdemControl
         Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
         bool dbgMode = false;
-
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
@@ -204,8 +201,8 @@ namespace OdemControl
             confFiles.Add("128Bins_Final", new List<uint>());
             confFiles.Add("blackmanHarris_DEC", new List<uint>());
             confFiles.Add("AWG", new List<uint>());
-            wfFiles.Add("waveformX", new List<uint>());
-            wfFiles.Add("waveformY", new List<uint>());
+            //wfFiles.Add("waveformX", new List<uint>());
+            //wfFiles.Add("waveformY", new List<uint>());
 
             // Set scan mode parameters table
             ModeParams.Rows.Clear();
@@ -399,19 +396,16 @@ namespace OdemControl
             ModeParams.Rows[4].Cells[1].Value = scanModes[modeName].lines.ToString();
             ModeParams.Rows[5].Cells[1].Value = scanModes[modeName].fRate.ToString() + " FPS";
             ModeParams.ClearSelection();
+            return;
+
+            Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
+            wfFiles.Add("waveformX", new List<uint>());
+            wfFiles.Add("waveformY", new List<uint>());
 
             string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".";
             List<string> files = wfFiles.Keys.ToList();
             Stream stream;
             StreamReader reader;
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName + "scan_parameters.json");
-            if (stream == null)
-            {
-                MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            reader = new StreamReader(stream);
-            scanParamsJson = reader.ReadToEnd();
 
             foreach (string f in files)
             {
@@ -461,9 +455,9 @@ namespace OdemControl
             GeneralParameters["SOA"] = 2;
 
             GeneralParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
-            ConfigNow();
+            ConfigNow("");
         }
-        public async void ConfigNow()
+        public async void ConfigNow(string wfPath)
         {
             configuring = true;
             pingLost = 10;
@@ -473,7 +467,7 @@ namespace OdemControl
             deviceState.ForeColor = Color.Black;
             appSetting.Update(true);
             confState = (int)confStates.IDLE;
-            await cofigdeviceAsync();
+            await cofigdeviceAsync(wfPath);
             if (confState == (int)confStates.DONE)
             {
                 deviceState.Text = "Device ready";

@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace OdemControl
 {
@@ -57,6 +46,9 @@ namespace OdemControl
         uint VecDest = 0;
         List<uint> VecData = new List<uint>();
         Dictionary<int, string> rowFiles = new Dictionary<int, string>();
+        bool JsonReady = false;
+        sm_params scan_params = new sm_params();
+        int BASE_FREQUENCY_HZ = 40000;
 
         public Debug(Form1 mainfrm)
         {
@@ -117,8 +109,21 @@ namespace OdemControl
             rowFiles.Add(3, "128Bins_Final.txt");
             rowFiles.Add(4, "blackmanHarris_DEC.txt");
             rowFiles.Add(5, "2kWin.txt");
-        }
 
+            cModeParams.Rows.Add("Mirror freq", "4000.0");
+            cModeParams.Rows.Add("FPGA points", "12283");
+            cModeParams.Rows.Add("----------", "-----------");
+            cModeParams.Rows.Add("Horizontal FOV", "30");
+            cModeParams.Rows.Add("Vertical FOV", "19");
+            cModeParams.Rows.Add("Horizontal Res.", "0.01");
+            cModeParams.Rows.Add("Vertical Res.", "0.12");
+            cModeParams.Rows.Add("Lines per frame", "160");
+            cModeParams.Rows.Add("frame rate", "5");
+
+            cWaveForm.Rows.Add("waveformX", "");
+            cWaveForm.Rows.Add("waveformY", "");
+
+        }
         private void Debug_FormClosing(object sender, FormClosingEventArgs e)
         {
             mainfrm.debugMode.Enabled = true;
@@ -186,7 +191,6 @@ namespace OdemControl
                     string ver = reader.ReadToEnd();
                     MonitorView.AppendText(ver);
                 }
-
             }
         }
         private void clr_Click(object sender, EventArgs e)
@@ -235,7 +239,6 @@ namespace OdemControl
             pushed = "WriteReg";
             timer1.Start();
         }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             timer1.Stop();
@@ -326,16 +329,6 @@ namespace OdemControl
                 WriteI2C.BackColor = Color.Lime;
             pushed = "WriteI2C";
             timer1.Start();
-
-        }
-        private void vecList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            VecFln.Text = "Double click to select file";
-            VecData.Clear();
-            string rn = vecList.SelectedItem as string;
-            VecDest = Vectors[rn];
-            vecReg.Text = "0x" + VecDest.ToString("X08");
-
         }
         private void VecFln_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -350,12 +343,11 @@ namespace OdemControl
                 string path = ofd.FileName;
                 VecFln.Text = path;
                 // Read all lines
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = System.IO.File.ReadAllLines(path);
                 foreach (string l in lines)
                     VecData.Add(uint.Parse(l));
             }
         }
-
         private void WrVec_Click(object sender, EventArgs e)
         {
             if (VecData.Count == 0)
@@ -390,12 +382,20 @@ namespace OdemControl
                     setting.Add("Files");
                     foreach (DataGridViewRow row in customFiles.Rows)
                         setting.Add(row.Cells[0].Value.ToString() + "," + row.Cells[1].Value.ToString());
-                    File.WriteAllLines(dialog.FileName, setting);
+                    setting.Add("ScanMode " + customMode.Checked.ToString());
+                    foreach (DataGridViewRow row in cModeParams.Rows)
+                        setting.Add(row.Cells[0].Value.ToString() + "," + row.Cells[1].Value.ToString());
+                    setting.Add("scanFiles");
+                    foreach (DataGridViewRow row in cWaveForm.Rows)
+                        setting.Add(row.Cells[0].Value.ToString() + "," + row.Cells[1].Value.ToString());
+
+                    System.IO.File.WriteAllLines(dialog.FileName, setting);
                 }
             }
         }
         private void loadSetting_Click(object sender, EventArgs e)
         {
+            JsonReady = false;
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Text Files (*.txt)|*.txt";
             ofd.Title = "Select a Text File";
@@ -403,9 +403,10 @@ namespace OdemControl
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 bool isfiles = false;
+                bool isSM = false;
                 string path = ofd.FileName;
                 // Read all lines
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = System.IO.File.ReadAllLines(path);
                 int row = 0;
                 foreach (string l in lines)
                 {
@@ -415,11 +416,29 @@ namespace OdemControl
                         row = 0;
                         continue;
                     }
+                    else if (l.Contains("ScanMode"))
+                    {
+                        customMode.Checked = l.Contains("True");
+                        isfiles = false;
+                        isSM = true;
+                        row = 0;
+                        continue;
+                    }
                     string val = l.Split(',')[1];
-                    if (isfiles)
-                        customFiles.Rows[row].Cells[1].Value = val;
+                    if (isSM)
+                    {
+                        if (isfiles)
+                            cWaveForm.Rows[row].Cells[1].Value = val;
+                        else
+                            cModeParams.Rows[row].Cells[1].Value = val;
+                    }
                     else
-                        customParams.Rows[row].Cells[1].Value = val;
+                    {
+                        if (isfiles)
+                            customFiles.Rows[row].Cells[1].Value = val;
+                        else
+                            customParams.Rows[row].Cells[1].Value = val;
+                    }
                     row++;
                 }
             }
@@ -451,20 +470,26 @@ namespace OdemControl
                             customFiles.Rows[4].Cells[1].Value = file;
                         else if (file.EndsWith("2kWin.txt"))
                             customFiles.Rows[5].Cells[1].Value = file;
-
                     }
                 }
             }
         }
         private void customConfig_Click(object sender, EventArgs e)
         {
+            if (customMode.Checked && !JsonReady)
+            {
+                MessageBox.Show("Please genetare json file");
+                return;
+            }
+
             List<string> setFiles = new List<string>();
+            List<string> wfFiles = new List<string>();
             // Check if all files exsist
             bool all = true;
             foreach (DataGridViewRow row in customFiles.Rows)
             {
                 string fln = row.Cells[1].Value.ToString();
-                if (File.Exists(fln))
+                if (System.IO.File.Exists(fln))
                     setFiles.Add(fln);
                 else
                 {
@@ -472,9 +497,24 @@ namespace OdemControl
                     break;
                 }
             }
+
+            if (customMode.Checked)
+            {
+                foreach (DataGridViewRow row in cWaveForm.Rows)
+                {
+                    string fln = row.Cells[1].Value.ToString();
+                    if (File.Exists(fln))
+                        wfFiles.Add(fln);
+                    else
+                    {
+                        all = false;
+                        break;
+                    }
+                }
+            }
             if (!all)
             {
-                MessageBox.Show("Not all files selected or not exist");
+                MessageBox.Show("Not all files set or not exist");
                 return;
             }
 
@@ -530,7 +570,85 @@ namespace OdemControl
             mainfrm.GeneralParameters["OTD"] = getVal(customParams.Rows[6].Cells[1].Value.ToString());
             OTDelay.Value = mainfrm.GeneralParameters["OTD"];
 
-            mainfrm.ConfigNow();
+            string path = "";
+
+            mainfrm.ConfigNow(path);
+        }
+        private string SetJSON(int xCount)
+        {
+            scan_params.mirror = double.Parse(cModeParams.Rows[0].Cells[1].Value.ToString());
+            scan_params.points = uint.Parse(cModeParams.Rows[1].Cells[1].Value.ToString());
+            scan_params.hFOV = uint.Parse(cModeParams.Rows[3].Cells[1].Value.ToString());
+            scan_params.vFOV = uint.Parse(cModeParams.Rows[4].Cells[1].Value.ToString());
+            scan_params.hRes = double.Parse(cModeParams.Rows[5].Cells[1].Value.ToString());
+            scan_params.vRes = double.Parse(cModeParams.Rows[6].Cells[1].Value.ToString());
+            scan_params.linesPerF = uint.Parse(cModeParams.Rows[7].Cells[1].Value.ToString());
+            scan_params.fpga_points_per_line = (uint)(scan_params.hFOV / scan_params.hRes);
+            scan_params.total_fpga_points = scan_params.fpga_points_per_line * scan_params.linesPerF * 2;
+            scan_params.fpga_total_scan_time_sec = ((double)scan_params.total_fpga_points * 16.384) / 1000000.0;
+
+            string json = "{\r\n    \"metadata\": {\r\n        \"timestamp\": \"";
+            json += DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            json += "\",\r\n        \"generation_method\": \"manual_update\",\r\n        \"generation_date\": \" ";
+            json += DateTime.Now.ToString("yyyyMMdd");
+            json += "\",\r\n        \"generation_time\": \"";
+            json += DateTime.Now.ToString("HHmmss");
+            json += "\",\r\n        \"waveform_files\": {\r\n            \"x_file\": \"waveformX.csv\",\r\n            \"y_file\": \"waveformY.csv\"\r\n        },\r\n        \"line_counts\": {\r\n            \"x_lines\": ";
+            json += xCount.ToString();
+            json += ",\r\n            \"y_lines\": ";
+            json += xCount.ToString();
+            json += "\r\n        }\r\n    },\r\n    \"selected_parameters\": {\r\n        \"mirror_frequency_hz\": ";
+            json += scan_params.mirror.ToString("0.0");
+            json += ",\r\n        \"achieved_total_fpga_points_to_use\": ";
+            json += scan_params.points.ToString();
+            json += ",\r\n        \"mirror_points_per_axis\": ";
+            json += xCount.ToString();
+            json += "\r\n    },\r\n    \"user_entered_parameters\": {\r\n        \"horizontal_fov\": ";
+            json += scan_params.hFOV.ToString("0.0");
+            json += ",\r\n        \"pixel_angle_h\": ";
+            json += scan_params.hRes.ToString("0.00");
+            json += ",\r\n        \"vertical_step_angle\": ";
+            json += scan_params.vRes.ToString("0.00");
+            json += ",\r\n        \"number_lines\": ";
+            json += scan_params.linesPerF.ToString();
+            json += ",\r\n        \"round_percent\": 0.05\r\n    },\r\n    \"deduced_parameters_from_optimization\": {\r\n        \"fpga_parameters\": {\r\n            \"fpga_points_per_line\": ";
+            // fpga_parameters
+            json += scan_params.fpga_points_per_line.ToString();
+            json += ",\r\n            \"total_fpga_points\": ";
+            json += scan_params.total_fpga_points.ToString();
+            json += ",\r\n            \"fpga_total_scan_time_sec\": ";
+            json += scan_params.fpga_total_scan_time_sec.ToString();
+            json += "\r\n        },\r\n        \"mirror_parameters\": {\r\n            \"mirror_points_per_line\": ";
+            // mirror_parameters
+            mirror_params mp = new mirror_params(scan_params, BASE_FREQUENCY_HZ);
+            json += mp.points_per_line;
+            json += ",\r\n            \"mirror_points_per_axis\": ";
+            json += mp.points_per_axis.ToString();
+            json += ",\r\n            \"mirror_frequency_hz\": ";
+            json += mp.frequency_hz.ToString();
+            json += ",\r\n            \"mirror_total_scan_time_sec\": ";
+            json += mp.total_scan_time_sec.ToString();
+            json += ",\r\n            \"frequency_divisor\": ";
+            json += mp.frequency_divisor.ToString();
+            json += ",\r\n            \"base_frequency_hz\": ";
+            json += mp.base_frequency_hz.ToString();
+            // achieved_parameters
+            json += "\r\n        },\r\n        \"achieved_parameters\": {\r\n            \"achieved_fpga_points_per_line\": ";
+            double achieved_total_fpga_points = mp.total_scan_time_sec * 1000000.0 / 16.384;
+            json += (achieved_total_fpga_points / scan_params.linesPerF / 2).ToString();
+            json += ",\r\n            \"achieved_total_fpga_points\": ";
+            json += achieved_total_fpga_points.ToString();
+            json += ",\r\n            \"achieved_total_fpga_points_to_use\": ";
+            json += ((uint)achieved_total_fpga_points).ToString();
+            json += ",\r\n            \"achieved_fpga_points_per_line_diff\": ";
+            json += (achieved_total_fpga_points / scan_params.linesPerF / 2).ToString();
+            // timing_analysis
+            json += "\r\n        },\r\n        \"timing_analysis\": {\r\n            \"time_difference_sec\": ";
+            json += mp.time_difference_sec.ToString();
+            json += ",\r\n            \"time_match_percent\": ";
+            json += mp.time_match_percent.ToString();
+            json += "\r\n        }\r\n    }\r\n}";
+            return json;
         }
         private int getVal(string sval)
         {
@@ -541,6 +659,233 @@ namespace OdemControl
                 val = int.Parse(sval);
 
             return val;
+        }
+        private void customMode_CheckedChanged(object sender, EventArgs e)
+        {
+            cModeParams.Enabled = customMode.Checked;
+            cWaveForm.Enabled = customMode.Checked;
+        }
+        private void customFiles_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 0) return;
+            int row = e.RowIndex;
+            string fln = rowFiles[row];
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Text Files (*" + fln + "|*" + fln;
+            ofd.Title = "Select a Text File";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                customFiles.Rows[row].Cells[1].Value = ofd.FileName;
+            }
+        }
+        private void selWF_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select a folder";
+                dialog.ShowNewFolderButton = true;
+                string x = "";
+                string y = "";
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string path = dialog.SelectedPath;
+                    folderName.Text = path;
+                    string[] files = Directory.GetFiles(path);
+
+                    foreach (string file in files)
+                    {
+                        if (file.EndsWith("waveformX.csv"))
+                            x = file;
+                        else if (file.EndsWith("waveformY.csv"))
+                            y = file;
+                    }
+
+                    if ((x == "") || (y == ""))
+                        MessageBox.Show("wavefromX and/or waveformY not in folder");
+                    else
+                    {
+                        cWaveForm.Rows[0].Cells[1].Value = x;
+                        cWaveForm.Rows[1].Cells[1].Value = x;
+                    }
+                }
+            }
+        }
+        private void genJSON_Click(object sender, EventArgs e)
+        {
+            JsonReady = false;
+            List<string> wfFiles = new List<string>();
+            foreach (DataGridViewRow row in cWaveForm.Rows)
+            {
+                string fln = row.Cells[1].Value.ToString();
+                if (File.Exists(fln))
+                    wfFiles.Add(fln);
+            }
+            if (wfFiles.Count < 2)
+            {
+                MessageBox.Show("Missing waveform file(s)");
+                return;
+            }
+            int xCount = File.ReadLines(wfFiles[0]).Count();
+            int yCount = File.ReadLines(wfFiles[1]).Count();
+            if (xCount != yCount)
+            {
+                MessageBox.Show("waveform file line count not the same");
+                return;
+            }
+            string json = SetJSON(xCount);
+            string jfln = wfFiles[0].Replace("waveformX.csv", "scan_parameters.json");
+            File.WriteAllText(jfln, json);
+            JsonReady = true;
+        }
+        private void cModeParams_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            JsonReady = false;
+        }
+        private void impSM_Click(object sender, EventArgs e)
+        {
+            string modeName = mainfrm.modes[mainfrm.appSetting.scanModeNum];
+            cModeParams.Rows[0].Cells[1].Value = mainfrm.scanModes[modeName].mirror.ToString();
+            cModeParams.Rows[0].Cells[1].Value = mainfrm.scanModes[modeName].nPoints.ToString();
+            cModeParams.Rows[3].Cells[1].Value = mainfrm.scanModes[modeName].hFOV.ToString();
+            cModeParams.Rows[4].Cells[1].Value = mainfrm.scanModes[modeName].vFOV.ToString();
+            cModeParams.Rows[5].Cells[1].Value = mainfrm.scanModes[modeName].hRes.ToString("0.00");
+            cModeParams.Rows[6].Cells[1].Value = mainfrm.scanModes[modeName].vRes.ToString("0.00");
+            cModeParams.Rows[7].Cells[1].Value = mainfrm.scanModes[modeName].lines.ToString();
+            cModeParams.Rows[8].Cells[1].Value = mainfrm.scanModes[modeName].fRate.ToString();
+        }
+    }
+    public class mirror_params
+    {
+        public int points_per_line;
+        public int points_per_axis;
+        public double frequency_hz;
+        public double total_scan_time_sec;
+        public int frequency_divisor;
+        public int base_frequency_hz;
+        public double time_difference_sec;
+        public double time_match_percent;
+        public mirror_params()
+        {
+            points_per_line = 0;
+            points_per_axis = 0;
+            frequency_hz = 0;
+            total_scan_time_sec = 0;
+            frequency_divisor = 0;
+            base_frequency_hz = 0;
+            time_difference_sec = 0;
+            time_match_percent = 0;
+        }
+        public mirror_params(sm_params smPars, int base_freq)
+        {
+            mirror_params best_match = new mirror_params();
+
+            double best_time_diff = double.MaxValue;
+            double best_time_diff_this_points = double.MaxValue;
+            bool is_better_match = false;
+
+            int max_ppl = (int)(2500 / (smPars.linesPerF * 2));
+            for (int ppl = max_ppl; ppl >= 0; ppl--)
+            {
+                // Calculate total mirror points per axis
+                points_per_axis = ppl * (int)smPars.linesPerF * 2;
+
+                // Skip if exceeds mirror hardware constraint
+                if (points_per_axis > 2500)
+                    continue;
+
+                // Try different frequency divisors, starting with highest frequencies first
+                // Start from divisor=1 (40kHz) down to higher divisors (lower frequencies)
+                // But we'll prioritize finding the best match at highest possible frequency
+                for (int div = 1; div < base_freq + 1; div++)
+                {
+                    frequency_hz = (double)base_freq / (double)div;
+                    // Skip very low frequencies (below 1 Hz) for practical reasons
+                    if (frequency_hz < 1.0)
+                        break;
+
+                    // Calculate mirror scan time for this configuration
+                    total_scan_time_sec = (double)points_per_axis / frequency_hz;
+
+                    // CONSTRAINT: Mirror time must be equal or larger than FPGA time
+                    // Skip configurations where mirror time is shorter than FPGA time
+                    if (total_scan_time_sec < smPars.fpga_total_scan_time_sec)
+                        continue;
+
+                    // Calculate time difference from FPGA target (mirror time >= FPGA time)
+                    double time_diff = total_scan_time_sec - smPars.fpga_total_scan_time_sec;
+
+                    // Check if this is better than current best match
+                    // Prioritize higher frequencies when time differences are similar (within 1% of each other)
+                    is_better_match = false;
+
+                    if (time_diff < best_time_diff)
+                        is_better_match = true;
+                    else if (Math.Abs(time_diff - best_time_diff) < (smPars.fpga_total_scan_time_sec * 0.01))  // Within 1% of best time
+                    {
+                        // If time match is similar, prefer higher frequency
+                        if (frequency_hz > best_match.frequency_hz)
+                            is_better_match = true;
+                     }
+
+                    if (is_better_match)
+                    {
+                        best_time_diff = time_diff;
+                        time_match_percent = 100.0 * (1.0 - time_diff / Math.Max(smPars.fpga_total_scan_time_sec, total_scan_time_sec));
+                    }
+
+                    best_match.points_per_line = ppl;
+                    best_match.points_per_axis = points_per_axis;
+                    best_match.frequency_hz = frequency_hz;
+                    best_match.total_scan_time_sec = total_scan_time_sec;
+                    best_match.frequency_divisor = div;
+                    best_match.time_difference_sec = time_diff;
+                    best_match.time_match_percent = time_match_percent;
+
+                    // If we get a very close match, we can stop searching
+                    if (time_diff < (smPars.fpga_total_scan_time_sec * 0.001))  // Within 0.1%
+                        break;
+                }
+
+                // If we found a very good match, no need to try more points
+                if (best_match.time_difference_sec < (smPars.fpga_total_scan_time_sec * 0.001))  // Within 0.1%
+                    break;
+            }
+
+            points_per_line = best_match.points_per_line;
+            points_per_axis = best_match.points_per_axis;
+            frequency_hz = best_match.frequency_hz;
+            total_scan_time_sec = best_match.total_scan_time_sec;
+            frequency_divisor = best_match.frequency_divisor;
+            base_frequency_hz = base_freq;
+            time_difference_sec = best_match.time_difference_sec;
+            time_match_percent = best_match.time_match_percent;
+
+        }
+    }
+    public class sm_params
+    {
+        public double mirror;
+        public uint points;
+        public uint hFOV;
+        public uint vFOV;
+        public double hRes;
+        public double vRes;
+        public uint linesPerF;
+        public uint fpga_points_per_line;
+        public uint total_fpga_points;
+        public double fpga_total_scan_time_sec; 
+
+        public sm_params()
+        {
+            mirror = 0;
+            points = 0;
+            hFOV = 0;
+            vFOV = 0;
+            hRes = 0;
+            vRes = 0;
+            linesPerF = 0;
         }
     }
 }

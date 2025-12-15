@@ -27,9 +27,10 @@ namespace OdemControl
         };
         public int lastOTdelay = 0;
 
-        private async Task cofigdeviceAsync()
+        private async Task cofigdeviceAsync(string wfPath)
         {
             string Error = "";
+            int modeNum = scanModes[modes[appSetting.scanModeNum]].modeNum;
             while (confState != (int)confStates.DONE)
             {
                 string stateName = Enum.GetName(typeof(confStates), confState);
@@ -448,7 +449,9 @@ namespace OdemControl
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: Load files";
                         this.Refresh();
-                        Error = LoadFiles();
+                        Error = LoadFiles(wfPath);
+                        if (wfPath.Length > 0)
+                            modeNum = 10;
                         if (Error.Length > 0)
                         {
                             LogMessage("Configuring Error: " + Error);
@@ -482,7 +485,7 @@ namespace OdemControl
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
                         LogMessage("Start Odem (~40Sec)");
                         deviceState.Text = "Start Odem (~40Sec)";
-                        Error = RunOpto(scanModes[modes[appSetting.scanModeNum]].modeNum);
+                        Error = RunOpto(modeNum);
                         // Close and reopen client due to left over messages in buffer
                         await ConnectNow();
                         optoStat.Visible = false;

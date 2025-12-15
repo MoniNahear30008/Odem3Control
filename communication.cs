@@ -752,7 +752,7 @@ namespace OdemControl
             if (result != "exists")
                 ssh.CreateCommand($"mkdir -p \"{path}\"").Execute();
         }
-        private string LoadFiles()
+        private string LoadFiles(string wfPath)
         {
             string modeName = modes[appSetting.scanModeNum];
             int modeIndex = scanModes[modeName].modeNum;
@@ -765,31 +765,42 @@ namespace OdemControl
             {
                 client.Connect();
 
-                string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".scan_parameters.json";
-                Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
-                if (resourceStream == null)
+                if (wfPath == "")
                 {
-                    return "Failed to read device configuation file";
+                    string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".scan_parameters.json";
+                    Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                    if (resourceStream == null)
+                    {
+                        return "Failed to read device configuation file";
+                    }
+
+                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
+
+                    resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformX.csv";
+                    resourceStream = assembly.GetManifestResourceStream(resourceName);
+                    if (resourceStream == null)
+                    {
+                        return "Failed to read device configuation file";
+                    }
+                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
+
+                    resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformY.csv";
+                    resourceStream = assembly.GetManifestResourceStream(resourceName);
+                    if (resourceStream == null)
+                    {
+                        return "Failed to read device configuation file";
+                    }
+                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
                 }
-
-                client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
-
-                resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformX.csv";
-                resourceStream = assembly.GetManifestResourceStream(resourceName);
-                if (resourceStream == null)
+                else
                 {
-                    return "Failed to read device configuation file";
+                    var stream = File.OpenRead(wfPath + "scan_parameters.json");
+                    client.Upload(stream, "/var/lib/odem/patterns/10_scan_parameters.json");
+                    stream = File.OpenRead(wfPath + "waveformX.csv");
+                    client.Upload(stream, "/var/lib/odem/patterns/10_waveformX.csv");
+                    stream = File.OpenRead(wfPath + "waveformY.csv");
+                    client.Upload(stream, "/var/lib/odem/patterns/10_waveformY.csv");
                 }
-                client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
-
-                resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformY.csv";
-                resourceStream = assembly.GetManifestResourceStream(resourceName);
-                if (resourceStream == null)
-                {
-                    return "Failed to read device configuation file";
-                }
-                client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
-
                 client.Disconnect();
             }
 
