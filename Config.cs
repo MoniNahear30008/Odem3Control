@@ -505,15 +505,15 @@
         private string ConfigDACs()
         {
             string Error = "";
-            //Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
-            //if (Error.Length > 0)
-            //    return Error;
-            //Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
-            //if (Error.Length > 0)
-            //    return Error;
-            //Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
-            //if (Error.Length > 0)
-            //    return Error;
+            Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
+            Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
+            if (Error.Length > 0)
+                return Error;
             Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1F, new List<uint> { (uint)0x3F9 });
             if (Error.Length > 0)
                 return Error;

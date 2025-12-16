@@ -183,7 +183,7 @@
             // 
             resetDSP.Location = new Point(277, 27);
             resetDSP.Name = "resetDSP";
-            resetDSP.Size = new Size(82, 23);
+            resetDSP.Size = new Size(82, 27);
             resetDSP.TabIndex = 6;
             resetDSP.Text = "Reset DSP";
             resetDSP.UseVisualStyleBackColor = true;
@@ -213,7 +213,7 @@
             // pwBox
             // 
             pwBox.Controls.Add(pw);
-            pwBox.Location = new Point(281, 131);
+            pwBox.Location = new Point(448, 107);
             pwBox.Name = "pwBox";
             pwBox.Size = new Size(200, 75);
             pwBox.TabIndex = 6;
@@ -247,6 +247,7 @@
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(resetDSP);
             tabPage1.Controls.Add(OTDelay);
+            tabPage1.Controls.Add(pwBox);
             tabPage1.Controls.Add(wrOTDelay);
             tabPage1.Location = new Point(4, 26);
             tabPage1.Name = "tabPage1";
@@ -348,10 +349,10 @@
             tabPage2.Controls.Add(folderName);
             tabPage2.Controls.Add(getFromFolder);
             tabPage2.Controls.Add(customParams);
-            tabPage2.Location = new Point(4, 26);
+            tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(888, 543);
+            tabPage2.Size = new Size(888, 545);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Custom device";
             tabPage2.UseVisualStyleBackColor = true;
@@ -610,7 +611,6 @@
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(896, 573);
-            Controls.Add(pwBox);
             Controls.Add(tabControl1);
             Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Margin = new Padding(3, 2, 3, 2);

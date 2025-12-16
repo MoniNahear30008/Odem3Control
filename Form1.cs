@@ -28,6 +28,8 @@ namespace OdemControl
             {"Tx3_10_19",5050},
             {"Tx3_20_29",5050},
             {"Tx3_30_39",5050},
+            {"MainBoard",1 },
+            {"DriverBoard",1 },
         };
         public Dictionary<string, int> GeneralParameters = new Dictionary<string, int>()
         {
@@ -190,8 +192,6 @@ namespace OdemControl
             confFiles.Add("128Bins_Final", new List<uint>());
             confFiles.Add("blackmanHarris_DEC", new List<uint>());
             confFiles.Add("AWG", new List<uint>());
-            //wfFiles.Add("waveformX", new List<uint>());
-            //wfFiles.Add("waveformY", new List<uint>());
 
             // Set scan mode parameters table
             ModeParams.Rows.Clear();
@@ -489,6 +489,11 @@ namespace OdemControl
         }
         private void StartDbg()
         {
+            splitContainer4.Panel2Collapsed = false;
+            this.Width = 1500;
+            debugMode.Visible = false;
+            return;
+
             db = new Debug();
             db.StartPosition = FormStartPosition.CenterParent;
             db.Show();
@@ -927,8 +932,16 @@ namespace OdemControl
             streaming.Visible = false;
             if (coldLaser.Visible)
             {
-                MessageBox.Show("Laser temperature too low.\nPlease wait until the laser warms up.", "Laser Temperature", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (dbgMode)
+                {
+                    if (MessageBox.Show("Laser temperature too low. Start streaming anyways?", "Laser Temperature", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                        return;
+                }
+                else
+                {
+                    MessageBox.Show("Laser temperature too low.\nPlease wait until the laser warms up.", "Laser Temperature", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
             stream.ReadTimeout = 50000;
             string Error = StreamingCmd(true);
@@ -936,7 +949,8 @@ namespace OdemControl
             if (Error.Length > 0)
             {
                 LogMessage("Streaming command: " + Error);
-                MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string smsg = Error.Replace("\0","") + "\nRestart ODEM and App";
+                MessageBox.Show(smsg , "Start Streaming Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
@@ -1028,11 +1042,16 @@ namespace OdemControl
                 this.Close();
             }
 
+            splitContainer4.Panel2Collapsed = true;
+            this.Width = 750;
+
+
             if (!dbgMode)
                 splitContainer3.Panel2Collapsed = true;
 
-            if (forceDbgMode)
-                StartDbg();
+            SetDebugView();
+            //if (forceDbgMode)
+            //    StartDbg();
         }
 
         private void showCom_CheckedChanged(object sender, EventArgs e)
@@ -1052,6 +1071,281 @@ namespace OdemControl
         private void clr_Click(object sender, EventArgs e)
         {
             MonitorView.Clear();
+        }
+
+        private void pw_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (pw.Text == appSetting.dbgPW)
+                {
+                    groupBox5.Visible = false;
+                    tabControl1.Visible = true;
+                }
+                else
+                {
+                    pw.Text = "";
+                    MessageBox.Show("Incorrect Password");
+                }
+            }
+
+        }
+
+        private void timer3_Tick(object sender, EventArgs e)
+        {
+            timer3.Stop();
+            switch (pushed)
+            {
+                case "OTDelay":
+                    wrOTDelay.BackColor = SystemColors.Control;
+                    break;
+                case "resetDSP":
+                    resetDSP.BackColor = SystemColors.Control;
+                    break;
+                case "WriteReg":
+                    WriteReg.BackColor = SystemColors.Control;
+                    break;
+                case "WriteI2C":
+                    WriteI2C.BackColor = SystemColors.Control;
+                    break;
+                case "WrVec":
+                    WrVec.BackColor = SystemColors.Control;
+                    break;
+            }
+        }
+        private void resetDSP_Click(object sender, EventArgs e)
+        {
+            string Error = WriteRegWaitResp(WriteRegs[(int)confStates.RESET_DSP], new List<uint> { 0x4100004 });
+            if (Error.Length > 0)
+            {
+                LogMessage("Configuring Error: " + Error);
+                resetDSP.BackColor = Color.Red;
+            }
+            else
+                resetDSP.BackColor = Color.Lime;
+            pushed = "resetDSP";
+            timer3.Start();
+        }
+        private void wrOTDelay_Click(object sender, EventArgs e)
+        {
+            if (!isConnected) return;
+
+            LogMessage("Configuring: Set OT Delay");
+            string mode = modes[appSetting.scanModeNum];
+            int nPoints = scanModes[mode].nPoints;
+            int otd = (int)OTDelay.Value;
+            uint iotd = (uint)Math.Abs(otd);
+            if (otd < 0)
+                iotd = (uint)(nPoints - iotd);
+            lastOTdelay = otd;
+            string Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
+            if (Error.Length > 0)
+            {
+                LogMessage("Configuring Error: " + Error);
+                wrOTDelay.BackColor = Color.Red;
+            }
+            else
+                wrOTDelay.BackColor = Color.Lime;
+            pushed = "OTDelay";
+            timer3.Start();
+        }
+        private void WriteReg_Click(object sender, EventArgs e)
+        {
+            if (!isConnected) return;
+            uint add = 0;
+            if (!uint.TryParse(regAdd.Text, System.Globalization.NumberStyles.HexNumber, null, out add))
+            {
+                regAdd.Text = "FF000000";
+                MessageBox.Show("Register address must be Hex number");
+                return;
+            }
+
+            uint val = 0;
+            if (regVal.Text.StartsWith("0x"))
+            {
+                if (!uint.TryParse(regVal.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out val))
+                {
+                    regVal.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+            else
+            {
+                if (!uint.TryParse(regVal.Text, out val))
+                {
+                    regVal.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+
+            string Error = WriteRegWaitResp(add, new List<uint>() { val });
+            if (Error.Length > 0)
+            {
+                LogMessage("Configuring Error: " + Error);
+                WriteReg.BackColor = Color.Red;
+            }
+            else
+                WriteReg.BackColor = Color.Lime;
+            pushed = "WriteReg";
+            timer3.Start();
+        }
+        private void WrVec_Click(object sender, EventArgs e)
+        {
+            if (VecData.Count == 0)
+            {
+                MessageBox.Show("Vector not loaded");
+                return;
+            }
+
+            string Error = WriteRegWaitResp(VecDest, VecData);
+            if (Error.Length > 0)
+            {
+                LogMessage("Configuring Error: " + Error);
+                WrVec.BackColor = Color.Red;
+            }
+            else
+                WrVec.BackColor = Color.Lime;
+            pushed = "WrVec";
+            timer3.Start();
+        }
+        private void VecFln_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            VecFln.Text = "Double click to select file";
+            VecData.Clear();
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Text Files (*.txt)|*.txt";
+            ofd.Title = "Select a Text File";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string path = ofd.FileName;
+                VecFln.Text = path;
+                // Read all lines
+                string[] lines = System.IO.File.ReadAllLines(path);
+                foreach (string l in lines)
+                    VecData.Add(uint.Parse(l));
+            }
+        }
+        private void WriteI2C_Click(object sender, EventArgs e)
+        {
+            uint val = 0;
+            if (I2Cval.Text.StartsWith("0x"))
+            {
+                if (!uint.TryParse(I2Cval.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out val))
+                {
+                    I2Cval.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+            else
+            {
+                if (!uint.TryParse(I2Cval.Text, out val))
+                {
+                    I2Cval.Text = "";
+                    MessageBox.Show("Invalid value number");
+                    return;
+                }
+            }
+
+            if (val > 0xffff)
+            {
+                I2Cval.Text = "";
+                MessageBox.Show("Invalid value - must be 16 bits");
+                return;
+            }
+
+            string Error = WriteI2CWaitResp(I2C_ch, I2C_dev, 0x14, I2C_reg, new List<uint> { val });
+            if (Error.Length > 0)
+            {
+                LogMessage("Configuring Error: " + Error);
+                WriteI2C.BackColor = Color.Red;
+            }
+            else
+                WriteI2C.BackColor = Color.Lime;
+            pushed = "WriteI2C";
+            timer3.Start();
+
+        }
+        private void RegsNames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string rn = RegsNames.SelectedItem as string;
+            regAdd.Text = WriteRegsAdd[rn].ToString("X08");
+        }
+        private void I2CsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string rn = I2CsList.SelectedItem as string;
+            I2C_ch = I2Cs[rn][0];
+            I2C_dev = I2Cs[rn][1];
+            I2C_reg = I2Cs[rn][2];
+            I2C_val = I2Cs[rn][3];
+            I2Cdest.Text = "Ch: " + I2C_ch.ToString() + " ;  Dev: 0x" + I2C_dev.ToString("X02") +
+                "; Reg: 0x" + I2C_reg.ToString("X02");
+            I2Cval.Text = "0x" + I2C_val.ToString("X04");
+        }
+        private void getFromFolder_Click(object sender, EventArgs e)
+        {
+            GetFIles();
+        }
+        private void saveSetting_Click(object sender, EventArgs e)
+        {
+            SaveToFile();
+        }
+        private void loadSetting_Click(object sender, EventArgs e)
+        {
+            LoadFromFile();
+        }
+        private void customMode_CheckedChanged(object sender, EventArgs e)
+        {
+            cModeParams.Enabled = customMode.Checked;
+            cWaveForm.Enabled = customMode.Checked;
+        }
+        private void impSM_Click(object sender, EventArgs e)
+        {
+            string modeName = modes[appSetting.scanModeNum];
+            cModeParams.Rows[0].Cells[1].Value = scanModes[modeName].mirror.ToString();
+            cModeParams.Rows[1].Cells[1].Value = scanModes[modeName].nPoints.ToString();
+            cModeParams.Rows[3].Cells[1].Value = scanModes[modeName].hFOV.ToString();
+            cModeParams.Rows[4].Cells[1].Value = scanModes[modeName].vFOV.ToString();
+            cModeParams.Rows[5].Cells[1].Value = scanModes[modeName].hRes.ToString("0.00");
+            cModeParams.Rows[6].Cells[1].Value = scanModes[modeName].vRes.ToString("0.00");
+            cModeParams.Rows[7].Cells[1].Value = scanModes[modeName].lines.ToString();
+            cModeParams.Rows[8].Cells[1].Value = scanModes[modeName].fRate.ToString();
+        }
+        private void cModeParams_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            genJSON.ForeColor = Color.Red;
+            JsonReady = false;
+        }
+        private void customFiles_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 0) return;
+            int row = e.RowIndex;
+            string fln = rowFiles[row];
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Text Files (*" + fln + "|*" + fln;
+            ofd.Title = "Select a Text File";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                customFiles.Rows[row].Cells[1].Value = ofd.FileName;
+            }
+        }
+        private void genJSON_Click(object sender, EventArgs e)
+        {
+            GenJson();
+            genJSON.ForeColor = Color.LimeGreen;
+        }
+        private void selWF_Click(object sender, EventArgs e)
+        {
+            GetWfFiles();
+        }
+        private void customConfig_Click(object sender, EventArgs e)
+        {
+            CustomCofig();
         }
     }
 
