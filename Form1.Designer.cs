@@ -154,6 +154,7 @@
             // 
             // devices
             // 
+            devices.DropDownStyle = ComboBoxStyle.DropDownList;
             devices.FormattingEnabled = true;
             devices.Location = new Point(120, 69);
             devices.Margin = new Padding(4, 3, 4, 3);
@@ -292,6 +293,7 @@
             // scanMode
             // 
             scanMode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            scanMode.DropDownStyle = ComboBoxStyle.DropDownList;
             scanMode.FormattingEnabled = true;
             scanMode.Location = new Point(17, 125);
             scanMode.Margin = new Padding(4, 3, 4, 3);

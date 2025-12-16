@@ -129,6 +129,20 @@
   <metadata name="dataGridViewTextBoxColumn4.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
+  <data name="label1.Text" xml:space="preserve">
+    <value>- It is recommnded to save all required file in same folder.
+
+c:\lidwave\data\SNxxx\
+
+AWG.txt
+badGoodIndxs_High.txt
+badGoodIndxs_Low.txt
+blackmanHarris_DEC.txt
+2kWin.txt
+128Bins_Final.txt
+waveformX.csv
+waveformY.csv</value>
+  </data>
   <metadata name="dataGridViewTextBoxColumn1.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

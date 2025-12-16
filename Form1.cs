@@ -1,22 +1,13 @@
-using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Numerics;
 using System.Reflection;
-using System.Text.Json;
-using System.Windows.Forms;
-using System.Xml.Linq;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.Design.AxImporter;
 
 namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        public bool forceDbgMode = false;
-        string version = "1.04.00";
+        string version = "2.00.00";
 
+        public bool forceDbgMode = false;
+        bool noDevice = false;
         public appSettings appSetting;
         public bool isConnected = false;
         public List<string> deviceID = new List<string>();
@@ -89,13 +80,10 @@ namespace OdemControl
             if (loggingEnabled)
                 OpenLogFile();
 
-            bool nodv = SetVars();
+            noDevice = SetVars();
 
-            if (forceDbgMode)
-                StartDbg();
-
-            if (nodv)
-                timer2.Start();
+            this.Refresh();
+            timer2.Start();
         }
         private void Getini()
         {
@@ -500,9 +488,10 @@ namespace OdemControl
         }
         private void StartDbg()
         {
-            db = new Debug(this);
+            db = new Debug();
             db.StartPosition = FormStartPosition.CenterParent;
-            db.Show(this);
+            db.Show();
+            db.SetDebugForm(this);
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1013,9 +1002,15 @@ namespace OdemControl
         private void timer2_Tick(object sender, EventArgs e)
         {
             timer2.Stop();
-            this.Enabled = false;
-            MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            this.Close();
+
+            if (noDevice)
+            {
+                this.Enabled = false;
+                MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+            }
+            else if (forceDbgMode)
+                StartDbg();
         }
     }
 

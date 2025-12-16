@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Debug));
             label3 = new Label();
             I2Cdest = new Label();
             I2CsList = new ComboBox();
@@ -61,6 +62,7 @@
             vecReg = new Label();
             groupBox2 = new GroupBox();
             tabPage2 = new TabPage();
+            label4 = new Label();
             impSM = new Button();
             genJSON = new Button();
             selWF = new Button();
@@ -431,6 +433,7 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(label4);
             tabPage2.Controls.Add(impSM);
             tabPage2.Controls.Add(genJSON);
             tabPage2.Controls.Add(selWF);
@@ -453,9 +456,19 @@
             tabPage2.Text = "Custom device";
             tabPage2.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.BorderStyle = BorderStyle.FixedSingle;
+            label4.Location = new Point(495, 73);
+            label4.Name = "label4";
+            label4.Size = new Size(276, 32);
+            label4.TabIndex = 22;
+            label4.Text = "When setting scan mode from selected scan mode\r\nremmember to use the right waveform files";
+            // 
             // impSM
             // 
-            impSM.Location = new Point(496, 53);
+            impSM.Location = new Point(495, 44);
             impSM.Name = "impSM";
             impSM.Size = new Size(219, 23);
             impSM.TabIndex = 21;
@@ -465,7 +478,7 @@
             // 
             // genJSON
             // 
-            genJSON.Location = new Point(696, 346);
+            genJSON.Location = new Point(695, 381);
             genJSON.Name = "genJSON";
             genJSON.Size = new Size(177, 23);
             genJSON.TabIndex = 20;
@@ -475,7 +488,7 @@
             // 
             // selWF
             // 
-            selWF.Location = new Point(496, 347);
+            selWF.Location = new Point(495, 382);
             selWF.Name = "selWF";
             selWF.Size = new Size(177, 23);
             selWF.TabIndex = 20;
@@ -493,7 +506,7 @@
             cWaveForm.ColumnHeadersVisible = false;
             cWaveForm.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
             cWaveForm.Enabled = false;
-            cWaveForm.Location = new Point(493, 379);
+            cWaveForm.Location = new Point(492, 414);
             cWaveForm.Name = "cWaveForm";
             cWaveForm.RowHeadersVisible = false;
             cWaveForm.Size = new Size(379, 61);
@@ -518,7 +531,7 @@
             // customMode
             // 
             customMode.AutoSize = true;
-            customMode.Location = new Point(496, 29);
+            customMode.Location = new Point(495, 20);
             customMode.Name = "customMode";
             customMode.Size = new Size(129, 19);
             customMode.TabIndex = 18;
@@ -536,7 +549,7 @@
             cModeParams.ColumnHeadersVisible = false;
             cModeParams.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4 });
             cModeParams.Enabled = false;
-            cModeParams.Location = new Point(496, 82);
+            cModeParams.Location = new Point(495, 117);
             cModeParams.Margin = new Padding(4, 3, 4, 3);
             cModeParams.Name = "cModeParams";
             cModeParams.RowHeadersVisible = false;
@@ -565,16 +578,16 @@
             // label1
             // 
             label1.BorderStyle = BorderStyle.FixedSingle;
-            label1.Location = new Point(265, 176);
+            label1.Location = new Point(265, 107);
             label1.Name = "label1";
-            label1.Size = new Size(177, 69);
+            label1.Size = new Size(201, 203);
             label1.TabIndex = 16;
-            label1.Text = "- Set scan mode and sensitivity in main window\r\n- Use \"Configure custom device\"";
+            label1.Text = resources.GetString("label1.Text");
             // 
             // customConfig
             // 
             customConfig.Font = new Font("Segoe UI", 12F);
-            customConfig.Location = new Point(265, 294);
+            customConfig.Location = new Point(265, 322);
             customConfig.Name = "customConfig";
             customConfig.Size = new Size(201, 41);
             customConfig.TabIndex = 15;
@@ -617,9 +630,9 @@
             // loadSetting
             // 
             loadSetting.Font = new Font("Segoe UI", 12F);
-            loadSetting.Location = new Point(274, 63);
+            loadSetting.Location = new Point(265, 63);
             loadSetting.Name = "loadSetting";
-            loadSetting.Size = new Size(168, 33);
+            loadSetting.Size = new Size(201, 41);
             loadSetting.TabIndex = 12;
             loadSetting.Text = "Load setting from file";
             loadSetting.UseVisualStyleBackColor = true;
@@ -628,9 +641,9 @@
             // saveSetting
             // 
             saveSetting.Font = new Font("Segoe UI", 12F);
-            saveSetting.Location = new Point(274, 15);
+            saveSetting.Location = new Point(265, 15);
             saveSetting.Name = "saveSetting";
-            saveSetting.Size = new Size(168, 33);
+            saveSetting.Size = new Size(201, 41);
             saveSetting.TabIndex = 13;
             saveSetting.Text = "Save setting to file";
             saveSetting.UseVisualStyleBackColor = true;
@@ -694,8 +707,8 @@
             // 
             // Debug
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(1498, 711);
             Controls.Add(splitContainer1);
             Margin = new Padding(3, 2, 3, 2);
@@ -784,5 +797,6 @@
         private GroupBox groupBox2;
         private GroupBox groupBox4;
         private Button impSM;
+        private Label label4;
     }
 }

@@ -1,10 +1,4 @@
-﻿using Org.BouncyCastle.Tls.Crypto.Impl.BC;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace OdemControl
+﻿namespace OdemControl
 {
     public partial class Form1
     {

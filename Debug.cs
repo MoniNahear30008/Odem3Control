@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+﻿using System.Reflection;
 
 namespace OdemControl
 {
@@ -50,9 +48,15 @@ namespace OdemControl
         sm_params scan_params = new sm_params();
         int BASE_FREQUENCY_HZ = 40000;
 
-        public Debug(Form1 mainfrm)
+        public Debug()
         {
             InitializeComponent();
+
+            //this.mainfrm = mainfrm;
+//            SetDebugForm();
+        }
+        public void SetDebugForm(Form1 mainfrm)
+        {
             this.mainfrm = mainfrm;
             MonitorView.Clear();
             OTDelay.Value = mainfrm.lastOTdelay;
