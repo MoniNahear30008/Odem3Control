@@ -51,14 +51,12 @@ namespace OdemControl
         public Debug()
         {
             InitializeComponent();
+            tabControl1.Visible = false;
 
-            //this.mainfrm = mainfrm;
-//            SetDebugForm();
         }
         public void SetDebugForm(Form1 mainfrm)
         {
             this.mainfrm = mainfrm;
-            MonitorView.Clear();
             OTDelay.Value = mainfrm.lastOTdelay;
             foreach (string r in WriteRegsAdd.Keys)
                 RegsNames.Items.Add(r);
@@ -75,7 +73,7 @@ namespace OdemControl
             if (mainfrm.forceDbgMode)
             {
                 pwBox.Visible = false;
-                groupBox1.Visible = true;
+                tabControl1.Visible = true;
             }
             SetCustomParams();
         }
@@ -132,18 +130,6 @@ namespace OdemControl
         {
             mainfrm.debugMode.Enabled = true;
         }
-        public void UpdateMonitor(string text)
-        {
-            if (showCom.Checked)
-            {
-                MonitorView.AppendText(text + Environment.NewLine);
-                if (AutoScroll.Checked)
-                {
-                    MonitorView.SelectionStart = MonitorView.Text.Length;
-                    MonitorView.ScrollToCaret();
-                }
-            }
-        }
         private void pw_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -151,7 +137,7 @@ namespace OdemControl
                 if (pw.Text == mainfrm.appSetting.dbgPW)
                 {
                     pwBox.Visible = false;
-                    groupBox1.Visible = true;
+                    tabControl1.Visible = true;
                 }
                 else
                 {
@@ -182,24 +168,6 @@ namespace OdemControl
                 wrOTDelay.BackColor = Color.Lime;
             pushed = "OTDelay";
             timer1.Start();
-        }
-        private void showCom_CheckedChanged(object sender, EventArgs e)
-        {
-            MonitorView.Clear();
-            if (showVer.Checked)
-            {
-                Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.version.txt");
-                if (stream != null)
-                {
-                    StreamReader reader = new StreamReader(stream);
-                    string ver = reader.ReadToEnd();
-                    MonitorView.AppendText(ver);
-                }
-            }
-        }
-        private void clr_Click(object sender, EventArgs e)
-        {
-            MonitorView.Clear();
         }
         private void WriteReg_Click(object sender, EventArgs e)
         {

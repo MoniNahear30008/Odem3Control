@@ -67,6 +67,12 @@
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
             groupBox1 = new GroupBox();
+            splitContainer3 = new SplitContainer();
+            MonitorView = new RichTextBox();
+            clr = new Button();
+            showVer = new RadioButton();
+            AutoScroll = new CheckBox();
+            showCom = new RadioButton();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -81,6 +87,10 @@
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
             groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
+            splitContainer3.Panel1.SuspendLayout();
+            splitContainer3.Panel2.SuspendLayout();
+            splitContainer3.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
@@ -90,7 +100,7 @@
             statusStrip1.Location = new Point(0, 547);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 15, 0);
-            statusStrip1.Size = new Size(782, 24);
+            statusStrip1.Size = new Size(812, 24);
             statusStrip1.TabIndex = 0;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -236,7 +246,7 @@
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(179, 165);
+            tempTable.Size = new Size(192, 263);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -269,7 +279,7 @@
             ModeParams.ReadOnly = true;
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(269, 228);
+            ModeParams.Size = new Size(286, 263);
             ModeParams.TabIndex = 1;
             // 
             // Column1
@@ -298,14 +308,14 @@
             scanMode.Location = new Point(17, 125);
             scanMode.Margin = new Padding(4, 3, 4, 3);
             scanMode.Name = "scanMode";
-            scanMode.Size = new Size(269, 29);
+            scanMode.Size = new Size(286, 29);
             scanMode.TabIndex = 0;
             scanMode.SelectedIndexChanged += scanMode_SelectedIndexChanged;
             // 
             // confDev
             // 
             confDev.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            confDev.Location = new Point(311, 302);
+            confDev.Location = new Point(329, 253);
             confDev.Margin = new Padding(4, 3, 4, 3);
             confDev.Name = "confDev";
             confDev.Size = new Size(122, 63);
@@ -318,7 +328,7 @@
             // 
             sensitivityHigh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             sensitivityHigh.AutoSize = true;
-            sensitivityHigh.Location = new Point(333, 202);
+            sensitivityHigh.Location = new Point(350, 202);
             sensitivityHigh.Margin = new Padding(4, 3, 4, 3);
             sensitivityHigh.Name = "sensitivityHigh";
             sensitivityHigh.Size = new Size(61, 25);
@@ -331,7 +341,7 @@
             SensitivityNormal.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             SensitivityNormal.AutoSize = true;
             SensitivityNormal.Checked = true;
-            SensitivityNormal.Location = new Point(333, 167);
+            SensitivityNormal.Location = new Point(350, 167);
             SensitivityNormal.Margin = new Padding(4, 3, 4, 3);
             SensitivityNormal.Name = "SensitivityNormal";
             SensitivityNormal.Size = new Size(81, 25);
@@ -376,10 +386,10 @@
             sStop.Enabled = false;
             sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(580, 69);
+            sStop.Location = new Point(610, 52);
             sStop.Margin = new Padding(4, 3, 4, 3);
             sStop.Name = "sStop";
-            sStop.Size = new Size(181, 55);
+            sStop.Size = new Size(181, 62);
             sStop.TabIndex = 0;
             sStop.Text = "Stop streaming";
             sStop.UseVisualStyleBackColor = false;
@@ -391,10 +401,10 @@
             sStart.BackColor = Color.Green;
             sStart.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(33, 69);
+            sStart.Location = new Point(33, 52);
             sStart.Margin = new Padding(4, 3, 4, 3);
             sStart.Name = "sStart";
-            sStart.Size = new Size(181, 55);
+            sStart.Size = new Size(181, 62);
             sStart.TabIndex = 0;
             sStart.Text = "Start streaming";
             sStart.UseVisualStyleBackColor = false;
@@ -402,7 +412,7 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(110, 79);
+            debugMode.Location = new Point(15, 78);
             debugMode.Margin = new Padding(4, 3, 4, 3);
             debugMode.Name = "debugMode";
             debugMode.Size = new Size(108, 32);
@@ -443,7 +453,7 @@
             // 
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(333, 132);
+            label1.Location = new Point(350, 132);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(81, 21);
@@ -468,8 +478,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(groupBox1);
-            splitContainer1.Size = new Size(782, 547);
-            splitContainer1.SplitterDistance = 402;
+            splitContainer1.Size = new Size(812, 466);
+            splitContainer1.SplitterDistance = 342;
             splitContainer1.TabIndex = 16;
             // 
             // splitContainer2
@@ -503,8 +513,8 @@
             splitContainer2.Panel2.Controls.Add(checkT);
             splitContainer2.Panel2.Controls.Add(ReadIntProg);
             splitContainer2.Panel2.Controls.Add(ReadIntText);
-            splitContainer2.Size = new Size(782, 402);
-            splitContainer2.SplitterDistance = 466;
+            splitContainer2.Size = new Size(812, 342);
+            splitContainer2.SplitterDistance = 483;
             splitContainer2.TabIndex = 0;
             // 
             // groupBox1
@@ -516,17 +526,99 @@
             groupBox1.Dock = DockStyle.Fill;
             groupBox1.Location = new Point(0, 0);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(782, 141);
+            groupBox1.Size = new Size(812, 120);
             groupBox1.TabIndex = 14;
             groupBox1.TabStop = false;
+            // 
+            // splitContainer3
+            // 
+            splitContainer3.Dock = DockStyle.Fill;
+            splitContainer3.Location = new Point(0, 0);
+            splitContainer3.Name = "splitContainer3";
+            splitContainer3.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            splitContainer3.Panel1.Controls.Add(splitContainer1);
+            // 
+            // splitContainer3.Panel2
+            // 
+            splitContainer3.Panel2.Controls.Add(MonitorView);
+            splitContainer3.Panel2.Controls.Add(clr);
+            splitContainer3.Panel2.Controls.Add(showVer);
+            splitContainer3.Panel2.Controls.Add(AutoScroll);
+            splitContainer3.Panel2.Controls.Add(showCom);
+            splitContainer3.Size = new Size(812, 547);
+            splitContainer3.SplitterDistance = 466;
+            splitContainer3.TabIndex = 17;
+            // 
+            // MonitorView
+            // 
+            MonitorView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            MonitorView.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            MonitorView.Location = new Point(3, 33);
+            MonitorView.Name = "MonitorView";
+            MonitorView.ReadOnly = true;
+            MonitorView.Size = new Size(806, 40);
+            MonitorView.TabIndex = 8;
+            MonitorView.Text = "";
+            // 
+            // clr
+            // 
+            clr.Font = new Font("Segoe UI", 9.75F);
+            clr.Location = new Point(329, 5);
+            clr.Name = "clr";
+            clr.Size = new Size(75, 23);
+            clr.TabIndex = 7;
+            clr.Text = "Clear";
+            clr.UseVisualStyleBackColor = true;
+            clr.Click += clr_Click;
+            // 
+            // showVer
+            // 
+            showVer.AutoSize = true;
+            showVer.Font = new Font("Segoe UI", 9.75F);
+            showVer.Location = new Point(200, 6);
+            showVer.Name = "showVer";
+            showVer.Size = new Size(75, 21);
+            showVer.TabIndex = 5;
+            showVer.Text = "Versions";
+            showVer.UseVisualStyleBackColor = true;
+            // 
+            // AutoScroll
+            // 
+            AutoScroll.AutoSize = true;
+            AutoScroll.Checked = true;
+            AutoScroll.CheckState = CheckState.Checked;
+            AutoScroll.Font = new Font("Segoe UI", 9.75F);
+            AutoScroll.Location = new Point(12, 6);
+            AutoScroll.Name = "AutoScroll";
+            AutoScroll.Size = new Size(89, 21);
+            AutoScroll.TabIndex = 4;
+            AutoScroll.Text = "Auto scroll";
+            AutoScroll.UseVisualStyleBackColor = true;
+            // 
+            // showCom
+            // 
+            showCom.AutoSize = true;
+            showCom.Checked = true;
+            showCom.Font = new Font("Segoe UI", 9.75F);
+            showCom.Location = new Point(119, 6);
+            showCom.Name = "showCom";
+            showCom.Size = new Size(64, 21);
+            showCom.TabIndex = 6;
+            showCom.TabStop = true;
+            showCom.Text = "Comm";
+            showCom.UseVisualStyleBackColor = true;
+            showCom.CheckedChanged += showCom_CheckedChanged;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.LightGray;
-            ClientSize = new Size(782, 571);
-            Controls.Add(splitContainer1);
+            ClientSize = new Size(812, 571);
+            Controls.Add(splitContainer3);
             Controls.Add(statusStrip1);
             Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -552,6 +644,11 @@
             splitContainer2.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
+            splitContainer3.Panel1.ResumeLayout(false);
+            splitContainer3.Panel2.ResumeLayout(false);
+            splitContainer3.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
+            splitContainer3.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -595,5 +692,11 @@
         private SplitContainer splitContainer1;
         private SplitContainer splitContainer2;
         private GroupBox groupBox1;
+        private SplitContainer splitContainer3;
+        private Button clr;
+        private RadioButton showVer;
+        private CheckBox AutoScroll;
+        private RadioButton showCom;
+        private RichTextBox MonitorView;
     }
 }

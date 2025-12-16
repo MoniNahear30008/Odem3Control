@@ -1,4 +1,5 @@
 using System.Reflection;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace OdemControl
 {
@@ -492,6 +493,20 @@ namespace OdemControl
             db.StartPosition = FormStartPosition.CenterParent;
             db.Show();
             db.SetDebugForm(this);
+
+            Rectangle screen = Screen.PrimaryScreen.WorkingArea;
+
+            int totalWidth = this.Width + db.Width;
+            int startX = (screen.Width - totalWidth) / 2;
+            int y = (screen.Height - this.Height) / 2;
+
+            this.Location = new Point(startX, y);
+            db.Location = new Point(startX + this.Width, y);
+            //db.StartPosition = FormStartPosition.Manual;
+            //db.Location = new Point(
+            //    this.Location.X + this.Width,
+            //    this.Location.Y
+            //);
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -603,12 +618,15 @@ namespace OdemControl
         }
         public void LogMessage(string message)
         {
-            if (db != null)
+            if (showCom.Checked)
             {
-                if (!db.IsDisposed)
-                    db.UpdateMonitor(message);
+                MonitorView.AppendText(message + Environment.NewLine);
+                if (AutoScroll.Checked)
+                {
+                    MonitorView.SelectionStart = MonitorView.Text.Length;
+                    MonitorView.ScrollToCaret();
+                }
             }
-
             if (loggingEnabled && logFile != null)
             {
                 if (message.StartsWith("Reg write") & (message.Length > 80))
@@ -1009,8 +1027,31 @@ namespace OdemControl
                 MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
             }
-            else if (forceDbgMode)
+
+            if (!dbgMode)
+                splitContainer3.Panel2Collapsed = true;
+
+            if (forceDbgMode)
                 StartDbg();
+        }
+
+        private void showCom_CheckedChanged(object sender, EventArgs e)
+        {
+            MonitorView.Clear();
+            if (showVer.Checked)
+            {
+                Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.version.txt");
+                if (stream != null)
+                {
+                    StreamReader reader = new StreamReader(stream);
+                    string ver = reader.ReadToEnd();
+                    MonitorView.AppendText(ver);
+                }
+            }
+        }
+        private void clr_Click(object sender, EventArgs e)
+        {
+            MonitorView.Clear();
         }
     }
 
@@ -1046,7 +1087,6 @@ namespace OdemControl
                 Properties.Settings.Default.Save();
         }
     }
-
     public class deviceParameters
     {
         public uint Capture_Delay { get; set; }
@@ -1070,7 +1110,6 @@ namespace OdemControl
             Tx3_30_39 = 5050;
         }
     }
-
     public class scanMode
     {
         public int mirror { get; set;}
