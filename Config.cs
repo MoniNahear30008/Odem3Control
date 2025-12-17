@@ -20,6 +20,19 @@
             {(int)confStates.SET_OT_DELAY, 0xFF20003C}
         };
         public int lastOTdelay = 0;
+        public Dictionary<string, I2CConfig> I2CConf = new Dictionary<string, I2CConfig>()
+        {
+            {"Chirp AWG gain", new I2CConfig(3, 0x4B, 0x14, 0x1C)},
+            { "PM1 Control", new I2CConfig(3, 0x4A, 0x14, 0x1C)},
+            { "PM2 Control", new I2CConfig(3, 0x48, 0x14, 0x1C)},
+            { "LO", new I2CConfig(7, 0x4B, 0x14, 0x1C)},
+            {"TxSOA1", new I2CConfig(7, 0x4A, 0x14, 0x19)},
+            {"TxSOA2", new I2CConfig(7, 0x4A, 0x14, 0x1C)},
+            {"Tx3_0_9", new I2CConfig(7, 0x49, 0x14, 0x19)},
+            {"Tx3_10_19", new I2CConfig(7, 0x49, 0x14, 0x1C)},
+            {"Tx3_20_29", new I2CConfig(7, 0x48, 0x14, 0x19)},
+            {"Tx3_30_39", new I2CConfig(7, 0x48, 0x14, 0x1C)}
+        };
 
         private async Task cofigdeviceAsync(string wfPath)
         {
@@ -563,5 +576,26 @@
         SET_OT_DELAY,
         RUN_OPTOTUNE_CALIBRATION,
         DONE
+    }
+    public class I2CConfig
+    {
+        public int ch;
+        public int dev;
+        public int option;
+        public int reg;
+        public I2CConfig()
+        {
+            ch = 3;
+            dev = 0x4B;
+            option = 0x14;
+            reg = 0x1C;
+        }
+        public I2CConfig(int ich, int idev, int iopt, int ireg)
+        {
+            ch = ich;
+            dev = idev;
+            option = iopt;
+            reg = ireg;
+        }
     }
 }

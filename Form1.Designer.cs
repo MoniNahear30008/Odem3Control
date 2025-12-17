@@ -92,9 +92,9 @@
             textBox1 = new TextBox();
             WriteReg = new Button();
             RegsNames = new ComboBox();
-            label5 = new Label();
             regVal = new TextBox();
             regAdd = new TextBox();
+            label5 = new Label();
             resetDSP = new Button();
             OTDelay = new NumericUpDown();
             wrOTDelay = new Button();
@@ -125,6 +125,7 @@
             pwBox = new GroupBox();
             pw = new TextBox();
             timer3 = new System.Windows.Forms.Timer(components);
+            label8 = new Label();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -714,6 +715,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(label8);
             tabPage1.Controls.Add(groupBox4);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
@@ -783,7 +785,7 @@
             // 
             I2Cval.Location = new Point(348, 60);
             I2Cval.Name = "I2Cval";
-            I2Cval.Size = new Size(82, 27);
+            I2Cval.Size = new Size(114, 27);
             I2Cval.TabIndex = 8;
             // 
             // groupBox3
@@ -841,9 +843,9 @@
             groupBox2.Controls.Add(groupBox5);
             groupBox2.Controls.Add(WriteReg);
             groupBox2.Controls.Add(RegsNames);
-            groupBox2.Controls.Add(label5);
             groupBox2.Controls.Add(regVal);
             groupBox2.Controls.Add(regAdd);
+            groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Segoe UI", 11.25F);
             groupBox2.Location = new Point(15, 82);
             groupBox2.Name = "groupBox2";
@@ -888,6 +890,20 @@
             RegsNames.TabIndex = 9;
             RegsNames.SelectedIndexChanged += RegsNames_SelectedIndexChanged;
             // 
+            // regVal
+            // 
+            regVal.Location = new Point(262, 60);
+            regVal.Name = "regVal";
+            regVal.Size = new Size(102, 27);
+            regVal.TabIndex = 8;
+            // 
+            // regAdd
+            // 
+            regAdd.Location = new Point(79, 59);
+            regAdd.Name = "regAdd";
+            regAdd.Size = new Size(90, 27);
+            regAdd.TabIndex = 8;
+            // 
             // label5
             // 
             label5.AutoSize = true;
@@ -897,24 +913,10 @@
             label5.TabIndex = 7;
             label5.Text = "Addr: 0x                                   Value";
             // 
-            // regVal
-            // 
-            regVal.Location = new Point(282, 60);
-            regVal.Name = "regVal";
-            regVal.Size = new Size(82, 27);
-            regVal.TabIndex = 8;
-            // 
-            // regAdd
-            // 
-            regAdd.Location = new Point(69, 59);
-            regAdd.Name = "regAdd";
-            regAdd.Size = new Size(73, 27);
-            regAdd.TabIndex = 8;
-            // 
             // resetDSP
             // 
             resetDSP.Font = new Font("Segoe UI", 11.25F);
-            resetDSP.Location = new Point(277, 27);
+            resetDSP.Location = new Point(308, 27);
             resetDSP.Name = "resetDSP";
             resetDSP.Size = new Size(120, 29);
             resetDSP.TabIndex = 6;
@@ -926,7 +928,7 @@
             // 
             OTDelay.Font = new Font("Segoe UI", 11.25F);
             OTDelay.Increment = new decimal(new int[] { 10, 0, 0, 0 });
-            OTDelay.Location = new Point(159, 29);
+            OTDelay.Location = new Point(190, 29);
             OTDelay.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             OTDelay.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
             OTDelay.Name = "OTDelay";
@@ -939,7 +941,7 @@
             wrOTDelay.Font = new Font("Segoe UI", 11.25F);
             wrOTDelay.Location = new Point(15, 29);
             wrOTDelay.Name = "wrOTDelay";
-            wrOTDelay.Size = new Size(127, 27);
+            wrOTDelay.Size = new Size(169, 27);
             wrOTDelay.TabIndex = 6;
             wrOTDelay.Text = "Update OT Delay";
             wrOTDelay.UseVisualStyleBackColor = true;
@@ -1240,6 +1242,15 @@
             // 
             timer3.Tick += timer3_Tick;
             // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(21, 423);
+            label8.Name = "label8";
+            label8.Size = new Size(263, 17);
+            label8.TabIndex = 21;
+            label8.Text = "Use 0x prefix in value fields for Hex number";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -1283,6 +1294,7 @@
             splitContainer4.ResumeLayout(false);
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -1401,5 +1413,6 @@
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private System.Windows.Forms.Timer timer3;
+        private Label label8;
     }
 }

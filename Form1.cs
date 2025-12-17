@@ -1035,21 +1035,23 @@ namespace OdemControl
         {
             timer2.Stop();
 
+            splitContainer4.Panel2Collapsed = true;
+            this.Width = 750;
+
             if (noDevice)
             {
                 this.Enabled = false;
                 MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
+
             }
+            else
+            {
+                if (!dbgMode)
+                    splitContainer3.Panel2Collapsed = true;
 
-            splitContainer4.Panel2Collapsed = true;
-            this.Width = 750;
-
-
-            if (!dbgMode)
-                splitContainer3.Panel2Collapsed = true;
-
-            SetDebugView();
+                SetDebugView();
+            }
             //if (forceDbgMode)
             //    StartDbg();
         }
