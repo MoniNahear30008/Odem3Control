@@ -18,19 +18,6 @@ namespace OdemControl
             {"Retro level", 0xFF200070},
             {"OT delay", 0xFF20003C}
         };
-        Dictionary<string, List<uint>> I2Cs = new Dictionary<string, List<uint>>()
-        {
-            {"Chirp AWG gain", new List<uint>() {3, 0x4B, 0x1C, 0x7000}},
-            { "PM1 Control", new List<uint>() {3, 0x4A, 0x1C, 0}},
-            { "PM2 Control", new List<uint>() {3, 0x48, 0x1C, 0}},
-            { "LO", new List<uint>() {7, 0x4B, 0x1C, 0x7000}},
-            {"TxSOA1", new List<uint>() {7, 0x4A, 0x19, 0x2050}},
-            {"TxSOA2", new List<uint>() {7, 0x4A, 0x1C, 0x5050}},
-            {"Tx3_0_9", new List<uint>() {7, 0x49, 0x19, 0x5050}},
-            {"Tx3_10_19", new List<uint>() {7, 0x49, 0x1C, 0x5050}},
-            {"Tx3_20_29", new List<uint>() {7, 0x48, 0x19, 0x5050}},
-            {"Tx3_30_39", new List<uint>() {7, 0x48, 0x1C, 0x5050}}
-        };
         uint I2C_ch = 0;
         uint I2C_dev = 0;
         uint I2C_reg = 0;
@@ -103,7 +90,7 @@ namespace OdemControl
                 RegsNames.Items.Add(r);
             RegsNames.SelectedIndex = 0;
 
-            foreach (string r in I2Cs.Keys)
+            foreach (string r in I2CConf.Keys)
                 I2CsList.Items.Add(r);
             I2CsList.SelectedIndex = 0;
 

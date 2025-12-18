@@ -1282,10 +1282,10 @@ namespace OdemControl
         private void I2CsList_SelectedIndexChanged(object sender, EventArgs e)
         {
             string rn = I2CsList.SelectedItem as string;
-            I2C_ch = I2Cs[rn][0];
-            I2C_dev = I2Cs[rn][1];
-            I2C_reg = I2Cs[rn][2];
-            I2C_val = I2Cs[rn][3];
+            I2C_ch = I2CConf[rn].ch;
+            I2C_dev = I2CConf[rn].dev;
+            I2C_reg = I2CConf[rn].reg;
+            I2C_val = I2CConf[rn].val;
             I2Cdest.Text = "Ch: " + I2C_ch.ToString() + " ;  Dev: 0x" + I2C_dev.ToString("X02") +
                 "; Reg: 0x" + I2C_reg.ToString("X02");
             I2Cval.Text = "0x" + I2C_val.ToString("X04");

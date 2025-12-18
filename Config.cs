@@ -22,16 +22,16 @@
         public int lastOTdelay = 0;
         public Dictionary<string, I2CConfig> I2CConf = new Dictionary<string, I2CConfig>()
         {
-            {"Chirp AWG gain", new I2CConfig(3, 0x4B, 0x14, 0x1C)},
-            { "PM1 Control", new I2CConfig(3, 0x4A, 0x14, 0x1C)},
-            { "PM2 Control", new I2CConfig(3, 0x48, 0x14, 0x1C)},
-            { "LO", new I2CConfig(7, 0x4B, 0x14, 0x1C)},
-            {"TxSOA1", new I2CConfig(7, 0x4A, 0x14, 0x19)},
-            {"TxSOA2", new I2CConfig(7, 0x4A, 0x14, 0x1C)},
-            {"Tx3_0_9", new I2CConfig(7, 0x49, 0x14, 0x19)},
-            {"Tx3_10_19", new I2CConfig(7, 0x49, 0x14, 0x1C)},
-            {"Tx3_20_29", new I2CConfig(7, 0x48, 0x14, 0x19)},
-            {"Tx3_30_39", new I2CConfig(7, 0x48, 0x14, 0x1C)}
+            {"Chirp AWG gain", new I2CConfig(3, 0x4B, 0x14, 0x1C, 0x7000)},
+            {"PM1", new I2CConfig(3, 0x4A, 0x14, 0x1C, 0)},
+            {"PM2", new I2CConfig(3, 0x48, 0x14, 0x1C, 0)},
+            {"LO", new I2CConfig(7, 0x4B, 0x14, 0x1C, 0x7000)},
+            {"TxSOA1", new I2CConfig(7, 0x4A, 0x14, 0x19, 0x2050)},
+            {"TxSOA2", new I2CConfig(7, 0x4A, 0x14, 0x1C, 0x5050)},
+            {"Tx3_0_9", new I2CConfig(7, 0x49, 0x14, 0x19, 0x5050)},
+            {"Tx3_10_19", new I2CConfig(7, 0x49, 0x14, 0x1C, 0x5050)},
+            {"Tx3_20_29", new I2CConfig(7, 0x48, 0x14, 0x19, 0x5050)},
+            {"Tx3_30_39", new I2CConfig(7, 0x48, 0x14, 0x1C, 0x5050)}
         };
 
         private async Task cofigdeviceAsync(string wfPath)
@@ -192,6 +192,7 @@
                             deviceState.Text = "Configuring: SET_CHIRP_GAIN";
                         this.Refresh();
 
+//                        Error = WriteI2CWaitResp(I2CConf["Chirp_AWG_gain"], new List<uint> { (uint)deviceParameters["Chirp_AWG_gain"] });
                         Error = WriteI2CWaitResp(3, 0x4B, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Chirp_AWG_gain"] });
                         if (Error.Length > 0)
                         {
@@ -206,6 +207,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_PM1_CONTROL";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["PM1"], new List<uint> { (uint)GeneralParameters["PM1"] });
                         Error = WriteI2CWaitResp(3, 0x4A, 0x14, 0x1C, new List<uint> { (uint)GeneralParameters["PM1"] });
                         if (Error.Length > 0)
                         {
@@ -217,6 +219,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_PM2_CONTROL";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["PM2"], new List<uint> { (uint)GeneralParameters["PM2"] });
                         Error = WriteI2CWaitResp(3, 0x48, 0x14, 0x1C, new List<uint> { (uint)GeneralParameters["PM2"] });
                         if (Error.Length > 0)
                         {
@@ -263,6 +266,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_LO";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["LO"], new List<uint> { (uint)deviceParameters["LO"] });
                         Error = WriteI2CWaitResp(7, 0x4B, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["LO"] });
                         if (Error.Length > 0)
                         {
@@ -278,6 +282,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX_SOA1";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["TxSOA1"], new List<uint> { (uint)deviceParameters["TxSOA1"] });
                         Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x19, new List<uint> { (uint)deviceParameters["TxSOA1"] });
                         if (Error.Length > 0)
                         {
@@ -293,6 +298,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX_SOA2";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["TxSOA2"], new List<uint> { (uint)deviceParameters["TxSOA2"] });
                         Error = WriteI2CWaitResp(7, 0x4A, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["TxSOA2"] });
                         if (Error.Length > 0)
                         {
@@ -308,6 +314,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_0_9";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["Tx3_0_9"], new List<uint> { (uint)deviceParameters["Tx3_0_9"] });
                         Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x19, new List<uint> { (uint)deviceParameters["Tx3_0_9"] });
                         if (Error.Length > 0)
                         {
@@ -323,6 +330,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_10_19";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["Tx3_10_19"], new List<uint> { (uint)deviceParameters["Tx3_10_19"] });
                         Error = WriteI2CWaitResp(7, 0x49, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Tx3_10_19"] });
                         if (Error.Length > 0)
                         {
@@ -338,6 +346,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_20_29";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["Tx3_20_29"], new List<uint> { (uint)deviceParameters["Tx3_20_29"] });
                         Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x19, new List<uint> { (uint)deviceParameters["Tx3_20_29"] });
                         if (Error.Length > 0)
                         {
@@ -353,6 +362,7 @@
                         if (debugmodeEnabled)
                             deviceState.Text = "Configuring: SET_TX3_30_39";
                         this.Refresh();
+//                        Error = WriteI2CWaitResp(I2CConf["Tx3_30_39"], new List<uint> { (uint)deviceParameters["Tx3_30_39"] });
                         Error = WriteI2CWaitResp(7, 0x48, 0x14, 0x1C, new List<uint> { (uint)deviceParameters["Tx3_30_39"] });
                         if (Error.Length > 0)
                         {
@@ -579,23 +589,26 @@
     }
     public class I2CConfig
     {
-        public int ch;
-        public int dev;
-        public int option;
-        public int reg;
+        public uint ch;
+        public uint dev;
+        public uint option;
+        public uint reg;
+        public uint val;
         public I2CConfig()
         {
             ch = 3;
             dev = 0x4B;
             option = 0x14;
             reg = 0x1C;
+            val = 0;
         }
-        public I2CConfig(int ich, int idev, int iopt, int ireg)
+        public I2CConfig(uint ich, uint idev, uint iopt, uint ireg, uint ival)
         {
             ch = ich;
             dev = idev;
             option = iopt;
             reg = ireg;
+            val = ival;
         }
     }
 }
