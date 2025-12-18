@@ -5,7 +5,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.00.00";
+        string version = "2.00.01";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -562,6 +562,9 @@ namespace OdemControl
                     return;
                 }
             }
+
+            LogMessage("Update device " + devicesList[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
+                + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
 
             Dictionary<string, int> dp = OT_Delay[devicesList[appSetting.deviceNum]] as Dictionary<string, int>;
             foreach (string m in dp.Keys)
