@@ -1,11 +1,12 @@
 using System.Reflection;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.00.01";
+        string version = "2.00.02";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -61,6 +62,10 @@ namespace OdemControl
         public Form1()
         {
             InitializeComponent();
+
+            splitContainer3.Panel2Collapsed = true;
+            splitContainer4.Panel2Collapsed = true;
+            this.Width = 750;
 
             string path = @"C:\Lidwave";
             if (!Directory.Exists(path))
@@ -952,8 +957,8 @@ namespace OdemControl
             if (Error.Length > 0)
             {
                 LogMessage("Streaming command: " + Error);
-                string smsg = Error.Replace("\0","") + "\nRestart ODEM and App";
-                MessageBox.Show(smsg , "Start Streaming Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string smsg = Error.Replace("\0", "") + "\nRestart ODEM and App";
+                MessageBox.Show(smsg, "Start Streaming Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
@@ -1038,9 +1043,6 @@ namespace OdemControl
         {
             timer2.Stop();
 
-            splitContainer4.Panel2Collapsed = true;
-            this.Width = 750;
-
             if (noDevice)
             {
                 this.Enabled = false;
@@ -1050,13 +1052,9 @@ namespace OdemControl
             }
             else
             {
-                if (!dbgMode)
-                    splitContainer3.Panel2Collapsed = true;
-
+                splitContainer3.Panel2Collapsed = !dbgMode;
                 SetDebugView();
             }
-            //if (forceDbgMode)
-            //    StartDbg();
         }
 
         private void showCom_CheckedChanged(object sender, EventArgs e)
@@ -1115,6 +1113,9 @@ namespace OdemControl
                     break;
                 case "WrVec":
                     WrVec.BackColor = SystemColors.Control;
+                    break;
+                case "stopOT":
+                    stopOT.BackColor = SystemColors.Control;
                     break;
             }
         }
@@ -1351,6 +1352,17 @@ namespace OdemControl
         private void customConfig_Click(object sender, EventArgs e)
         {
             CustomCofig();
+        }
+
+        private void stopOT_Click(object sender, EventArgs e)
+        {
+            string Error = SendStopCmd();
+            if (Error.Length > 0)
+                stopOT.BackColor = Color.Red;
+            else
+                stopOT.BackColor = Color.Lime;
+            pushed = "stopOT";
+            timer3.Start();
         }
     }
 

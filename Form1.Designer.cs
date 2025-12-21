@@ -76,6 +76,7 @@
             splitContainer4 = new SplitContainer();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            label8 = new Label();
             groupBox4 = new GroupBox();
             I2CsList = new ComboBox();
             WriteI2C = new Button();
@@ -95,6 +96,7 @@
             regVal = new TextBox();
             regAdd = new TextBox();
             label5 = new Label();
+            stopOT = new Button();
             resetDSP = new Button();
             OTDelay = new NumericUpDown();
             wrOTDelay = new Button();
@@ -125,7 +127,6 @@
             pwBox = new GroupBox();
             pw = new TextBox();
             timer3 = new System.Windows.Forms.Timer(components);
-            label8 = new Label();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -719,6 +720,7 @@
             tabPage1.Controls.Add(groupBox4);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
+            tabPage1.Controls.Add(stopOT);
             tabPage1.Controls.Add(resetDSP);
             tabPage1.Controls.Add(OTDelay);
             tabPage1.Controls.Add(wrOTDelay);
@@ -729,6 +731,15 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Control";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(21, 423);
+            label8.Name = "label8";
+            label8.Size = new Size(263, 17);
+            label8.TabIndex = 21;
+            label8.Text = "Use 0x prefix in value fields for Hex number";
             // 
             // groupBox4
             // 
@@ -913,10 +924,21 @@
             label5.TabIndex = 7;
             label5.Text = "Addr: 0x                                   Value";
             // 
+            // stopOT
+            // 
+            stopOT.Font = new Font("Segoe UI", 11.25F);
+            stopOT.Location = new Point(466, 28);
+            stopOT.Name = "stopOT";
+            stopOT.Size = new Size(120, 29);
+            stopOT.TabIndex = 6;
+            stopOT.Text = "Stop OT";
+            stopOT.UseVisualStyleBackColor = true;
+            stopOT.Click += stopOT_Click;
+            // 
             // resetDSP
             // 
             resetDSP.Font = new Font("Segoe UI", 11.25F);
-            resetDSP.Location = new Point(308, 27);
+            resetDSP.Location = new Point(308, 28);
             resetDSP.Name = "resetDSP";
             resetDSP.Size = new Size(120, 29);
             resetDSP.TabIndex = 6;
@@ -1240,16 +1262,8 @@
             // 
             // timer3
             // 
+            timer3.Interval = 2000;
             timer3.Tick += timer3_Tick;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(21, 423);
-            label8.Name = "label8";
-            label8.Size = new Size(263, 17);
-            label8.TabIndex = 21;
-            label8.Text = "Use 0x prefix in value fields for Hex number";
             // 
             // Form1
             // 
@@ -1414,5 +1428,6 @@
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private System.Windows.Forms.Timer timer3;
         private Label label8;
+        private Button stopOT;
     }
 }
