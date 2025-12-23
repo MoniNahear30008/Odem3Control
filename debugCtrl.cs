@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Renci.SshNet.Security;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace OdemControl
 {
@@ -107,6 +109,115 @@ namespace OdemControl
                 debugMode.Visible = false;
             }
 
+        }
+        private void GenerateEncryptedFile()
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>()
+            {
+                {"badGoodIndxs_High.txt", "" },
+                {"badGoodIndxs_Low.txt", "" },
+                {"128Bins_Final.txt", ""},
+                {"AWG.txt", ""},
+                {"2kWin.txt", ""},
+                {"blackmanHarris_DEC.txt", ""},
+                {"General_Params.csv","" }
+            };
+            int found = 0;
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select a folder";
+                dialog.ShowNewFolderButton = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string path = dialog.SelectedPath;
+                    folderName.Text = path;
+                    string[] files = Directory.GetFiles(path);
+                    foreach (string file in files)
+                    {
+                        if (file.EndsWith("AWG.txt"))
+                        {
+                            dict["AWG.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("badGoodIndxs_High.txt"))
+                        {
+                            dict["badGoodIndxs_High.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("badGoodIndxs_Low.txt"))
+                        {
+                            dict["badGoodIndxs_Low.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("128Bins_Final.txt"))
+                        {
+                            dict["128Bins_Final.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("blackmanHarris_DEC.txt"))
+                        {
+                            dict["blackmanHarris_DEC.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("2kWin.txt"))
+                        {
+                            dict["2kWin.txt"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("General_Params.csv"))
+                        {
+                            dict["General_Params.csv"] = file;
+                            found++;
+                        }
+                    }
+                }
+            }
+            if (found < dict.Count)
+            {
+                MessageBox.Show("Not all required files found in folder");
+                return;
+            }
+            List<string> allFiles = new List<string>();
+            foreach (KeyValuePair<string, string> f in dict)
+            {
+                allFiles.Add("New file: " + f.Key);
+                allFiles.AddRange(File.ReadAllLines(f.Value).ToList());
+            }
+
+            //var (key, iv) = CreateKey("StrongPassword123!");
+
+            //using Aes aes = Aes.Create();
+            //aes.Key = key;
+            //aes.IV = iv;
+
+            //using StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8);
+
+            //foreach (string s in input)
+            //{
+            //    byte[] plainBytes = Encoding.UTF8.GetBytes(s);
+            //    byte[] encrypted = aes.CreateEncryptor()
+            //        .TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+
+            //    writer.WriteLine(Convert.ToBase64String(encrypted));
+            //}
+
+        }
+        private void GetEncryptedFile()
+        {
+            //var output = new List<string>();
+
+            //using Aes aes = Aes.Create();
+            //aes.Key = key;
+            //aes.IV = iv;
+
+            //foreach (string line in File.ReadLines(filePath))
+            //{
+            //    byte[] encrypted = Convert.FromBase64String(line);
+            //    byte[] decrypted = aes.CreateDecryptor()
+            //        .TransformFinalBlock(encrypted, 0, encrypted.Length);
+
+            //    output.Add(Encoding.UTF8.GetString(decrypted));
+            //}
         }
         private void GetFIles()
         {

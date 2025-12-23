@@ -19,7 +19,7 @@ namespace OdemControl
         private int _port = 24871;
         NetworkStream stream;
         TcpClient client;
-        SshClient ssh;
+        public SshClient ssh;
 
         public event Action<string> OnMessageReceived;
 
@@ -230,6 +230,85 @@ namespace OdemControl
 
             string res = WaitWriteRespose(1);
             return res;
+        }
+        public string ReadReg(uint add, uint len, out List<uint> vals)
+        {
+            vals = new List<uint>();
+            List<byte> data = new List<byte>();
+            data.Add(0x02);         // Read command
+            data.Add(0x00);         // Reserved
+            data.AddRange(GetBytesBigEndian(add));
+            data.AddRange(GetBytesBigEndian(len));
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "01 00 ";
+                foreach (byte b in data.Skip(2))
+                    tx += b.ToString("X2") + " ";
+                LogMessage("Reg read: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            if (!isConnected) return "Device not connected";
+            if (stream.CanWrite == false)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
+
+            try
+            {
+                stream.Write(TxBuf);
+            }
+            catch (IOException)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
+
+            List<byte> resp = new List<byte>();
+            try
+            {
+                while (true)
+                {
+                    while (true)
+                    {
+                        this.Refresh();
+                        byte[] buffer = new byte[1024];
+                        int count = stream.Read(buffer, 0, buffer.Length);
+                        resp.AddRange(new List<byte>(buffer.Take(count)));
+                        // ACK/NACK respons
+                        if (resp.Count >= 8)
+                        {
+                            if ((resp[0] == 0) && (resp[1] == 2))
+                            {
+                                LogMessage("Command pass");
+                                vals.Add(resp[8]);
+                                vals.Add(resp[9]);
+                                vals.Add(resp[10]);
+                                vals.Add(resp[11]);
+                                return "";
+                            }
+                            else if (resp[0] == 1)
+                            {
+                                LogMessage("Command fail");
+                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
+                                if (loggingEnabled)
+                                    LogMessage("Reg write response: " + s);
+                                return s;
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                    DevieLost();
+                return "Device not reponding";
+
+            }
         }
         public string WriteI2CWaitResp(I2CConfig Cfg, List<uint> vals)
         {
@@ -645,10 +724,10 @@ namespace OdemControl
                 return "Device not reponding";
             }
             
-            string res = WaitReadRespose(8, option, out vals, waitmsg);
+            string res = WaitI2CReadRespose(8, option, out vals, waitmsg);
             return res;
         }
-        private string WaitReadRespose(int cmd, uint option, out List<uint> vals, bool waitmsg = true)
+        private string WaitI2CReadRespose(int cmd, uint option, out List<uint> vals, bool waitmsg = true)
         {
             vals = null;
             int stepNum = 0;

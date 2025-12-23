@@ -1,4 +1,8 @@
 ===========================================
+23/12/25: Version 2.01.00: 
+	- Update SN0056 and SN0057 parameters and files
+
+===========================================
 21/12/25: Version 2.00.02: 
 	- Add stop OT in debug mode
 

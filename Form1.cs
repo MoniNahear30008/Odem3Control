@@ -6,7 +6,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.00.02";
+        string version = "2.01.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -16,7 +16,7 @@ namespace OdemControl
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
         public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
-        private List<string> devicesList = new List<string>();
+        public List<string> devicesList = new List<string>();
         int confState = (int)confStates.IDLE;
         public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
         {
@@ -178,16 +178,16 @@ namespace OdemControl
             }
 
             // Get scan modes from csv file
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.Devices_Params.csv");
-            if (stream == null)
-            {
-                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            StreamReader reader = new StreamReader(stream);
-            string allparams = reader.ReadToEnd();
-            List<string> paramsList = allparams.Split("\r\n").ToList();
-            List<string> dvs = paramsList[0].Substring(paramsList[0].IndexOf("SN")).Split(',').ToList();
+            //Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.Devices_Params.csv");
+            //if (stream == null)
+            //{
+            //    MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return false;
+            //}
+            //StreamReader reader = new StreamReader(stream);
+//            string allparams = reader.ReadToEnd();
+//            List<string> paramsList = allparams.Split("\r\n").ToList();
+//            List<string> dvs = paramsList[0].Substring(paramsList[0].IndexOf("SN")).Split(',').ToList();
 
 
             // configuration files dictionaries
@@ -208,13 +208,13 @@ namespace OdemControl
             ModeParams.Rows.Add("frame rate", ".. FPS");
 
             // Get scan modes from csv file
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
             if (stream == null)
             {
                 MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
-            reader = new StreamReader(stream);
+            StreamReader reader = new StreamReader(stream);
             string allmodes = reader.ReadToEnd();
             List<string> allmodesList = allmodes.Split("\r\n").ToList();
             modes = allmodesList[0].Split(",").ToList();
@@ -439,8 +439,8 @@ namespace OdemControl
             }
             else
             {
-                GeneralParameters["CFAR"] = 0x00000404;
-                GeneralParameters["Spurs"] = 0x20023C78;
+                GeneralParameters["CFAR"] = 0x00000303;
+                GeneralParameters["Spurs"] = 0x70033C78;
             }
 
             GeneralParameters["Retro"] = 10000;
@@ -1091,7 +1091,6 @@ namespace OdemControl
                     MessageBox.Show("Incorrect Password");
                 }
             }
-
         }
 
         private void timer3_Tick(object sender, EventArgs e)
@@ -1116,6 +1115,9 @@ namespace OdemControl
                     break;
                 case "stopOT":
                     stopOT.BackColor = SystemColors.Control;
+                    break;
+                case "getVer":
+                    getVer.BackColor = SystemColors.Control;
                     break;
             }
         }
@@ -1363,6 +1365,49 @@ namespace OdemControl
                 stopOT.BackColor = Color.Lime;
             pushed = "stopOT";
             timer3.Start();
+        }
+
+        private void getVer_Click(object sender, EventArgs e)
+        {
+            fpgaVer.Text = "FPGA Version: ";
+            List<uint> ver = new List<uint>();
+            string err = ReadReg(0xFF200018, 1, out ver);
+            if (err.Length > 0)
+                getVer.BackColor = Color.Red;
+            else
+            {
+                getVer.BackColor = Color.Lime;
+                string f = "FPGA Version: 0x" + ver[3].ToString("X02") + " " + ver[0].ToString() + " Channels";
+                if (ver[2] == 1)
+                    f += " (Debug)";
+                fpgaVer.Text = f;
+            }
+            pushed = "getVer";
+            timer3.Start();
+        }
+
+        private void upgradeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //if (!isConnected)
+            //{
+            //    MessageBox.Show("Device not connected");
+            //    return;
+            //}
+
+            //if (deviceConfigured)
+            //{
+            //    MessageBox.Show("Restart ODEM without configuration before upgrading");
+            //    return;
+
+            //}
+
+            upgrade ug = new upgrade(this);
+            ug.ShowDialog();
+        }
+
+        private void genEncypt_Click(object sender, EventArgs e)
+        {
+            GenerateEncryptedFile();
         }
     }
 
