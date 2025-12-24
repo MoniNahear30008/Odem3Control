@@ -25,6 +25,7 @@ namespace OdemControl
 
         private void DevieLost()
         {
+            deviceConfigured = false;
             LogMessage("Disconnecting from device...");
             isConnected = false;
             if (client != null)

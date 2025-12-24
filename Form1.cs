@@ -6,7 +6,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.01.00";
+        string version = "2.01.01";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -177,19 +177,6 @@ namespace OdemControl
                 return true;
             }
 
-            // Get scan modes from csv file
-            //Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Devices.Devices_Params.csv");
-            //if (stream == null)
-            //{
-            //    MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return false;
-            //}
-            //StreamReader reader = new StreamReader(stream);
-//            string allparams = reader.ReadToEnd();
-//            List<string> paramsList = allparams.Split("\r\n").ToList();
-//            List<string> dvs = paramsList[0].Substring(paramsList[0].IndexOf("SN")).Split(',').ToList();
-
-
             // configuration files dictionaries
             confFiles.Add("badGoodIndxs_High", new List<uint>());
             confFiles.Add("badGoodIndxs_Low", new List<uint>());
@@ -322,6 +309,8 @@ namespace OdemControl
             {
                 List<string> parts = otdl[l].Split(',').ToList();
                 string modeName = parts[0];
+                if (modeName == "")
+                    continue;
                 ot.Add(modeName, new List<int>());
                 for (int i = 1; i < parts.Count(); i++)
                 {
@@ -365,14 +354,14 @@ namespace OdemControl
         }
         private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
         {
+            updateScanMode(scanMode.SelectedIndex);
+            streamBox(false);
             if (deviceConfigured)
             {
                 MessageBox.Show("Please restart device and reconnect before changing scan mode");
                 DevieLost();
                 return;
             }
-            updateScanMode(scanMode.SelectedIndex);
-            streamBox(false);
         }
         private void streamBox(bool enable)
         {

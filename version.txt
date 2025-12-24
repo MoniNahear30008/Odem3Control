@@ -1,4 +1,8 @@
 ===========================================
+24/12/25: Version 2.01.01: 
+	- Update scan mode table
+
+===========================================
 23/12/25: Version 2.01.00: 
 	- Update SN0056 and SN0057 parameters and files
 

@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <None Remove="Devices\blackmanHarris_DEC.txt" />
-    <None Remove="Devices\Devices_Params.csv" />
     <None Remove="Devices\SN0051\128Bins_Final.txt" />
     <None Remove="Devices\SN0051\2kWin.txt" />
     <None Remove="Devices\SN0051\AWG.txt" />
@@ -79,7 +78,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Devices\blackmanHarris_DEC.txt" />
-    <EmbeddedResource Include="Devices\Devices_Params.csv" />
     <EmbeddedResource Include="Devices\SN0051\128Bins_Final.txt" />
     <EmbeddedResource Include="Devices\SN0051\2kWin.txt" />
     <EmbeddedResource Include="Devices\SN0051\AWG.txt" />

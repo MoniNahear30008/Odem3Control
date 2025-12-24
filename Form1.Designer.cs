@@ -66,7 +66,6 @@
             timer2 = new System.Windows.Forms.Timer(components);
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
-            groupBox1 = new GroupBox();
             splitContainer3 = new SplitContainer();
             MonitorView = new RichTextBox();
             clr = new Button();
@@ -146,7 +145,6 @@
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
-            groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
             splitContainer3.Panel1.SuspendLayout();
             splitContainer3.Panel2.SuspendLayout();
@@ -431,17 +429,17 @@
             // 
             // streaming
             // 
-            streaming.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             streaming.AutoSize = true;
             streaming.BackColor = Color.Green;
             streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             streaming.ForeColor = Color.White;
-            streaming.Location = new Point(285, 80);
-            streaming.Margin = new Padding(4, 0, 4, 0);
+            streaming.Location = new Point(261, 57);
+            streaming.Margin = new Padding(20);
             streaming.Name = "streaming";
             streaming.Size = new Size(182, 25);
             streaming.TabIndex = 1;
             streaming.Text = "Device is streaming";
+            streaming.TextAlign = ContentAlignment.MiddleCenter;
             streaming.Visible = false;
             // 
             // coldLaser
@@ -449,7 +447,7 @@
             coldLaser.AutoSize = true;
             coldLaser.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             coldLaser.ForeColor = Color.Orange;
-            coldLaser.Location = new Point(186, 25);
+            coldLaser.Location = new Point(182, 18);
             coldLaser.Margin = new Padding(4, 0, 4, 0);
             coldLaser.Name = "coldLaser";
             coldLaser.Size = new Size(345, 19);
@@ -459,15 +457,14 @@
             // 
             // sStop
             // 
-            sStop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             sStop.BackColor = Color.Red;
             sStop.Enabled = false;
             sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(515, 52);
-            sStop.Margin = new Padding(4, 3, 4, 3);
+            sStop.Location = new Point(536, 41);
+            sStop.Margin = new Padding(10);
             sStop.Name = "sStop";
-            sStop.Size = new Size(181, 67);
+            sStop.Size = new Size(149, 61);
             sStop.TabIndex = 0;
             sStop.Text = "Stop streaming";
             sStop.UseVisualStyleBackColor = false;
@@ -475,14 +472,14 @@
             // 
             // sStart
             // 
-            sStart.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            sStart.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             sStart.BackColor = Color.Green;
             sStart.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(33, 52);
-            sStart.Margin = new Padding(4, 3, 4, 3);
+            sStart.Location = new Point(19, 41);
+            sStart.Margin = new Padding(10);
             sStart.Name = "sStart";
-            sStart.Size = new Size(181, 67);
+            sStart.Size = new Size(149, 61);
             sStart.TabIndex = 0;
             sStart.Text = "Start streaming";
             sStart.UseVisualStyleBackColor = false;
@@ -555,7 +552,10 @@
             // 
             // splitContainer1.Panel2
             // 
-            splitContainer1.Panel2.Controls.Add(groupBox1);
+            splitContainer1.Panel2.Controls.Add(streaming);
+            splitContainer1.Panel2.Controls.Add(sStart);
+            splitContainer1.Panel2.Controls.Add(sStop);
+            splitContainer1.Panel2.Controls.Add(coldLaser);
             splitContainer1.Size = new Size(717, 477);
             splitContainer1.SplitterDistance = 348;
             splitContainer1.TabIndex = 16;
@@ -594,19 +594,6 @@
             splitContainer2.Size = new Size(717, 348);
             splitContainer2.SplitterDistance = 436;
             splitContainer2.TabIndex = 0;
-            // 
-            // groupBox1
-            // 
-            groupBox1.Controls.Add(sStart);
-            groupBox1.Controls.Add(coldLaser);
-            groupBox1.Controls.Add(sStop);
-            groupBox1.Controls.Add(streaming);
-            groupBox1.Dock = DockStyle.Fill;
-            groupBox1.Location = new Point(0, 0);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(717, 125);
-            groupBox1.TabIndex = 14;
-            groupBox1.TabStop = false;
             // 
             // splitContainer3
             // 
@@ -1326,7 +1313,7 @@
             // upgradeToolStripMenuItem
             // 
             upgradeToolStripMenuItem.Name = "upgradeToolStripMenuItem";
-            upgradeToolStripMenuItem.Size = new Size(180, 22);
+            upgradeToolStripMenuItem.Size = new Size(119, 22);
             upgradeToolStripMenuItem.Text = "Upgrade";
             upgradeToolStripMenuItem.Click += upgradeToolStripMenuItem_Click;
             // 
@@ -1343,6 +1330,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Margin = new Padding(4, 3, 4, 3);
+            MinimumSize = new Size(750, 650);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ODEM Control by Lidwave";
@@ -1354,6 +1342,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
+            splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
             splitContainer2.Panel1.ResumeLayout(false);
@@ -1362,8 +1351,6 @@
             splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
             splitContainer3.Panel1.ResumeLayout(false);
             splitContainer3.Panel2.ResumeLayout(false);
             splitContainer3.Panel2.PerformLayout();
@@ -1437,7 +1424,6 @@
         private System.Windows.Forms.Timer timer2;
         private SplitContainer splitContainer1;
         private SplitContainer splitContainer2;
-        private GroupBox groupBox1;
         private SplitContainer splitContainer3;
         private Button clr;
         private RadioButton showVer;
