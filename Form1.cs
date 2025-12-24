@@ -1377,18 +1377,17 @@ namespace OdemControl
 
         private void upgradeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //if (!isConnected)
-            //{
-            //    MessageBox.Show("Device not connected");
-            //    return;
-            //}
+            if (!isConnected)
+            {
+                MessageBox.Show("Device not connected");
+                return;
+            }
 
-            //if (deviceConfigured)
-            //{
-            //    MessageBox.Show("Restart ODEM without configuration before upgrading");
-            //    return;
-
-            //}
+            if (deviceConfigured)
+            {
+                MessageBox.Show("ODEM in running\nRestart ODEM and just connect");
+                return;
+            }
 
             upgrade ug = new upgrade(this);
             ug.ShowDialog();
@@ -1397,6 +1396,22 @@ namespace OdemControl
         private void genEncypt_Click(object sender, EventArgs e)
         {
             GenerateEncryptedFile();
+        }
+
+        private void getVersionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if ( !isConnected)
+            {
+                oVer.Text = "";
+                return;
+            }
+
+            List<uint> ver = new List<uint>();
+            string err = ReadReg(0xFF200018, 1, out ver);
+            if (err.Length > 0)
+                MessageBox.Show("Error reading version: " + err, "Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
+                oVer.Text = "Version: 0x" + ver[3].ToString("X02");
         }
     }
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -184,22 +185,26 @@ namespace OdemControl
                 allFiles.AddRange(File.ReadAllLines(f.Value).ToList());
             }
 
-            //var (key, iv) = CreateKey("StrongPassword123!");
+            // 32-byte (256-bit) key
+            byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
+            // 16-byte (128-bit) IV
+            byte[] iv = Convert.FromBase64String("h1V3fT9tQ+X6sE1sFvJ3Wg==");
 
-            //using Aes aes = Aes.Create();
-            //aes.Key = key;
-            //aes.IV = iv;
+            using Aes aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = iv;
 
-            //using StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8);
+            string filePath = "c:\\lidwave\\dev_info.dat";
+            using StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8);
 
-            //foreach (string s in input)
-            //{
-            //    byte[] plainBytes = Encoding.UTF8.GetBytes(s);
-            //    byte[] encrypted = aes.CreateEncryptor()
-            //        .TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+            foreach (string s in allFiles)
+            {
+                byte[] plainBytes = Encoding.UTF8.GetBytes(s);
+                byte[] encrypted = aes.CreateEncryptor()
+                    .TransformFinalBlock(plainBytes, 0, plainBytes.Length);
 
-            //    writer.WriteLine(Convert.ToBase64String(encrypted));
-            //}
+                writer.WriteLine(Convert.ToBase64String(encrypted));
+            }
 
         }
         private void GetEncryptedFile()

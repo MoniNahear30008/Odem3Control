@@ -66,6 +66,7 @@
             timer2 = new System.Windows.Forms.Timer(components);
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
+            oVer = new Label();
             splitContainer3 = new SplitContainer();
             MonitorView = new RichTextBox();
             clr = new Button();
@@ -132,6 +133,7 @@
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             upgradeToolStripMenuItem = new ToolStripMenuItem();
+            getVersionToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -568,6 +570,7 @@
             // 
             // splitContainer2.Panel1
             // 
+            splitContainer2.Panel1.Controls.Add(oVer);
             splitContainer2.Panel1.Controls.Add(ModeParams);
             splitContainer2.Panel1.Controls.Add(label1);
             splitContainer2.Panel1.Controls.Add(scanMode);
@@ -594,6 +597,14 @@
             splitContainer2.Size = new Size(717, 348);
             splitContainer2.SplitterDistance = 436;
             splitContainer2.TabIndex = 0;
+            // 
+            // oVer
+            // 
+            oVer.AutoSize = true;
+            oVer.Location = new Point(299, 73);
+            oVer.Name = "oVer";
+            oVer.Size = new Size(0, 21);
+            oVer.TabIndex = 16;
             // 
             // splitContainer3
             // 
@@ -737,7 +748,6 @@
             genEncypt.TabIndex = 23;
             genEncypt.Text = "Generate encypted file";
             genEncypt.UseVisualStyleBackColor = true;
-            genEncypt.Visible = false;
             genEncypt.Click += genEncypt_Click;
             // 
             // fpgaVer
@@ -1304,8 +1314,7 @@
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { upgradeToolStripMenuItem });
-            fileToolStripMenuItem.Enabled = false;
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { getVersionToolStripMenuItem, upgradeToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 20);
             fileToolStripMenuItem.Text = "File";
@@ -1313,9 +1322,16 @@
             // upgradeToolStripMenuItem
             // 
             upgradeToolStripMenuItem.Name = "upgradeToolStripMenuItem";
-            upgradeToolStripMenuItem.Size = new Size(119, 22);
+            upgradeToolStripMenuItem.Size = new Size(180, 22);
             upgradeToolStripMenuItem.Text = "Upgrade";
             upgradeToolStripMenuItem.Click += upgradeToolStripMenuItem_Click;
+            // 
+            // getVersionToolStripMenuItem
+            // 
+            getVersionToolStripMenuItem.Name = "getVersionToolStripMenuItem";
+            getVersionToolStripMenuItem.Size = new Size(180, 22);
+            getVersionToolStripMenuItem.Text = "Get version";
+            getVersionToolStripMenuItem.Click += getVersionToolStripMenuItem_Click;
             // 
             // Form1
             // 
@@ -1490,5 +1506,7 @@
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem upgradeToolStripMenuItem;
         private Button genEncypt;
+        private ToolStripMenuItem getVersionToolStripMenuItem;
+        private Label oVer;
     }
 }

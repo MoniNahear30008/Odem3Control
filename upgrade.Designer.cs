@@ -34,13 +34,14 @@
             ugFln = new Label();
             pwBox = new GroupBox();
             pw = new TextBox();
+            waitRes = new Label();
             pwBox.SuspendLayout();
             SuspendLayout();
             // 
             // DoUG
             // 
             DoUG.Enabled = false;
-            DoUG.Location = new Point(27, 91);
+            DoUG.Location = new Point(27, 109);
             DoUG.Name = "DoUG";
             DoUG.Size = new Size(133, 39);
             DoUG.TabIndex = 0;
@@ -73,7 +74,7 @@
             // ugFln
             // 
             ugFln.AutoSize = true;
-            ugFln.Location = new Point(180, 45);
+            ugFln.Location = new Point(27, 83);
             ugFln.Name = "ugFln";
             ugFln.Size = new Size(16, 15);
             ugFln.TabIndex = 3;
@@ -100,11 +101,22 @@
             pw.TabIndex = 0;
             pw.KeyDown += pw_KeyDown;
             // 
+            // waitRes
+            // 
+            waitRes.AutoSize = true;
+            waitRes.Location = new Point(176, 121);
+            waitRes.Name = "waitRes";
+            waitRes.Size = new Size(127, 15);
+            waitRes.TabIndex = 17;
+            waitRes.Text = "Waiting upgrade result";
+            waitRes.Visible = false;
+            // 
             // upgrade
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(488, 169);
+            ClientSize = new Size(427, 169);
+            Controls.Add(waitRes);
             Controls.Add(pwBox);
             Controls.Add(ugFln);
             Controls.Add(selFile);
@@ -115,6 +127,7 @@
             MinimizeBox = false;
             Name = "upgrade";
             SizeGripStyle = SizeGripStyle.Hide;
+            StartPosition = FormStartPosition.CenterParent;
             Text = "upgrade";
             pwBox.ResumeLayout(false);
             pwBox.PerformLayout();
@@ -130,5 +143,6 @@
         private Label ugFln;
         private GroupBox pwBox;
         private TextBox pw;
+        private Label waitRes;
     }
 }
