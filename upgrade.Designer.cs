@@ -34,7 +34,7 @@
             ugFln = new Label();
             pwBox = new GroupBox();
             pw = new TextBox();
-            waitRes = new Label();
+            progressBar1 = new ProgressBar();
             pwBox.SuspendLayout();
             SuspendLayout();
             // 
@@ -101,22 +101,21 @@
             pw.TabIndex = 0;
             pw.KeyDown += pw_KeyDown;
             // 
-            // waitRes
+            // progressBar1
             // 
-            waitRes.AutoSize = true;
-            waitRes.Location = new Point(176, 121);
-            waitRes.Name = "waitRes";
-            waitRes.Size = new Size(127, 15);
-            waitRes.TabIndex = 17;
-            waitRes.Text = "Waiting upgrade result";
-            waitRes.Visible = false;
+            progressBar1.Location = new Point(27, 154);
+            progressBar1.Maximum = 5;
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(133, 12);
+            progressBar1.TabIndex = 17;
+            progressBar1.Visible = false;
             // 
             // upgrade
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(427, 169);
-            Controls.Add(waitRes);
+            ClientSize = new Size(427, 178);
+            Controls.Add(progressBar1);
             Controls.Add(pwBox);
             Controls.Add(ugFln);
             Controls.Add(selFile);
@@ -143,6 +142,6 @@
         private Label ugFln;
         private GroupBox pwBox;
         private TextBox pw;
-        private Label waitRes;
+        private ProgressBar progressBar1;
     }
 }

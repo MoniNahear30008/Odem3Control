@@ -13,6 +13,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.WebRequestMethods;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace OdemControl
@@ -23,19 +24,23 @@ namespace OdemControl
         string passw;
         string ugFilename;
         StreamWriter logFile;
+        uint oVer = 0;
         public upgrade(Form1 parent)
         {
             InitializeComponent();
             this.parent = parent;
             passw = parent.devicesList[parent.appSetting.deviceNum];
-            string path = @"C:\Lidwave";
-            string logFileName = path + "\\upgrade.log";
-            logFile = new StreamWriter(logFileName, false);
-            logFile.WriteLine("Ugrade start " + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
         }
 
         private void DoUG_Click(object sender, EventArgs e)
         {
+            progressBar1.Value = 0;
+            string path = @"C:\Lidwave";
+            string logFileName = path + "\\upgrade.log";
+            logFile = new StreamWriter(logFileName, false);
+            logFile.WriteLine("Ugrade start " + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+            logFile.WriteLine("Current ODEM version: 0x" + oVer.ToString("X08"));
+
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
             // Load upgrade file
@@ -43,36 +48,36 @@ namespace OdemControl
             upgrade_LoadFile();
 
             // Check upgrade file on device - might be a problem - this check should be done on the PC side
-            logFile.WriteLine("Send ssh command: swupdate -i package.swu -v -n");
-            string err = "";
-            var result = parent.ssh.CreateCommand($"swupdate -i package.swu -v -n").Execute().Trim();
-            if (result.Contains("ERROR"))
-                err += " ERROR";
-            if (result.Contains(" handler "))
-                err += " handler";
-            if (result.Contains("parse"))
-                err += " parse";
+            logFile.WriteLine("Send ssh command: swupdate -i /tmp/package.swu -v -n");
+            var result = parent.ssh.CreateCommand($"swupdate -i /tmp/package.swu -v -n").Execute().Trim();
+            Thread.Sleep(1000); // wait for command to start
+            progressBar1.Value = 1;
+            this.Refresh();
+            bool pass = result.Contains("SWUpdate was successful");
 
             logFile.WriteLine("Package test result:");
             logFile.WriteLine(result);
 
-            if (err != "")
+            if (!pass)
             {
-                logFile.WriteLine("Package test failed - " + err);
-                if (MessageBox.Show("Upgrade package might be corrupted.\nPlease consult lidwave support\nIf approved click Yes to contiue", "Upgrade warning",                   // Window title
-                MessageBoxButtons.YesNo,MessageBoxIcon.Warning) != DialogResult.Yes)
-                {
-                    this.Cursor = Cursors.Default;
-                    this.Enabled = true;
-                    return;
-                }
+                logFile.WriteLine("Package test failed");
+                MessageBox.Show("Upgrade package might be corrupted.\n\nPlease consult Lidwave support", "Upgrade error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Cursor = Cursors.Default;
+                this.Enabled = true;
+                logFile.Close();
+                return;
             }
 
             // Send upgrade command
-            waitRes.Visible = true;
-            logFile.WriteLine("Send ssh command: swupdate -i package.swu -v");
-            result = parent.ssh.CreateCommand($"swupdate -i package.swu -v").Execute().Trim();
-            Thread.Sleep(20000); // wait for command to start
+            logFile.WriteLine("Send ssh command: swupdate -i /tmp/package.swu -v");
+            result = parent.ssh.CreateCommand($"swupdate -i /tmp/package.swu -v").Execute().Trim();
+            for (int i = 0; i < 4; i++)
+            {
+                Thread.Sleep(1000); // wait for command to start
+                progressBar1.Value = i + 2;
+                this.Refresh();
+            }
             logFile.WriteLine("Upgrade result:");
             logFile.WriteLine(result);
             logFile.Close();
@@ -80,15 +85,15 @@ namespace OdemControl
             this.Cursor = Cursors.Default;
             this.Enabled = true;
 
-            MessageBox.Show("ODEM upgraded:\n- Resart ODEM\n- Wait for 1 minute and try to connect\n- Read version", "Upgrade", MessageBoxButtons.OK);
-            parent.Close();
+            MessageBox.Show("ODEM upgraded:\n- Resart ODEM\n- Wait for 10 minute and try to connect\n- Read version", "Upgrade", MessageBoxButtons.OK);
+            this.Close();
         }
         private void upgrade_LoadFile()
         {
             using (var client = new ScpClient("192.168.2.24", "root", ""))
             {
                 client.Connect();
-                var stream = File.OpenRead(ugFilename);
+                var stream = System.IO.File.OpenRead(ugFilename);
                 client.Upload(stream, "/tmp/package.swu");
                 client.Disconnect();
             }
@@ -99,7 +104,6 @@ namespace OdemControl
             string err = parent.ReadReg(0xFF200018, 1, out ver);
             return err;
         }
-
         private void pw_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -115,12 +119,12 @@ namespace OdemControl
                         MessageBox.Show("Error reading ODEM version: " + err, "Upgrade", MessageBoxButtons.OK);
                         return;
                     }
-                    logFile.WriteLine("ODEM version: 0x" + ver[0].ToString("X02") +
-                        ver[1].ToString("X02") + ver[2].ToString("X02") + ver[3].ToString("X02"));
+                    oVer = (ver[0] << 24) | (ver[1] << 16) | (ver[2] << 8) | ver[3];
 
                     selFile.Visible = true;
                     DoUG.Visible = true;
                     ugFln.Visible = true;
+                    progressBar1.Visible = true;
                 }
                 else
                 {
@@ -128,9 +132,7 @@ namespace OdemControl
                     MessageBox.Show("Incorrect Password");
                 }
             }
-
         }
-
         private void selFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();

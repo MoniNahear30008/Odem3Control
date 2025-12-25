@@ -132,8 +132,8 @@
             timer3 = new System.Windows.Forms.Timer(components);
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
-            upgradeToolStripMenuItem = new ToolStripMenuItem();
             getVersionToolStripMenuItem = new ToolStripMenuItem();
+            upgradeToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ReadInt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
@@ -748,6 +748,7 @@
             genEncypt.TabIndex = 23;
             genEncypt.Text = "Generate encypted file";
             genEncypt.UseVisualStyleBackColor = true;
+            genEncypt.Visible = false;
             genEncypt.Click += genEncypt_Click;
             // 
             // fpgaVer
@@ -1319,19 +1320,19 @@
             fileToolStripMenuItem.Size = new Size(37, 20);
             fileToolStripMenuItem.Text = "File";
             // 
-            // upgradeToolStripMenuItem
-            // 
-            upgradeToolStripMenuItem.Name = "upgradeToolStripMenuItem";
-            upgradeToolStripMenuItem.Size = new Size(180, 22);
-            upgradeToolStripMenuItem.Text = "Upgrade";
-            upgradeToolStripMenuItem.Click += upgradeToolStripMenuItem_Click;
-            // 
             // getVersionToolStripMenuItem
             // 
             getVersionToolStripMenuItem.Name = "getVersionToolStripMenuItem";
             getVersionToolStripMenuItem.Size = new Size(180, 22);
             getVersionToolStripMenuItem.Text = "Get version";
             getVersionToolStripMenuItem.Click += getVersionToolStripMenuItem_Click;
+            // 
+            // upgradeToolStripMenuItem
+            // 
+            upgradeToolStripMenuItem.Name = "upgradeToolStripMenuItem";
+            upgradeToolStripMenuItem.Size = new Size(180, 22);
+            upgradeToolStripMenuItem.Text = "Upgrade";
+            upgradeToolStripMenuItem.Click += upgradeToolStripMenuItem_Click;
             // 
             // Form1
             // 

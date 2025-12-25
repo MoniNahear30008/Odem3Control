@@ -209,20 +209,26 @@ namespace OdemControl
         }
         private void GetEncryptedFile()
         {
-            //var output = new List<string>();
+            var output = new List<string>();
+            // 32-byte (256-bit) key
+            byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
+            // 16-byte (128-bit) IV
+            byte[] iv = Convert.FromBase64String("h1V3fT9tQ+X6sE1sFvJ3Wg==");
 
-            //using Aes aes = Aes.Create();
-            //aes.Key = key;
-            //aes.IV = iv;
+            using Aes aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = iv;
 
-            //foreach (string line in File.ReadLines(filePath))
-            //{
-            //    byte[] encrypted = Convert.FromBase64String(line);
-            //    byte[] decrypted = aes.CreateDecryptor()
-            //        .TransformFinalBlock(encrypted, 0, encrypted.Length);
+            string filePath = "c:\\lidwave\\dev_info.dat";
 
-            //    output.Add(Encoding.UTF8.GetString(decrypted));
-            //}
+            foreach (string line in File.ReadLines(filePath))
+            {
+                byte[] encrypted = Convert.FromBase64String(line);
+                byte[] decrypted = aes.CreateDecryptor()
+                    .TransformFinalBlock(encrypted, 0, encrypted.Length);
+
+                output.Add(Encoding.UTF8.GetString(decrypted));
+            }
         }
         private void GetFIles()
         {

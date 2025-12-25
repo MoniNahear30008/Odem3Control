@@ -6,7 +6,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.01.01";
+        string version = "2.02.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -907,6 +907,7 @@ namespace OdemControl
         }
         private async void connect_Click(object sender, EventArgs e)
         {
+            oVer.Text = "";
             bool tryconnect = !isConnected;
             this.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
@@ -1391,11 +1392,15 @@ namespace OdemControl
 
             upgrade ug = new upgrade(this);
             ug.ShowDialog();
+            for (int i = 0; i < tempTable.Rows.Count; i++)
+                tempTable.Rows[i].Cells[1].Value = "";
+            DevieLost();
         }
 
         private void genEncypt_Click(object sender, EventArgs e)
         {
             GenerateEncryptedFile();
+//            GetEncryptedFile();
         }
 
         private void getVersionToolStripMenuItem_Click(object sender, EventArgs e)

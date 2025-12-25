@@ -25,6 +25,7 @@ namespace OdemControl
 
         private void DevieLost()
         {
+            oVer.Text = "";
             deviceConfigured = false;
             LogMessage("Disconnecting from device...");
             isConnected = false;
