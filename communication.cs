@@ -312,9 +312,79 @@ namespace OdemControl
 
             }
         }
-        public string WriteI2CWaitResp(I2CConfig Cfg, List<uint> vals)
+        public string WriteEEPROM(uint ch, uint dev, uint option, uint reg, List<uint> vals)
         {
-            return WriteI2CWaitResp(Cfg.ch, Cfg.dev, Cfg.option, Cfg.reg, vals);
+            if (!isConnected) return "Device not connected";
+
+            byte[] regadd = GetBytesBigEndian(reg).ToArray();
+            List<byte> data = new List<byte>();
+            data.Add(0x07);         // command ID
+            data.Add(0x00);         // Bus
+            data.Add(0x70);         // Mux
+            data.Add((byte)ch);     // Mux channel
+            data.Add((byte)dev);    // Device
+            data.Add((byte)option); // I2C device register
+            data.AddRange(GetBytesBigEndian((uint)vals.Count));  // Number of values
+            switch (option & 0x30)
+            {
+                case 0x10:                  // 8 bits register address
+                    data.Add(regadd[3]);
+                    break;
+
+                case 0x20:                  // 16 bits register address
+                    data.Add(regadd[2]);
+                    data.Add(regadd[3]);
+                    break;
+
+                default:
+                    MessageBox.Show("Invalid I2C register address option");
+                    return "Invalid I2C register address option";
+            }
+            switch (option & 0xC)
+            {
+                case 0x0:                  // 8 bits value
+                    foreach (uint v in vals)
+                        data.Add((byte)v);
+                    break;
+
+                case 0x4:                  // 16 bits value
+                    foreach (uint v in vals)
+                    {
+                        data.Add((byte)(v >> 8));
+                        data.Add((byte)v);
+                    }
+                    break;
+
+                default:
+                    MessageBox.Show("Invalid I2C data size option");
+                    return "Invalid I2C data size option";
+            }
+
+            if (dataLoggingEnabled)
+            {
+                string tx = "";
+                foreach (byte b in data)
+                    tx += b.ToString("X2") + " ";
+                LogMessage("I2C write: " + tx);
+            }
+
+            byte[] TxBuf = data.ToArray();
+            if (stream.CanWrite == false)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
+            try
+            {
+                stream.Write(TxBuf);
+            }
+            catch (IOException)
+            {
+                DevieLost();
+                return "Device not reponding";
+            }
+            string res = WaitWriteRespose(7);
+            return res;
         }
         public string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
         {
@@ -670,7 +740,7 @@ namespace OdemControl
     
             }
         }
-        private string ReadI2C(uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals, bool waitmsg = true)
+        private string ReadI2C(uint bus, uint mux, uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals, bool waitmsg = true)
         {
             vals = null;
             if (!isConnected)
@@ -679,8 +749,8 @@ namespace OdemControl
             byte[] regadd = GetBytesBigEndian(reg).ToArray();
             List<byte> data = new List<byte>();
             data.Add(0x08);         // command ID
-            data.Add(0x00);         // Bus
-            data.Add(0x70);         // Mux
+            data.Add((byte)bus);         // Bus
+            data.Add((byte)mux);         // Mux
             data.Add((byte)ch);     // Mux channel
             data.Add((byte)dev);    // Device
             data.Add((byte)option); // I2C device register

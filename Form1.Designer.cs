@@ -66,6 +66,7 @@
             timer2 = new System.Windows.Forms.Timer(components);
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
+            ConnectedTo = new Label();
             oVer = new Label();
             splitContainer3 = new SplitContainer();
             MonitorView = new RichTextBox();
@@ -76,7 +77,11 @@
             splitContainer4 = new SplitContainer();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            groupBox1 = new GroupBox();
+            getEncyptedFile = new Button();
             genEncypt = new Button();
+            devSN = new Label();
+            devUID = new Label();
             fpgaVer = new Label();
             label8 = new Label();
             groupBox4 = new GroupBox();
@@ -99,6 +104,8 @@
             regAdd = new TextBox();
             label5 = new Label();
             stopOT = new Button();
+            setSN = new Button();
+            readUID = new Button();
             getVer = new Button();
             resetDSP = new Button();
             OTDelay = new NumericUpDown();
@@ -157,6 +164,7 @@
             splitContainer4.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            groupBox1.SuspendLayout();
             groupBox4.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -211,7 +219,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(39, 73);
+            label2.Location = new Point(35, 73);
             label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
             label2.Size = new Size(81, 21);
@@ -250,6 +258,7 @@
             devices.Size = new Size(158, 29);
             devices.TabIndex = 8;
             toolTip1.SetToolTip(devices, "Will automatic detected in future versions");
+            devices.Visible = false;
             devices.SelectedIndexChanged += devices_SelectedIndexChanged;
             // 
             // ReadIntProg
@@ -324,7 +333,7 @@
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(182, 133);
+            tempTable.Size = new Size(181, 170);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -357,7 +366,7 @@
             ModeParams.ReadOnly = true;
             ModeParams.RowHeadersVisible = false;
             ModeParams.RowHeadersWidth = 51;
-            ModeParams.Size = new Size(293, 269);
+            ModeParams.Size = new Size(290, 220);
             ModeParams.TabIndex = 1;
             // 
             // Column1
@@ -386,14 +395,14 @@
             scanMode.Location = new Point(17, 125);
             scanMode.Margin = new Padding(4, 3, 4, 3);
             scanMode.Name = "scanMode";
-            scanMode.Size = new Size(293, 29);
+            scanMode.Size = new Size(290, 29);
             scanMode.TabIndex = 0;
             scanMode.SelectedIndexChanged += scanMode_SelectedIndexChanged;
             // 
             // confDev
             // 
             confDev.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            confDev.Location = new Point(315, 253);
+            confDev.Location = new Point(322, 253);
             confDev.Margin = new Padding(4, 3, 4, 3);
             confDev.Name = "confDev";
             confDev.Size = new Size(102, 63);
@@ -406,7 +415,7 @@
             // 
             sensitivityHigh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             sensitivityHigh.AutoSize = true;
-            sensitivityHigh.Location = new Point(336, 202);
+            sensitivityHigh.Location = new Point(333, 202);
             sensitivityHigh.Margin = new Padding(4, 3, 4, 3);
             sensitivityHigh.Name = "sensitivityHigh";
             sensitivityHigh.Size = new Size(61, 25);
@@ -419,7 +428,7 @@
             SensitivityNormal.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             SensitivityNormal.AutoSize = true;
             SensitivityNormal.Checked = true;
-            SensitivityNormal.Location = new Point(336, 167);
+            SensitivityNormal.Location = new Point(333, 167);
             SensitivityNormal.Margin = new Padding(4, 3, 4, 3);
             SensitivityNormal.Name = "SensitivityNormal";
             SensitivityNormal.Size = new Size(81, 25);
@@ -435,7 +444,7 @@
             streaming.BackColor = Color.Green;
             streaming.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             streaming.ForeColor = Color.White;
-            streaming.Location = new Point(261, 57);
+            streaming.Location = new Point(261, 32);
             streaming.Margin = new Padding(20);
             streaming.Name = "streaming";
             streaming.Size = new Size(182, 25);
@@ -463,7 +472,7 @@
             sStop.Enabled = false;
             sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
-            sStop.Location = new Point(536, 41);
+            sStop.Location = new Point(536, 11);
             sStop.Margin = new Padding(10);
             sStop.Name = "sStop";
             sStop.Size = new Size(149, 61);
@@ -478,7 +487,7 @@
             sStart.BackColor = Color.Green;
             sStart.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStart.ForeColor = Color.White;
-            sStart.Location = new Point(19, 41);
+            sStart.Location = new Point(19, 11);
             sStart.Margin = new Padding(10);
             sStart.Name = "sStart";
             sStart.Size = new Size(149, 61);
@@ -530,7 +539,7 @@
             // 
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(336, 132);
+            label1.Location = new Point(333, 132);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(81, 21);
@@ -543,6 +552,7 @@
             // 
             // splitContainer1
             // 
+            splitContainer1.BorderStyle = BorderStyle.FixedSingle;
             splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Location = new Point(0, 0);
             splitContainer1.Name = "splitContainer1";
@@ -559,17 +569,19 @@
             splitContainer1.Panel2.Controls.Add(sStop);
             splitContainer1.Panel2.Controls.Add(coldLaser);
             splitContainer1.Size = new Size(717, 477);
-            splitContainer1.SplitterDistance = 348;
+            splitContainer1.SplitterDistance = 387;
             splitContainer1.TabIndex = 16;
             // 
             // splitContainer2
             // 
+            splitContainer2.BorderStyle = BorderStyle.FixedSingle;
             splitContainer2.Dock = DockStyle.Fill;
             splitContainer2.Location = new Point(0, 0);
             splitContainer2.Name = "splitContainer2";
             // 
             // splitContainer2.Panel1
             // 
+            splitContainer2.Panel1.Controls.Add(ConnectedTo);
             splitContainer2.Panel1.Controls.Add(oVer);
             splitContainer2.Panel1.Controls.Add(ModeParams);
             splitContainer2.Panel1.Controls.Add(label1);
@@ -594,9 +606,18 @@
             splitContainer2.Panel2.Controls.Add(checkT);
             splitContainer2.Panel2.Controls.Add(ReadIntProg);
             splitContainer2.Panel2.Controls.Add(ReadIntText);
-            splitContainer2.Size = new Size(717, 348);
-            splitContainer2.SplitterDistance = 436;
+            splitContainer2.Size = new Size(717, 387);
+            splitContainer2.SplitterDistance = 435;
             splitContainer2.TabIndex = 0;
+            // 
+            // ConnectedTo
+            // 
+            ConnectedTo.AutoSize = true;
+            ConnectedTo.Location = new Point(134, 73);
+            ConnectedTo.Name = "ConnectedTo";
+            ConnectedTo.Size = new Size(19, 21);
+            ConnectedTo.TabIndex = 17;
+            ConnectedTo.Text = "...";
             // 
             // oVer
             // 
@@ -608,6 +629,7 @@
             // 
             // splitContainer3
             // 
+            splitContainer3.BorderStyle = BorderStyle.FixedSingle;
             splitContainer3.Dock = DockStyle.Fill;
             splitContainer3.Location = new Point(0, 0);
             splitContainer3.Name = "splitContainer3";
@@ -635,7 +657,7 @@
             MonitorView.Location = new Point(3, 33);
             MonitorView.Name = "MonitorView";
             MonitorView.ReadOnly = true;
-            MonitorView.Size = new Size(711, 45);
+            MonitorView.Size = new Size(709, 43);
             MonitorView.TabIndex = 8;
             MonitorView.Text = "";
             // 
@@ -690,6 +712,7 @@
             // 
             // splitContainer4
             // 
+            splitContainer4.BorderStyle = BorderStyle.FixedSingle;
             splitContainer4.Dock = DockStyle.Fill;
             splitContainer4.Location = new Point(0, 24);
             splitContainer4.Name = "splitContainer4";
@@ -715,19 +738,23 @@
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(763, 563);
+            tabControl1.Size = new Size(761, 561);
             tabControl1.TabIndex = 20;
             tabControl1.Visible = false;
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(genEncypt);
+            tabPage1.Controls.Add(groupBox1);
+            tabPage1.Controls.Add(devSN);
+            tabPage1.Controls.Add(devUID);
             tabPage1.Controls.Add(fpgaVer);
             tabPage1.Controls.Add(label8);
             tabPage1.Controls.Add(groupBox4);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(stopOT);
+            tabPage1.Controls.Add(setSN);
+            tabPage1.Controls.Add(readUID);
             tabPage1.Controls.Add(getVer);
             tabPage1.Controls.Add(resetDSP);
             tabPage1.Controls.Add(OTDelay);
@@ -735,21 +762,58 @@
             tabPage1.Location = new Point(4, 26);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(755, 533);
+            tabPage1.Size = new Size(753, 531);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Control";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(getEncyptedFile);
+            groupBox1.Controls.Add(genEncypt);
+            groupBox1.Location = new Point(582, 259);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(146, 186);
+            groupBox1.TabIndex = 26;
+            groupBox1.TabStop = false;
+            // 
+            // getEncyptedFile
+            // 
+            getEncyptedFile.Location = new Point(16, 112);
+            getEncyptedFile.Name = "getEncyptedFile";
+            getEncyptedFile.Size = new Size(104, 56);
+            getEncyptedFile.TabIndex = 24;
+            getEncyptedFile.Text = "Import encypted file";
+            getEncyptedFile.UseVisualStyleBackColor = true;
+            getEncyptedFile.Click += getEncyptedFile_Click;
+            // 
             // genEncypt
             // 
-            genEncypt.Location = new Point(613, 134);
+            genEncypt.Location = new Point(16, 33);
             genEncypt.Name = "genEncypt";
             genEncypt.Size = new Size(104, 56);
             genEncypt.TabIndex = 23;
             genEncypt.Text = "Generate encypted file";
             genEncypt.UseVisualStyleBackColor = true;
-            genEncypt.Visible = false;
             genEncypt.Click += genEncypt_Click;
+            // 
+            // devSN
+            // 
+            devSN.AutoSize = true;
+            devSN.Location = new Point(511, 26);
+            devSN.Name = "devSN";
+            devSN.Size = new Size(32, 17);
+            devSN.TabIndex = 25;
+            devSN.Text = "SN: ";
+            // 
+            // devUID
+            // 
+            devUID.AutoSize = true;
+            devUID.Location = new Point(511, 55);
+            devUID.Name = "devUID";
+            devUID.Size = new Size(36, 17);
+            devUID.TabIndex = 25;
+            devUID.Text = "UID: ";
             // 
             // fpgaVer
             // 
@@ -763,7 +827,7 @@
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(21, 464);
+            label8.Location = new Point(15, 489);
             label8.Name = "label8";
             label8.Size = new Size(263, 17);
             label8.TabIndex = 21;
@@ -777,7 +841,7 @@
             groupBox4.Controls.Add(label4);
             groupBox4.Controls.Add(I2Cval);
             groupBox4.Font = new Font("Segoe UI", 11.25F);
-            groupBox4.Location = new Point(15, 345);
+            groupBox4.Location = new Point(15, 381);
             groupBox4.Name = "groupBox4";
             groupBox4.Size = new Size(511, 100);
             groupBox4.TabIndex = 20;
@@ -834,7 +898,7 @@
             groupBox3.Controls.Add(VecFln);
             groupBox3.Controls.Add(vecReg);
             groupBox3.Font = new Font("Segoe UI", 11.25F);
-            groupBox3.Location = new Point(15, 234);
+            groupBox3.Location = new Point(15, 273);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(511, 100);
             groupBox3.TabIndex = 19;
@@ -886,7 +950,7 @@
             groupBox2.Controls.Add(regAdd);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Segoe UI", 11.25F);
-            groupBox2.Location = new Point(15, 123);
+            groupBox2.Location = new Point(15, 165);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(511, 100);
             groupBox2.TabIndex = 18;
@@ -955,7 +1019,7 @@
             // stopOT
             // 
             stopOT.Font = new Font("Segoe UI", 11.25F);
-            stopOT.Location = new Point(466, 69);
+            stopOT.Location = new Point(173, 69);
             stopOT.Name = "stopOT";
             stopOT.Size = new Size(120, 29);
             stopOT.TabIndex = 6;
@@ -963,10 +1027,32 @@
             stopOT.UseVisualStyleBackColor = true;
             stopOT.Click += stopOT_Click;
             // 
+            // setSN
+            // 
+            setSN.Font = new Font("Segoe UI", 11.25F);
+            setSN.Location = new Point(375, 94);
+            setSN.Name = "setSN";
+            setSN.Size = new Size(120, 29);
+            setSN.TabIndex = 6;
+            setSN.Text = "Set SN";
+            setSN.UseVisualStyleBackColor = true;
+            setSN.Click += setSN_Click;
+            // 
+            // readUID
+            // 
+            readUID.Font = new Font("Segoe UI", 11.25F);
+            readUID.Location = new Point(366, 20);
+            readUID.Name = "readUID";
+            readUID.Size = new Size(120, 29);
+            readUID.TabIndex = 6;
+            readUID.Text = "Read SN";
+            readUID.UseVisualStyleBackColor = true;
+            readUID.Click += readUID_Click;
+            // 
             // getVer
             // 
             getVer.Font = new Font("Segoe UI", 11.25F);
-            getVer.Location = new Point(21, 20);
+            getVer.Location = new Point(15, 20);
             getVer.Name = "getVer";
             getVer.Size = new Size(120, 29);
             getVer.TabIndex = 6;
@@ -977,7 +1063,7 @@
             // resetDSP
             // 
             resetDSP.Font = new Font("Segoe UI", 11.25F);
-            resetDSP.Location = new Point(308, 69);
+            resetDSP.Location = new Point(15, 69);
             resetDSP.Name = "resetDSP";
             resetDSP.Size = new Size(120, 29);
             resetDSP.TabIndex = 6;
@@ -989,7 +1075,7 @@
             // 
             OTDelay.Font = new Font("Segoe UI", 11.25F);
             OTDelay.Increment = new decimal(new int[] { 10, 0, 0, 0 });
-            OTDelay.Location = new Point(190, 70);
+            OTDelay.Location = new Point(192, 125);
             OTDelay.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             OTDelay.Minimum = new decimal(new int[] { 10000, 0, 0, int.MinValue });
             OTDelay.Name = "OTDelay";
@@ -1000,7 +1086,7 @@
             // wrOTDelay
             // 
             wrOTDelay.Font = new Font("Segoe UI", 11.25F);
-            wrOTDelay.Location = new Point(15, 70);
+            wrOTDelay.Location = new Point(15, 125);
             wrOTDelay.Name = "wrOTDelay";
             wrOTDelay.Size = new Size(169, 27);
             wrOTDelay.TabIndex = 6;
@@ -1028,7 +1114,7 @@
             tabPage2.Location = new Point(4, 26);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(755, 533);
+            tabPage2.Size = new Size(753, 531);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Custom device";
             tabPage2.UseVisualStyleBackColor = true;
@@ -1323,14 +1409,14 @@
             // getVersionToolStripMenuItem
             // 
             getVersionToolStripMenuItem.Name = "getVersionToolStripMenuItem";
-            getVersionToolStripMenuItem.Size = new Size(180, 22);
+            getVersionToolStripMenuItem.Size = new Size(133, 22);
             getVersionToolStripMenuItem.Text = "Get version";
             getVersionToolStripMenuItem.Click += getVersionToolStripMenuItem_Click;
             // 
             // upgradeToolStripMenuItem
             // 
             upgradeToolStripMenuItem.Name = "upgradeToolStripMenuItem";
-            upgradeToolStripMenuItem.Size = new Size(180, 22);
+            upgradeToolStripMenuItem.Size = new Size(133, 22);
             upgradeToolStripMenuItem.Text = "Upgrade";
             upgradeToolStripMenuItem.Click += upgradeToolStripMenuItem_Click;
             // 
@@ -1380,6 +1466,7 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            groupBox1.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -1509,5 +1596,12 @@
         private Button genEncypt;
         private ToolStripMenuItem getVersionToolStripMenuItem;
         private Label oVer;
+        private Button getEncyptedFile;
+        private Button readUID;
+        private Label devUID;
+        private GroupBox groupBox1;
+        private Label devSN;
+        private Button setSN;
+        private Label ConnectedTo;
     }
 }

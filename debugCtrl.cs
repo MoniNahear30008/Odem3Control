@@ -113,15 +113,16 @@ namespace OdemControl
         }
         private void GenerateEncryptedFile()
         {
+            Dictionary<string, object> DevFiles = new Dictionary<string, object>();
             Dictionary<string, string> dict = new Dictionary<string, string>()
             {
-                {"badGoodIndxs_High.txt", "" },
-                {"badGoodIndxs_Low.txt", "" },
-                {"128Bins_Final.txt", ""},
-                {"AWG.txt", ""},
-                {"2kWin.txt", ""},
-                {"blackmanHarris_DEC.txt", ""},
-                {"General_Params.csv","" }
+                {"badGoodIndxs_High", "" },
+                {"badGoodIndxs_Low", "" },
+                {"128Bins_Final", ""},
+                {"AWG", ""},
+                {"2kWin", ""},
+                {"blackmanHarris_DEC", ""},
+                {"General_Params","" }
             };
             int found = 0;
             using (var dialog = new FolderBrowserDialog())
@@ -132,51 +133,55 @@ namespace OdemControl
                 {
                     string path = dialog.SelectedPath;
                     folderName.Text = path;
-                    string[] files = Directory.GetFiles(path);
-                    foreach (string file in files)
+                    string[] folders = Directory.GetDirectories(path);
+                    foreach (string folder in folders)
                     {
-                        if (file.EndsWith("AWG.txt"))
-                        {
-                            dict["AWG.txt"] = file;
-                            found++;
+                        string[] files = Directory.GetFiles(folder);
+                        foreach (string file in files)
+                        { 
+                            if (file.EndsWith("AWG.txt"))
+                            {
+                                dict["AWG"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("badGoodIndxs_High.txt"))
+                            {
+                                dict["badGoodIndxs_High"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("badGoodIndxs_Low.txt"))
+                            {
+                                dict["badGoodIndxs_Low"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("128Bins_Final.txt"))
+                            {
+                                dict["128Bins_Final"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("blackmanHarris_DEC.txt"))
+                            {
+                                dict["blackmanHarris_DEC"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("2kWin.txt"))
+                            {
+                                dict["2kWin"] = file;
+                                found++;
+                            }
+                            else if (file.EndsWith("General_Params.csv"))
+                            {
+                                dict["General_Params"] = file;
+                                found++;
+                            }
                         }
-                        else if (file.EndsWith("badGoodIndxs_High.txt"))
+                        if (found < dict.Count)
                         {
-                            dict["badGoodIndxs_High.txt"] = file;
-                            found++;
-                        }
-                        else if (file.EndsWith("badGoodIndxs_Low.txt"))
-                        {
-                            dict["badGoodIndxs_Low.txt"] = file;
-                            found++;
-                        }
-                        else if (file.EndsWith("128Bins_Final.txt"))
-                        {
-                            dict["128Bins_Final.txt"] = file;
-                            found++;
-                        }
-                        else if (file.EndsWith("blackmanHarris_DEC.txt"))
-                        {
-                            dict["blackmanHarris_DEC.txt"] = file;
-                            found++;
-                        }
-                        else if (file.EndsWith("2kWin.txt"))
-                        {
-                            dict["2kWin.txt"] = file;
-                            found++;
-                        }
-                        else if (file.EndsWith("General_Params.csv"))
-                        {
-                            dict["General_Params.csv"] = file;
-                            found++;
+                            MessageBox.Show("Not all required files found in folder");
+                            return;
                         }
                     }
                 }
-            }
-            if (found < dict.Count)
-            {
-                MessageBox.Show("Not all required files found in folder");
-                return;
             }
             List<string> allFiles = new List<string>();
             foreach (KeyValuePair<string, string> f in dict)
@@ -229,6 +234,50 @@ namespace OdemControl
 
                 output.Add(Encoding.UTF8.GetString(decrypted));
             }
+
+            string currentFile = "";
+            bool isParams = false;
+            for (int i = 0; i < output.Count; i++)
+            {
+                string l = output[i];
+                if (l.StartsWith("New file: "))
+                {
+                    currentFile = l.Replace("New file: ", "");
+                    isParams = currentFile == "General_Params";
+                    if (!isParams)
+                    {
+                        if (confFiles.ContainsKey(currentFile))
+                            confFiles[currentFile].Clear();
+                    }
+                    continue;
+                }
+                else if (isParams)
+                {
+                    string[] parts = l.Split(',');
+                    if (parts.Length != 2)
+                        continue;
+                    string pname = parts[0].Trim();
+                    uint pval = 0;
+                    if (parts[1].Contains("0x"))
+                        pval = uint.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+                    else
+                        pval = uint.Parse(parts[1]);
+                    if (deviceParameters.ContainsKey(pname))
+                        deviceParameters[pname] = (int)pval;
+                    else
+                    {
+                        MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                }
+                else
+                    confFiles[currentFile].Add(uint.Parse(l));
+
+            }
+
+            // deviceParameters
+            // confFiles
         }
         private void GetFIles()
         {
@@ -581,6 +630,15 @@ namespace OdemControl
             GeneralParameters["OTD"] = getVal(customParams.Rows[6].Cells[1].Value.ToString());
             OTDelay.Value = GeneralParameters["OTD"];
             ConfigNow("");
+        }
+    
+        private List<uint> ReadEEPROM(uint add, uint len)
+        {
+            List<uint> t = new List<uint>();
+            string err = ReadI2C(0, 0x70, 1, 0x50, 0x24, add, len, out t);
+            if (err != "")
+                return null;
+            return t;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.02.00";
+        string version = "2.50.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -58,7 +58,6 @@ namespace OdemControl
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
-
         public Form1()
         {
             InitializeComponent();
@@ -87,6 +86,9 @@ namespace OdemControl
             dataLoggingEnabled |= dbgMode;
             if (loggingEnabled)
                 OpenLogFile();
+
+            ConnectedTo.Visible = !dbgMode;
+            devices.Visible = dbgMode;
 
             noDevice = SetVars();
 
@@ -151,30 +153,10 @@ namespace OdemControl
                 }
             }
 
-            bool nodev = false;
             if (dbgMode)
             {
                 foreach (string devName in devicesList)
                     devices.Items.Add(devName);
-            }
-            else
-            {
-                nodev = true;
-                if (devicesList.Contains(iniDev))
-                {
-                    devicesList.Clear();
-                    deviceID.Clear();
-                    devicesList.Add(iniDev);
-                    deviceID.Add(iniDev);
-                    devices.Items.Add(iniDev);
-                    devices.Enabled = false;
-                    nodev = false;
-                }
-            }
-
-            if (nodev)
-            {
-                return true;
             }
 
             // configuration files dictionaries
@@ -333,9 +315,12 @@ namespace OdemControl
             else
                 sensitivityHigh.Checked = true;
 
-            if (devicesList.Count == 1)
-                appSetting.deviceNum = 0;
-            devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
+            if (dbgMode)
+            {
+                if (devicesList.Count == 1)
+                    appSetting.deviceNum = 0;
+                devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
+            }
             return false;
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
@@ -787,7 +772,7 @@ namespace OdemControl
         {
             temp = 0;
             List<uint> t;
-            string err = ReadI2C(4, 0x48, 0x14, 0xD8, 1, out t);
+            string err = ReadI2C(0, 0x70, 4, 0x48, 0x14, 0xD8, 1, out t);
             if (err != "")
                 return err;
             double vref = 2.45;
@@ -823,7 +808,7 @@ namespace OdemControl
             temp = 0;
             string err = "";
             List<uint> t;
-            err = ReadI2C(4, 0x48, 0x14, 0x88, 1, out t);
+            err = ReadI2C(0, 0x70, 4, 0x48, 0x14, 0x88, 1, out t);
             if (err == "")
             {
                 double r1 = 5.6;
@@ -883,19 +868,19 @@ namespace OdemControl
             string err = "";
             List<uint> tmp;
             List<uint> tmp2 = new List<uint>();
-            err = ReadI2C(1, 0x48, 0x14, 0, 1, out tmp);
+            err = ReadI2C(0, 0x70, 1, 0x48, 0x14, 0, 1, out tmp);
             if (err != "")
                 return err;
             tmp2.Add(tmp[0]);
-            err = ReadI2C(1, 0x49, 0x14, 0, 1, out tmp);
+            err = ReadI2C(0, 0x70, 1, 0x49, 0x14, 0, 1, out tmp);
             if (err != "")
                 return err;
             tmp2.Add(tmp[0]);
-            err = ReadI2C(1, 0x4A, 0x14, 0, 1, out tmp);
+            err = ReadI2C(0, 0x70, 1, 0x4A, 0x14, 0, 1, out tmp);
             if (err != "")
                 return err;
             tmp2.Add(tmp[0]);
-            err = ReadI2C(1, 0x4B, 0x14, 0, 1, out tmp);
+            err = ReadI2C(0, 0x70, 1, 0x4B, 0x14, 0, 1, out tmp);
             if (err != "")
                 return err;
             tmp2.Add(tmp[0]);
@@ -923,7 +908,57 @@ namespace OdemControl
                 }
             }
             else
+            {
                 connectCnt = 0;
+                if (!dbgMode)
+                {
+                    bool noSN = false;
+                    List<uint> t = ReadEEPROM(0, 1);
+                    if (t == null)
+                        noSN = true;
+                    else if (t[0] == 0xFFFF)
+                        noSN = true;
+                    else
+                    {
+                        string rSN = "SN" + t[0].ToString("D4");
+                        if (devicesList.Contains(rSN))
+                        {
+                            devicesList.Clear();
+                            deviceID.Clear();
+                            devicesList.Add(rSN);
+                            deviceID.Add(rSN);
+                            devices.Items.Add(rSN);
+                            devices.Enabled = false;
+                            ConnectedTo.Text = rSN;
+                            appSetting.deviceNum = 0;
+                            UpdateConfFiles();
+                        }
+                    }
+
+                    if (noSN)
+                    {
+                        if (devicesList.Contains(iniDev))
+                        {
+                            devicesList.Clear();
+                            deviceID.Clear();
+                            devicesList.Add(iniDev);
+                            deviceID.Add(iniDev);
+                            devices.Items.Add(iniDev);
+                            devices.Enabled = false;
+                            ConnectedTo.Text = iniDev;
+                            appSetting.deviceNum = 0;
+                            UpdateConfFiles();
+                        }
+                        else
+                        {
+                            this.Enabled = false;
+                            MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            this.Close();
+                        }
+
+                    }
+                }
+            }
         }
         private void sStart_Click(object sender, EventArgs e)
         {
@@ -1033,14 +1068,14 @@ namespace OdemControl
         {
             timer2.Stop();
 
-            if (noDevice)
-            {
-                this.Enabled = false;
-                MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.Close();
+            //if (noDevice)
+            //{
+            //    this.Enabled = false;
+            //    MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    this.Close();
 
-            }
-            else
+            //}
+            //else
             {
                 splitContainer3.Panel2Collapsed = !dbgMode;
                 SetDebugView();
@@ -1108,6 +1143,12 @@ namespace OdemControl
                     break;
                 case "getVer":
                     getVer.BackColor = SystemColors.Control;
+                    break;
+                case "setSN":
+                    setSN.BackColor = SystemColors.Control;
+                    break;
+                case "readUID":
+                    readUID.BackColor = SystemColors.Control;
                     break;
             }
         }
@@ -1400,12 +1441,11 @@ namespace OdemControl
         private void genEncypt_Click(object sender, EventArgs e)
         {
             GenerateEncryptedFile();
-//            GetEncryptedFile();
         }
 
         private void getVersionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if ( !isConnected)
+            if (!isConnected)
             {
                 oVer.Text = "";
                 return;
@@ -1417,6 +1457,68 @@ namespace OdemControl
                 MessageBox.Show("Error reading version: " + err, "Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else
                 oVer.Text = "Version: 0x" + ver[3].ToString("X02");
+        }
+
+        private void getEncyptedFile_Click(object sender, EventArgs e)
+        {
+            GetEncryptedFile();
+        }
+
+        private void readUID_Click(object sender, EventArgs e)
+        {
+            devUID.Text = "UID: ";
+            devSN.Text = "SN: ";
+            List<uint> t = ReadEEPROM(0x7F7A, 4);
+            if (t == null)
+            {
+                MessageBox.Show("Fail to read device UID");
+                readUID.BackColor = Color.Red;
+                pushed = "readUID";
+                timer3.Start();
+                return;
+            }
+            else
+            {
+                ulong id = (ulong)t[0] + ((ulong)t[1] << 16) + ((ulong)t[2] << 32);
+                devUID.Text = "EUI-48: " + id.ToString("X12");
+            }
+
+            t = ReadEEPROM(0, 1);
+            if (t == null)
+            {
+                MessageBox.Show("Fail to read device SN");
+                readUID.BackColor = Color.Red;
+                pushed = "readUID";
+                timer3.Start();
+                return;
+            }
+            else if (t[0] == 0xFFFF)
+            {
+                devSN.Text = "Device SN not programmed";
+            }
+            else
+            {
+                devSN.Text = "SN" + t[0].ToString("D4");
+            }
+
+            readUID.BackColor = Color.Lime;
+            pushed = "readUID";
+            timer3.Start();
+        }
+        private void setSN_Click(object sender, EventArgs e)
+        {
+            uint sn = uint.Parse(devicesList[appSetting.deviceNum].Replace("SN", ""));
+            string err = WriteEEPROM(1, 0x50, 0x24, 0, new List<uint>() { sn });
+            if (err.Length > 0)
+            {
+                MessageBox.Show("Error set SN: " + err, "Write Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                setSN.BackColor = Color.Red;
+            }
+            else
+                setSN.BackColor = Color.Lime;
+
+            pushed = "setSN";
+            timer3.Start();
         }
     }
 
