@@ -16,7 +16,6 @@ namespace OdemControl
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
         public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
-        public List<string> devicesList = new List<string>();
         int confState = (int)confStates.IDLE;
         public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
         {
@@ -49,10 +48,7 @@ namespace OdemControl
         private StreamWriter logFile;
         int readTempCounter = 0;
         bool configuring = false;
-        Debug db = null;
-        bool EnablePing = true;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
-        Dictionary<string, object> Devices_Params = new Dictionary<string, object>();
         int pingLost = 0;
         bool dbgMode = false;
         bool deviceConfigured = false;
@@ -65,12 +61,29 @@ namespace OdemControl
             splitContainer3.Panel2Collapsed = true;
             splitContainer4.Panel2Collapsed = true;
             this.Width = 750;
+            IPAddredd.Text = _ipAddress;
+            IPPort.Text = _port.ToString();
+
 
             string path = @"C:\Lidwave";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
+            // if first run after installation, move sensor_info.dat to c:\lidwave
+            string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+            if (File.Exists("sensor_info.dat"))
+            {
+                File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat");
+                File.Delete(appFolder + "sensor_info.dat");
+            }
+
             this.Text = "ODEM Control by Lidwave. Version: " + version;
+
+            tempTable.Rows.Add("Optical chip", "");
+            tempTable.Rows.Add("Scanner", "");
+            tempTable.Rows.Add("Main Board", "");
+            tempTable.Rows.Add("Laser", "");
+            tempTable.ClearSelection();
 
             appSetting = new appSettings();
 
@@ -127,35 +140,25 @@ namespace OdemControl
         }
         private bool SetVars()
         {
-            //string op = Dns.GetHostEntry(Dns.GetHostName()).AddressList
-            //  .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
-            //  .ToString() ?? "No IPv4 found";
+            DevInFile.Clear();
+            AllDevicesFiles.Clear();
+            GetEncryptedFile();
 
-            tempTable.Rows.Add("Optical chip", "");
-            tempTable.Rows.Add("Scanner", "");
-            tempTable.Rows.Add("Main Board", "");
-            tempTable.Rows.Add("Laser", "");
-            tempTable.ClearSelection();
+            if (DevInFile.Count == 0)
+                return true;
 
-            IPAddredd.Text = _ipAddress;
-            IPPort.Text = _port.ToString();
-
-            // Set devices lists
-            var assembly = Assembly.GetExecutingAssembly();
-            string[] resources = assembly.GetManifestResourceNames();
-            foreach (string r in resources)
+            deviceID.Clear();
+            foreach (string dev in DevInFile.Keys)
             {
-                if (r.Contains("badGoodIndxs_High"))
-                {
-                    string devName = r.Split('.')[2];
-                    devicesList.Add(devName);
-                    deviceID.Add(devName);
-                }
+                if (!deviceID.Contains(dev))
+                    deviceID.Add(dev);
             }
+
+            deviceID.Sort();
 
             if (dbgMode)
             {
-                foreach (string devName in devicesList)
+                foreach (string devName in deviceID)
                     devices.Items.Add(devName);
             }
 
@@ -317,9 +320,9 @@ namespace OdemControl
 
             if (dbgMode)
             {
-                if (devicesList.Count == 1)
+                if (deviceID.Count == 1)
                     appSetting.deviceNum = 0;
-                devices.SelectedIndex = Math.Min(appSetting.deviceNum, devicesList.Count() - 1);
+                devices.SelectedIndex = Math.Min(appSetting.deviceNum, deviceID.Count() - 1);
             }
             return false;
         }
@@ -471,26 +474,6 @@ namespace OdemControl
             splitContainer4.Panel2Collapsed = false;
             this.Width = 1500;
             debugMode.Visible = false;
-            return;
-
-            db = new Debug();
-            db.StartPosition = FormStartPosition.CenterParent;
-            db.Show();
-            db.SetDebugForm(this);
-
-            Rectangle screen = Screen.PrimaryScreen.WorkingArea;
-
-            int totalWidth = this.Width + db.Width;
-            int startX = (screen.Width - totalWidth) / 2;
-            int y = (screen.Height - this.Height) / 2;
-
-            this.Location = new Point(startX, y);
-            db.Location = new Point(startX + this.Width, y);
-            //db.StartPosition = FormStartPosition.Manual;
-            //db.Location = new Point(
-            //    this.Location.X + this.Width,
-            //    this.Location.Y
-            //);
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -505,7 +488,21 @@ namespace OdemControl
         }
         private void UpdateConfFiles()
         {
-            string resourceName = "OdemControl.Devices." + devicesList[appSetting.deviceNum] + ".";
+            if (DevInFile.ContainsKey(deviceID[appSetting.deviceNum]))
+            {
+                LogMessage("Device configuration files read from encrypted file");
+
+                GetDeviceFiles(deviceID[appSetting.deviceNum]);
+
+                LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
+                    + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
+            }
+            else
+                MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+
+            return;
+            string resourceName = "OdemControl.Devices." + deviceID[appSetting.deviceNum] + ".";
             List<string> files = confFiles.Keys.ToList();
             Stream stream;
             StreamReader reader;
@@ -542,10 +539,10 @@ namespace OdemControl
                 }
             }
 
-            LogMessage("Update device " + devicesList[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
+            LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
                 + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
 
-            Dictionary<string, int> dp = OT_Delay[devicesList[appSetting.deviceNum]] as Dictionary<string, int>;
+            Dictionary<string, int> dp = OT_Delay[deviceID[appSetting.deviceNum]] as Dictionary<string, int>;
             foreach (string m in dp.Keys)
             {
                 if (deviceParameters.ContainsKey(m))
@@ -921,11 +918,11 @@ namespace OdemControl
                     else
                     {
                         string rSN = "SN" + t[0].ToString("D4");
-                        if (devicesList.Contains(rSN))
+                        if (deviceID.Contains(rSN))
                         {
-                            devicesList.Clear();
                             deviceID.Clear();
-                            devicesList.Add(rSN);
+                            deviceID.Clear();
+                            deviceID.Add(rSN);
                             deviceID.Add(rSN);
                             devices.Items.Add(rSN);
                             devices.Enabled = false;
@@ -937,11 +934,11 @@ namespace OdemControl
 
                     if (noSN)
                     {
-                        if (devicesList.Contains(iniDev))
+                        if (deviceID.Contains(iniDev))
                         {
-                            devicesList.Clear();
                             deviceID.Clear();
-                            devicesList.Add(iniDev);
+                            deviceID.Clear();
+                            deviceID.Add(iniDev);
                             deviceID.Add(iniDev);
                             devices.Items.Add(iniDev);
                             devices.Enabled = false;
@@ -1068,18 +1065,13 @@ namespace OdemControl
         {
             timer2.Stop();
 
-            //if (noDevice)
-            //{
-            //    this.Enabled = false;
-            //    MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    this.Close();
-
-            //}
-            //else
+            if (DevInFile.Count == 0)
             {
-                splitContainer3.Panel2Collapsed = !dbgMode;
-                SetDebugView();
+                MessageBox.Show("Sensor inof file not found\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            splitContainer3.Panel2Collapsed = !dbgMode;
+               SetDebugView();
         }
 
         private void showCom_CheckedChanged(object sender, EventArgs e)
@@ -1461,6 +1453,8 @@ namespace OdemControl
 
         private void getEncyptedFile_Click(object sender, EventArgs e)
         {
+            DevInFile.Clear();
+            AllDevicesFiles.Clear();
             GetEncryptedFile();
         }
 
@@ -1507,7 +1501,7 @@ namespace OdemControl
         }
         private void setSN_Click(object sender, EventArgs e)
         {
-            uint sn = uint.Parse(devicesList[appSetting.deviceNum].Replace("SN", ""));
+            uint sn = uint.Parse(deviceID[appSetting.deviceNum].Replace("SN", ""));
             string err = WriteEEPROM(1, 0x50, 0x24, 0, new List<uint>() { sn });
             if (err.Length > 0)
             {

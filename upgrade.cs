@@ -29,7 +29,7 @@ namespace OdemControl
         {
             InitializeComponent();
             this.parent = parent;
-            passw = parent.devicesList[parent.appSetting.deviceNum];
+            passw = parent.deviceID[parent.appSetting.deviceNum];
         }
 
         private void DoUG_Click(object sender, EventArgs e)

@@ -153,6 +153,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Odem.ini">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

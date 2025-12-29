@@ -113,7 +113,7 @@ namespace OdemControl
         }
         private void GenerateEncryptedFile()
         {
-            Dictionary<string, object> DevFiles = new Dictionary<string, object>();
+            List<string> allFiles = new List<string>();
             Dictionary<string, string> dict = new Dictionary<string, string>()
             {
                 {"badGoodIndxs_High", "" },
@@ -136,6 +136,7 @@ namespace OdemControl
                     string[] folders = Directory.GetDirectories(path);
                     foreach (string folder in folders)
                     {
+                        string dev = folder.Substring(folder.IndexOf("SN"));
                         string[] files = Directory.GetFiles(folder);
                         foreach (string file in files)
                         { 
@@ -177,17 +178,19 @@ namespace OdemControl
                         }
                         if (found < dict.Count)
                         {
-                            MessageBox.Show("Not all required files found in folder");
+                            MessageBox.Show("Not all required files found in folder for " + folder);
                             return;
                         }
+
+                        allFiles.Add("New Device: " + dev);
+                        foreach (KeyValuePair<string, string> f in dict)
+                        {
+                            allFiles.Add("New file: " + f.Key);
+                            allFiles.AddRange(File.ReadAllLines(f.Value).ToList());
+                        }
+
                     }
                 }
-            }
-            List<string> allFiles = new List<string>();
-            foreach (KeyValuePair<string, string> f in dict)
-            {
-                allFiles.Add("New file: " + f.Key);
-                allFiles.AddRange(File.ReadAllLines(f.Value).ToList());
             }
 
             // 32-byte (256-bit) key
@@ -199,7 +202,7 @@ namespace OdemControl
             aes.Key = key;
             aes.IV = iv;
 
-            string filePath = "c:\\lidwave\\dev_info.dat";
+            string filePath = "c:\\lidwave\\sensor_info.dat";
             using StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8);
 
             foreach (string s in allFiles)
@@ -214,6 +217,8 @@ namespace OdemControl
         }
         private void GetEncryptedFile()
         {
+            DevInFile.Clear();
+            AllDevicesFiles.Clear();
             var output = new List<string>();
             // 32-byte (256-bit) key
             byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
@@ -224,7 +229,10 @@ namespace OdemControl
             aes.Key = key;
             aes.IV = iv;
 
-            string filePath = "c:\\lidwave\\dev_info.dat";
+            string filePath = "c:\\lidwave\\sensor_info.dat";
+            if (File.Exists(filePath) == false)
+                return;
+
 
             foreach (string line in File.ReadLines(filePath))
             {
@@ -232,15 +240,26 @@ namespace OdemControl
                 byte[] decrypted = aes.CreateDecryptor()
                     .TransformFinalBlock(encrypted, 0, encrypted.Length);
 
-                output.Add(Encoding.UTF8.GetString(decrypted));
+                string nl = Encoding.UTF8.GetString(decrypted);
+                AllDevicesFiles.Add(nl);
+                if (nl.Contains("New Device: "))
+                {
+                    string dev = nl.Replace("New Device: ", "");
+                    DevInFile.Add(dev, AllDevicesFiles.Count);
+                }
             }
-
+        }
+        private void GetDeviceFiles(string dev)
+        {
+            int start = DevInFile[dev];
             string currentFile = "";
             bool isParams = false;
-            for (int i = 0; i < output.Count; i++)
+            for (int i = start; i < AllDevicesFiles.Count; i++)
             {
-                string l = output[i];
-                if (l.StartsWith("New file: "))
+                string l = AllDevicesFiles[i];
+                if (l.StartsWith("New Device: "))
+                    break;
+                else if (l.StartsWith("New file: "))
                 {
                     currentFile = l.Replace("New file: ", "");
                     isParams = currentFile == "General_Params";
@@ -257,11 +276,11 @@ namespace OdemControl
                     if (parts.Length != 2)
                         continue;
                     string pname = parts[0].Trim();
-                    uint pval = 0;
+                    int pval = 0;
                     if (parts[1].Contains("0x"))
-                        pval = uint.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+                        pval = int.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
                     else
-                        pval = uint.Parse(parts[1]);
+                        pval = int.Parse(parts[1]);
                     if (deviceParameters.ContainsKey(pname))
                         deviceParameters[pname] = (int)pval;
                     else
@@ -275,9 +294,6 @@ namespace OdemControl
                     confFiles[currentFile].Add(uint.Parse(l));
 
             }
-
-            // deviceParameters
-            // confFiles
         }
         private void GetFIles()
         {
@@ -639,6 +655,138 @@ namespace OdemControl
             if (err != "")
                 return null;
             return t;
+        }
+    }
+    public class mirror_params
+    {
+        public int points_per_line;
+        public int points_per_axis;
+        public double frequency_hz;
+        public double total_scan_time_sec;
+        public int frequency_divisor;
+        public int base_frequency_hz;
+        public double time_difference_sec;
+        public double time_match_percent;
+        public mirror_params()
+        {
+            points_per_line = 0;
+            points_per_axis = 0;
+            frequency_hz = 0;
+            total_scan_time_sec = 0;
+            frequency_divisor = 0;
+            base_frequency_hz = 0;
+            time_difference_sec = 0;
+            time_match_percent = 0;
+        }
+        public mirror_params(sm_params smPars, int base_freq)
+        {
+            mirror_params best_match = new mirror_params();
+
+            double best_time_diff = double.MaxValue;
+            double best_time_diff_this_points = double.MaxValue;
+            bool is_better_match = false;
+
+            int max_ppl = (int)(2500 / (smPars.linesPerF * 2));
+            for (int ppl = max_ppl; ppl >= 0; ppl--)
+            {
+                // Calculate total mirror points per axis
+                points_per_axis = ppl * (int)smPars.linesPerF * 2;
+
+                // Skip if exceeds mirror hardware constraint
+                if (points_per_axis > 2500)
+                    continue;
+
+                // Try different frequency divisors, starting with highest frequencies first
+                // Start from divisor=1 (40kHz) down to higher divisors (lower frequencies)
+                // But we'll prioritize finding the best match at highest possible frequency
+                for (int div = 1; div < base_freq + 1; div++)
+                {
+                    frequency_hz = (double)base_freq / (double)div;
+                    // Skip very low frequencies (below 1 Hz) for practical reasons
+                    if (frequency_hz < 1.0)
+                        break;
+
+                    // Calculate mirror scan time for this configuration
+                    total_scan_time_sec = (double)points_per_axis / frequency_hz;
+
+                    // CONSTRAINT: Mirror time must be equal or larger than FPGA time
+                    // Skip configurations where mirror time is shorter than FPGA time
+                    if (total_scan_time_sec < smPars.fpga_total_scan_time_sec)
+                        continue;
+
+                    // Calculate time difference from FPGA target (mirror time >= FPGA time)
+                    double time_diff = total_scan_time_sec - smPars.fpga_total_scan_time_sec;
+
+                    // Check if this is better than current best match
+                    // Prioritize higher frequencies when time differences are similar (within 1% of each other)
+                    is_better_match = false;
+
+                    if (time_diff < best_time_diff)
+                        is_better_match = true;
+                    else if (Math.Abs(time_diff - best_time_diff) < (smPars.fpga_total_scan_time_sec * 0.01))  // Within 1% of best time
+                    {
+                        // If time match is similar, prefer higher frequency
+                        if (frequency_hz > best_match.frequency_hz)
+                            is_better_match = true;
+                    }
+
+                    if (is_better_match)
+                    {
+                        best_time_diff = time_diff;
+                        time_match_percent = 100.0 * (1.0 - time_diff / Math.Max(smPars.fpga_total_scan_time_sec, total_scan_time_sec));
+                    }
+
+                    best_match.points_per_line = ppl;
+                    best_match.points_per_axis = points_per_axis;
+                    best_match.frequency_hz = frequency_hz;
+                    best_match.total_scan_time_sec = total_scan_time_sec;
+                    best_match.frequency_divisor = div;
+                    best_match.time_difference_sec = time_diff;
+                    best_match.time_match_percent = time_match_percent;
+
+                    // If we get a very close match, we can stop searching
+                    if (time_diff < (smPars.fpga_total_scan_time_sec * 0.001))  // Within 0.1%
+                        break;
+                }
+
+                // If we found a very good match, no need to try more points
+                if (best_match.time_difference_sec < (smPars.fpga_total_scan_time_sec * 0.001))  // Within 0.1%
+                    break;
+            }
+
+            points_per_line = best_match.points_per_line;
+            points_per_axis = best_match.points_per_axis;
+            frequency_hz = best_match.frequency_hz;
+            total_scan_time_sec = best_match.total_scan_time_sec;
+            frequency_divisor = best_match.frequency_divisor;
+            base_frequency_hz = base_freq;
+            time_difference_sec = best_match.time_difference_sec;
+            time_match_percent = best_match.time_match_percent;
+
+        }
+    }
+    public class sm_params
+    {
+        public double mirror;
+        public uint points;
+        public uint hFOV;
+        public uint vFOV;
+        public double hRes;
+        public double vRes;
+        public uint linesPerF;
+        public uint fpga_points_per_line;
+        public uint total_fpga_points;
+        public double fpga_total_scan_time_sec;
+
+        public sm_params()
+        {
+            mirror = 0;
+            points = 0;
+            hFOV = 0;
+            vFOV = 0;
+            hRes = 0;
+            vRes = 0;
+            linesPerF = 0;
         }
     }
 }

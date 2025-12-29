@@ -77,7 +77,6 @@
             splitContainer4 = new SplitContainer();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
-            groupBox1 = new GroupBox();
             getEncyptedFile = new Button();
             genEncypt = new Button();
             devSN = new Label();
@@ -164,7 +163,6 @@
             splitContainer4.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
-            groupBox1.SuspendLayout();
             groupBox4.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -744,7 +742,8 @@
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(groupBox1);
+            tabPage1.Controls.Add(getEncyptedFile);
+            tabPage1.Controls.Add(genEncypt);
             tabPage1.Controls.Add(devSN);
             tabPage1.Controls.Add(devUID);
             tabPage1.Controls.Add(fpgaVer);
@@ -767,29 +766,20 @@
             tabPage1.Text = "Control";
             tabPage1.UseVisualStyleBackColor = true;
             // 
-            // groupBox1
-            // 
-            groupBox1.Controls.Add(getEncyptedFile);
-            groupBox1.Controls.Add(genEncypt);
-            groupBox1.Location = new Point(582, 259);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(146, 186);
-            groupBox1.TabIndex = 26;
-            groupBox1.TabStop = false;
-            // 
             // getEncyptedFile
             // 
-            getEncyptedFile.Location = new Point(16, 112);
+            getEncyptedFile.Location = new Point(598, 273);
             getEncyptedFile.Name = "getEncyptedFile";
             getEncyptedFile.Size = new Size(104, 56);
             getEncyptedFile.TabIndex = 24;
             getEncyptedFile.Text = "Import encypted file";
             getEncyptedFile.UseVisualStyleBackColor = true;
+            getEncyptedFile.Visible = false;
             getEncyptedFile.Click += getEncyptedFile_Click;
             // 
             // genEncypt
             // 
-            genEncypt.Location = new Point(16, 33);
+            genEncypt.Location = new Point(598, 187);
             genEncypt.Name = "genEncypt";
             genEncypt.Size = new Size(104, 56);
             genEncypt.TabIndex = 23;
@@ -1466,7 +1456,6 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
-            groupBox1.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -1599,7 +1588,6 @@
         private Button getEncyptedFile;
         private Button readUID;
         private Label devUID;
-        private GroupBox groupBox1;
         private Label devSN;
         private Button setSN;
         private Label ConnectedTo;
