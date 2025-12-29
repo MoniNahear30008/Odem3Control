@@ -10,48 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Devices\blackmanHarris_DEC.txt" />
-    <None Remove="Devices\SN0051\128Bins_Final.txt" />
-    <None Remove="Devices\SN0051\2kWin.txt" />
-    <None Remove="Devices\SN0051\AWG.txt" />
-    <None Remove="Devices\SN0051\badGoodIndxs_High.txt" />
-    <None Remove="Devices\SN0051\badGoodIndxs_Low.txt" />
-    <None Remove="Devices\SN0051\FF200028.txt" />
-    <None Remove="Devices\SN0051\FF20002C.txt" />
-    <None Remove="Devices\SN0051\FF248200.txt" />
-    <None Remove="Devices\SN0051\FF340000.txt" />
-    <None Remove="Devices\SN0051\FF346000.txt" />
-    <None Remove="Devices\SN0051\General_Params.csv" />
-    <None Remove="Devices\SN0052\128Bins_Final.txt" />
-    <None Remove="Devices\SN0052\2kWin.txt" />
-    <None Remove="Devices\SN0052\AWG.txt" />
-    <None Remove="Devices\SN0052\badGoodIndxs_High.txt" />
-    <None Remove="Devices\SN0052\badGoodIndxs_Low.txt" />
-    <None Remove="Devices\SN0052\General_Params.csv" />
-    <None Remove="Devices\SN0053\128Bins_Final.txt" />
-    <None Remove="Devices\SN0053\2kWin.txt" />
-    <None Remove="Devices\SN0053\AWG.txt" />
-    <None Remove="Devices\SN0053\badGoodIndxs_High.txt" />
-    <None Remove="Devices\SN0053\badGoodIndxs_Low.txt" />
-    <None Remove="Devices\SN0053\FF200028.txt" />
-    <None Remove="Devices\SN0053\FF20002C.txt" />
-    <None Remove="Devices\SN0053\FF248000.txt" />
-    <None Remove="Devices\SN0053\FF248200.txt" />
-    <None Remove="Devices\SN0053\FF340000.txt" />
-    <None Remove="Devices\SN0053\FF346000.txt" />
-    <None Remove="Devices\SN0053\General_Params.csv" />
-    <None Remove="Devices\SN0056\128Bins_Final.txt" />
-    <None Remove="Devices\SN0056\2kWin.txt" />
-    <None Remove="Devices\SN0056\AWG.txt" />
-    <None Remove="Devices\SN0056\badGoodIndxs_High.txt" />
-    <None Remove="Devices\SN0056\badGoodIndxs_Low.txt" />
-    <None Remove="Devices\SN0056\General_Params.csv" />
-    <None Remove="Devices\SN0057\128Bins_Final.txt" />
-    <None Remove="Devices\SN0057\2kWin.txt" />
-    <None Remove="Devices\SN0057\AWG.txt" />
-    <None Remove="Devices\SN0057\badGoodIndxs_High.txt" />
-    <None Remove="Devices\SN0057\badGoodIndxs_Low.txt" />
-    <None Remove="Devices\SN0057\General_Params.csv" />
+    <Compile Remove="Devices\**" />
+    <EmbeddedResource Remove="Devices\**" />
+    <None Remove="Devices\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Optotune\Mode1\scan_parameters.json" />
     <None Remove="Optotune\Mode2\scan_parameters.json" />
     <None Remove="Optotune\Mode3\scan_parameters.json" />
@@ -77,37 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Devices\blackmanHarris_DEC.txt" />
-    <EmbeddedResource Include="Devices\SN0051\128Bins_Final.txt" />
-    <EmbeddedResource Include="Devices\SN0051\2kWin.txt" />
-    <EmbeddedResource Include="Devices\SN0051\AWG.txt" />
-    <EmbeddedResource Include="Devices\SN0051\badGoodIndxs_High.txt" />
-    <EmbeddedResource Include="Devices\SN0051\badGoodIndxs_Low.txt" />
-    <EmbeddedResource Include="Devices\SN0051\General_Params.csv" />
-    <EmbeddedResource Include="Devices\SN0052\128Bins_Final.txt" />
-    <EmbeddedResource Include="Devices\SN0052\2kWin.txt" />
-    <EmbeddedResource Include="Devices\SN0052\AWG.txt" />
-    <EmbeddedResource Include="Devices\SN0052\badGoodIndxs_High.txt" />
-    <EmbeddedResource Include="Devices\SN0052\badGoodIndxs_Low.txt" />
-    <EmbeddedResource Include="Devices\SN0052\General_Params.csv" />
-    <EmbeddedResource Include="Devices\SN0053\128Bins_Final.txt" />
-    <EmbeddedResource Include="Devices\SN0053\2kWin.txt" />
-    <EmbeddedResource Include="Devices\SN0053\AWG.txt" />
-    <EmbeddedResource Include="Devices\SN0053\badGoodIndxs_High.txt" />
-    <EmbeddedResource Include="Devices\SN0053\badGoodIndxs_Low.txt" />
-    <EmbeddedResource Include="Devices\SN0053\General_Params.csv" />
-    <EmbeddedResource Include="Devices\SN0056\128Bins_Final.txt" />
-    <EmbeddedResource Include="Devices\SN0056\2kWin.txt" />
-    <EmbeddedResource Include="Devices\SN0056\AWG.txt" />
-    <EmbeddedResource Include="Devices\SN0056\badGoodIndxs_High.txt" />
-    <EmbeddedResource Include="Devices\SN0056\badGoodIndxs_Low.txt" />
-    <EmbeddedResource Include="Devices\SN0056\General_Params.csv" />
-    <EmbeddedResource Include="Devices\SN0057\128Bins_Final.txt" />
-    <EmbeddedResource Include="Devices\SN0057\2kWin.txt" />
-    <EmbeddedResource Include="Devices\SN0057\AWG.txt" />
-    <EmbeddedResource Include="Devices\SN0057\badGoodIndxs_High.txt" />
-    <EmbeddedResource Include="Devices\SN0057\badGoodIndxs_Low.txt" />
-    <EmbeddedResource Include="Devices\SN0057\General_Params.csv" />
     <EmbeddedResource Include="Optotune\Mode1\scan_parameters.json" />
     <EmbeddedResource Include="Optotune\Mode2\scan_parameters.json" />
     <EmbeddedResource Include="Optotune\Mode3\scan_parameters.json" />

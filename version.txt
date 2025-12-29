@@ -1,4 +1,8 @@
 ===========================================
+29/12/25: Version 3.00.00: 
+	- Sesnors' infromaition saved in encrypted file
+
+===========================================
 28/12/25: Version 2.50.00: 
 	- Device SN saved in the device
 

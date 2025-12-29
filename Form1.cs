@@ -6,7 +6,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "2.50.00";
+        string version = "3.00.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -73,7 +73,7 @@ namespace OdemControl
             string appFolder = AppDomain.CurrentDomain.BaseDirectory;
             if (File.Exists("sensor_info.dat"))
             {
-                File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat");
+                File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat", overwrite: true);
                 File.Delete(appFolder + "sensor_info.dat");
             }
 
@@ -500,86 +500,6 @@ namespace OdemControl
             else
                 MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-
-            return;
-            string resourceName = "OdemControl.Devices." + deviceID[appSetting.deviceNum] + ".";
-            List<string> files = confFiles.Keys.ToList();
-            Stream stream;
-            StreamReader reader;
-            List<string> lc;
-            // Get general parameters
-            string fln = resourceName + "General_Params.csv";
-            LogMessage("Update file: " + fln);
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
-            if (stream == null)
-            {
-                MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            reader = new StreamReader(stream);
-            string content = reader.ReadToEnd();
-            lc = content.Split("\r\n").ToList();
-            foreach (string n in lc)
-            {
-                string[] parts = n.Split(',');
-                if (parts.Length != 2)
-                    continue;
-                string pname = parts[0].Trim();
-                uint pval = 0;
-                if (parts[1].Contains("0x"))
-                    pval = uint.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
-                else
-                    pval = uint.Parse(parts[1]);
-                if (deviceParameters.ContainsKey(pname))
-                    deviceParameters[pname] = (int)pval;
-                else
-                {
-                    MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-
-            LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
-                + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
-
-            Dictionary<string, int> dp = OT_Delay[deviceID[appSetting.deviceNum]] as Dictionary<string, int>;
-            foreach (string m in dp.Keys)
-            {
-                if (deviceParameters.ContainsKey(m))
-                    deviceParameters[m] = dp[m];
-            }
-
-            // Get common file
-            string commonFile = "blackmanHarris_DEC";
-            foreach (string f in files)
-            {
-                confFiles[f].Clear();
-                if (f == commonFile)
-                {
-                    fln = "OdemControl.Devices." + f + ".txt";
-                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
-                }
-                else
-                {
-                    fln = resourceName + f + ".txt";
-                    stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fln);
-                }
-                LogMessage("Update file: " + fln);
-                if (stream == null)
-                {
-                    MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                reader = new StreamReader(stream);
-                content = reader.ReadToEnd();
-                if (content.Contains("\r\n"))
-                    lc = content.Split("\r\n").ToList();
-                else
-                    lc = content.Split("\n").ToList();
-                lc.RemoveAt(lc.Count() - 1);
-                foreach (string n in lc)
-                    confFiles[f].Add(uint.Parse(n));
-            }
         }
         private void OpenLogFile()
         {
@@ -909,10 +829,11 @@ namespace OdemControl
                 connectCnt = 0;
                 if (!dbgMode)
                 {
+                    bool noFile = false;
                     bool noSN = false;
                     List<uint> t = ReadEEPROM(0, 1);
                     if (t == null)
-                        noSN = true;
+                        noFile = true;
                     else if (t[0] == 0xFFFF)
                         noSN = true;
                     else
@@ -932,7 +853,7 @@ namespace OdemControl
                         }
                     }
 
-                    if (noSN)
+                    if (noSN || noFile)
                     {
                         if (deviceID.Contains(iniDev))
                         {
@@ -946,10 +867,16 @@ namespace OdemControl
                             appSetting.deviceNum = 0;
                             UpdateConfFiles();
                         }
-                        else
+                        else if (noSN)
                         {
                             this.Enabled = false;
                             MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            this.Close();
+                        }
+                        else
+                        {
+                            this.Enabled = false;
+                            MessageBox.Show("MIssing or bad sensor_info.dat\n\nContact LidWave support", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             this.Close();
                         }
 
