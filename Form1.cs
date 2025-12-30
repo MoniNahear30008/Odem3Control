@@ -48,7 +48,6 @@ namespace OdemControl
         private StreamWriter logFile;
         int readTempCounter = 0;
         bool configuring = false;
-        Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         int pingLost = 0;
         bool dbgMode = false;
         bool deviceConfigured = false;
@@ -142,7 +141,7 @@ namespace OdemControl
         {
             DevInFile.Clear();
             AllDevicesFiles.Clear();
-            GetEncryptedFile();
+            GetEncryptedFile("c:\\lidwave\\sensor_info.dat");
 
             if (DevInFile.Count == 0)
                 return true;
@@ -274,44 +273,6 @@ namespace OdemControl
             }
             scanMode.SelectedIndex = Math.Min(appSetting.scanModeNum, modes.Count() - 1);
 
-            // Get OT delay
-            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.OT_Delay.csv");
-            if (stream == null)
-            {
-                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            reader = new StreamReader(stream);
-            string otd = reader.ReadToEnd();
-            List<string> otdl = otd.Split("\r\n").ToList();
-            List<string> dv = otdl[0].Split(',').ToList();
-            dv.RemoveAt(0);
-            foreach (string d in dv)
-                OT_Delay.Add(d, null);
-
-            Dictionary<string, List<int>> ot = new Dictionary<string, List<int>>();
-            for (int l = 1; l < otdl.Count(); l++)
-            {
-                List<string> parts = otdl[l].Split(',').ToList();
-                string modeName = parts[0];
-                if (modeName == "")
-                    continue;
-                ot.Add(modeName, new List<int>());
-                for (int i = 1; i < parts.Count(); i++)
-                {
-                    ot[modeName].Add(int.Parse(parts[i]));
-                }
-            }
-
-            int dnun = 0;
-            foreach (string dname in OT_Delay.Keys)
-            {
-                Dictionary<string, int> otmp = new Dictionary<string, int>();
-                foreach (string mname in ot.Keys)
-                    otmp.Add(mname, ot[mname][dnun]);
-                OT_Delay[dname] = otmp;
-                dnun++;
-            }
 
             if (appSetting.sensitivity == 0)
                 SensitivityNormal.Checked = true;
@@ -367,39 +328,6 @@ namespace OdemControl
             ModeParams.Rows[4].Cells[1].Value = scanModes[modeName].lines.ToString();
             ModeParams.Rows[5].Cells[1].Value = scanModes[modeName].fRate.ToString() + " FPS";
             ModeParams.ClearSelection();
-            return;
-
-            Dictionary<string, List<uint>> wfFiles = new Dictionary<string, List<uint>>();
-            wfFiles.Add("waveformX", new List<uint>());
-            wfFiles.Add("waveformY", new List<uint>());
-
-            string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".";
-            List<string> files = wfFiles.Keys.ToList();
-            Stream stream;
-            StreamReader reader;
-
-            foreach (string f in files)
-            {
-                wfFiles[f].Clear();
-                string fname = resourceName + f + ".csv";
-                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fname);
-                if (stream == null)
-                {
-                    MessageBox.Show("Failed to read device configuation file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                reader = new StreamReader(stream);
-                string content = reader.ReadToEnd();
-                List<string> lc;
-                if (content.Contains("\r\n"))
-                    lc = content.Split("\r\n").ToList();
-                else
-                    lc = content.Split("\n").ToList();
-                lc.RemoveAt(lc.Count() - 1);
-
-                foreach (string n in lc)
-                    wfFiles[f].Add(BitConverter.SingleToUInt32Bits(float.Parse(n)));
-            }
         }
         private void confDev_Click(object sender, EventArgs e)
         {
@@ -998,7 +926,7 @@ namespace OdemControl
             }
 
             splitContainer3.Panel2Collapsed = !dbgMode;
-               SetDebugView();
+            SetDebugView();
         }
 
         private void showCom_CheckedChanged(object sender, EventArgs e)
@@ -1382,7 +1310,17 @@ namespace OdemControl
         {
             DevInFile.Clear();
             AllDevicesFiles.Clear();
-            GetEncryptedFile();
+            string fln = "c:\\lidwave\\sensor_info.dat";
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Dat Files (*.dat)|*.dat";
+            ofd.Title = "Select a sensor info File";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                fln = ofd.FileName;
+            }
+            GetEncryptedFile(fln);
+            File.WriteAllLines("c:\\lidwave\\test2.txt", AllDevicesFiles);
         }
 
         private void readUID_Click(object sender, EventArgs e)

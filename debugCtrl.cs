@@ -1,11 +1,14 @@
-﻿using Renci.SshNet.Security;
+﻿using Microsoft.SharePoint.Client;
+using Renci.SshNet.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClosedXML.Excel;
 
 namespace OdemControl
 {
@@ -40,6 +43,9 @@ namespace OdemControl
         bool JsonReady = false;
         sm_params scan_params = new sm_params();
         int BASE_FREQUENCY_HZ = 40000;
+        Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
+        Dictionary<string, object> ScanModes = new Dictionary<string, object>();
+
         private void SetDebugView()
         {
             customParams.Rows.Add("Capture Delay", "3200");
@@ -108,11 +114,107 @@ namespace OdemControl
                 groupBox5.Visible = false;
                 tabControl1.Visible = true;
                 debugMode.Visible = false;
+                this.Location = new System.Drawing.Point((Screen.PrimaryScreen.WorkingArea.Width - this.Width) / 2,
+                    (Screen.PrimaryScreen.WorkingArea.Height - this.Height) / 2);
+            }
+        }
+        private void DownLoadFromSharePoint()
+        {
+        }
+        private void parseXlsx(string path)
+        {
+            using (var workbook = new XLWorkbook(path+"\\odem_op.xlsx"))
+            {
+                GetOtDelay(workbook.Worksheet("OT Delay"));
+                getSmPars(workbook.Worksheet("Scan modes"));
+
+            }
+        }
+        private void getSmPars(IXLWorksheet worksheet)
+        {
+            int totalRows = worksheet.Rows().Count();
+            var row = worksheet.Row(1);       // Row 1
+            int totalCells = row.Cells().Count();
+            for (int i = 0; i < totalCells + 1; i++)
+            {
+                string mn = row.Cell(i+3).GetString();
+                if (mn == "")
+                    continue;
+                ScanModes.Add(mn, null);
+            }
+        }
+        private void GetOtDelay(IXLWorksheet worksheet)
+        {
+            int totalRows = worksheet.Rows().Count();
+            var row = worksheet.Row(1);       // Row 1
+            int totalCells = row.Cells().Count();
+            for (int i = 1; i < totalCells; i++)
+                OT_Delay.Add(row.Cell(i + 1).GetString(), null);
+
+            Dictionary<string, List<int>> ot = new Dictionary<string, List<int>>();
+            for (int r = 2; r <= totalRows; r++)
+            {
+                string modeName = worksheet.Row(r).Cell(1).GetString();
+                if (modeName == "")
+                    continue;
+                ot.Add(modeName, new List<int>());
+                for (int i = 1; i < totalCells; i++)
+                {
+                    string cellVal = worksheet.Row(r).Cell(i + 1).GetString();
+                    ot[modeName].Add(int.Parse(cellVal));
+                }
+
             }
 
+            int dnun = 0;
+            foreach (string dname in OT_Delay.Keys)
+            {
+                Dictionary<string, int> otmp = new Dictionary<string, int>();
+                foreach (string mname in ot.Keys)
+                    otmp.Add(mname, ot[mname][dnun]);
+                OT_Delay[dname] = otmp;
+                dnun++;
+            }
+        }
+        private void GetOtDelay(string path)
+        {
+            List<string> lst = System.IO.File.ReadAllLines(path +"\\OT_Delay.csv").ToList();
+            List<string> dv = lst[0].Split(',').ToList();
+            dv.RemoveAt(0);
+            foreach (string d in dv)
+                OT_Delay.Add(d, null);
+
+            Dictionary<string, List<int>> ot = new Dictionary<string, List<int>>();
+            for (int l = 1; l < lst.Count(); l++)
+            {
+                List<string> parts = lst[l].Split(',').ToList();
+                string modeName = parts[0];
+                if (modeName == "")
+                    continue;
+                ot.Add(modeName, new List<int>());
+                for (int i = 1; i < parts.Count(); i++)
+                {
+                    ot[modeName].Add(int.Parse(parts[i]));
+                }
+            }
+
+            int dnun = 0;
+            foreach (string dname in OT_Delay.Keys)
+            {
+                Dictionary<string, int> otmp = new Dictionary<string, int>();
+                foreach (string mname in ot.Keys)
+                    otmp.Add(mname, ot[mname][dnun]);
+                OT_Delay[dname] = otmp;
+                dnun++;
+            }
         }
         private void GenerateEncryptedFile()
         {
+            DownLoadFromSharePoint();
+            
+            OT_Delay.Clear();
+            ScanModes.Clear();
+
             List<string> allFiles = new List<string>();
             Dictionary<string, string> dict = new Dictionary<string, string>()
             {
@@ -133,6 +235,8 @@ namespace OdemControl
                 {
                     string path = dialog.SelectedPath;
                     folderName.Text = path;
+                    parseXlsx(path);
+
                     string[] folders = Directory.GetDirectories(path);
                     foreach (string folder in folders)
                     {
@@ -186,13 +290,26 @@ namespace OdemControl
                         foreach (KeyValuePair<string, string> f in dict)
                         {
                             allFiles.Add("New file: " + f.Key);
-                            allFiles.AddRange(File.ReadAllLines(f.Value).ToList());
+                            List<string> filelines = System.IO.File.ReadAllLines(f.Value).ToList();
+                            allFiles.AddRange(filelines);
+                            if (f.Key == "General_Params")
+                            {
+                                Dictionary<string, int> devOTD = (Dictionary<string, int>)OT_Delay[dev];
+                                List<string> ot = new List<string>();
+                                foreach (KeyValuePair<string, int> o in devOTD)
+                                    ot.Add(o.Key + "," + o.Value.ToString());
+                                // Add OT delay lines at end of general params file
+                            }
                         }
 
                     }
                 }
             }
 
+            EncryptFile(allFiles);
+        }
+        private void EncryptFile(List<string> data)
+        {
             // 32-byte (256-bit) key
             byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
             // 16-byte (128-bit) IV
@@ -205,7 +322,7 @@ namespace OdemControl
             string filePath = "c:\\lidwave\\sensor_info.dat";
             using StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8);
 
-            foreach (string s in allFiles)
+            foreach (string s in data)
             {
                 byte[] plainBytes = Encoding.UTF8.GetBytes(s);
                 byte[] encrypted = aes.CreateEncryptor()
@@ -213,9 +330,9 @@ namespace OdemControl
 
                 writer.WriteLine(Convert.ToBase64String(encrypted));
             }
-
+            writer.Close();
         }
-        private void GetEncryptedFile()
+        private void GetEncryptedFile(string fln)
         {
             DevInFile.Clear();
             AllDevicesFiles.Clear();
@@ -230,11 +347,11 @@ namespace OdemControl
             aes.IV = iv;
 
             string filePath = "c:\\lidwave\\sensor_info.dat";
-            if (File.Exists(filePath) == false)
+            if (System.IO.File.Exists(filePath) == false)
                 return;
 
 
-            foreach (string line in File.ReadLines(filePath))
+            foreach (string line in System.IO.File.ReadLines(filePath))
             {
                 byte[] encrypted = Convert.FromBase64String(line);
                 byte[] decrypted = aes.CreateDecryptor()
@@ -519,7 +636,7 @@ namespace OdemControl
             foreach (DataGridViewRow row in cWaveForm.Rows)
             {
                 string fln = row.Cells[1].Value.ToString();
-                if (File.Exists(fln))
+                if (System.IO.File.Exists(fln))
                     wfFiles.Add(fln);
             }
             if (wfFiles.Count < 2)
@@ -527,8 +644,8 @@ namespace OdemControl
                 MessageBox.Show("Missing waveform file(s)");
                 return;
             }
-            int xCount = File.ReadLines(wfFiles[0]).Count();
-            int yCount = File.ReadLines(wfFiles[1]).Count();
+            int xCount = System.IO.File.ReadLines(wfFiles[0]).Count();
+            int yCount = System.IO.File.ReadLines(wfFiles[1]).Count();
             if (xCount != yCount)
             {
                 MessageBox.Show("waveform file line count not the same");
@@ -536,7 +653,7 @@ namespace OdemControl
             }
             string json = SetJSON(xCount);
             string jfln = wfFiles[0].Replace("waveformX.csv", "scan_parameters.json");
-            File.WriteAllText(jfln, json);
+            System.IO.File.WriteAllText(jfln, json);
             JsonReady = true;
 
         }
@@ -579,7 +696,7 @@ namespace OdemControl
                 foreach (DataGridViewRow row in cWaveForm.Rows)
                 {
                     string fln = row.Cells[1].Value.ToString();
-                    if (File.Exists(fln))
+                    if (System.IO.File.Exists(fln))
                         wfFiles.Add(fln);
                     else
                     {
@@ -601,27 +718,27 @@ namespace OdemControl
             confFiles["128Bins_Final"].Clear();
             confFiles["blackmanHarris_DEC"].Clear();
 
-            string[] lines = File.ReadAllLines(setFiles[0]);
+            string[] lines = System.IO.File.ReadAllLines(setFiles[0]);
             foreach (string l in lines)
                 confFiles["AWG"].Add(uint.Parse(l));
 
-            lines = File.ReadAllLines(setFiles[1]);
+            lines = System.IO.File.ReadAllLines(setFiles[1]);
             foreach (string l in lines)
                 confFiles["badGoodIndxs_High"].Add(uint.Parse(l));
 
-            lines = File.ReadAllLines(setFiles[2]);
+            lines = System.IO.File.ReadAllLines(setFiles[2]);
             foreach (string l in lines)
                 confFiles["badGoodIndxs_Low"].Add(uint.Parse(l));
 
-            lines = File.ReadAllLines(setFiles[3]);
+            lines = System.IO.File.ReadAllLines(setFiles[3]);
             foreach (string l in lines)
                 confFiles["128Bins_Final"].Add(uint.Parse(l));
 
-            lines = File.ReadAllLines(setFiles[4]);
+            lines = System.IO.File.ReadAllLines(setFiles[4]);
             foreach (string l in lines)
                 confFiles["blackmanHarris_DEC"].Add(uint.Parse(l));
 
-            lines = File.ReadAllLines(setFiles[5]);
+            lines = System.IO.File.ReadAllLines(setFiles[5]);
             foreach (string l in lines)
                 confFiles["2kWin"].Add(uint.Parse(l));
 
@@ -647,7 +764,6 @@ namespace OdemControl
             OTDelay.Value = GeneralParameters["OTD"];
             ConfigNow("");
         }
-    
         private List<uint> ReadEEPROM(uint add, uint len)
         {
             List<uint> t = new List<uint>();
