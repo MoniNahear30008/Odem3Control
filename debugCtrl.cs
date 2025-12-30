@@ -1,14 +1,7 @@
-﻿using Microsoft.SharePoint.Client;
-using Renci.SshNet.Security;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using ClosedXML.Excel;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using ClosedXML.Excel;
+using System.Text.RegularExpressions;
 
 namespace OdemControl
 {
@@ -132,15 +125,47 @@ namespace OdemControl
         }
         private void getSmPars(IXLWorksheet worksheet)
         {
+            Dictionary<int, string> smIdx = new Dictionary<int, string>();
             int totalRows = worksheet.Rows().Count();
             var row = worksheet.Row(1);       // Row 1
             int totalCells = row.Cells().Count();
+            int idx = 0;
             for (int i = 0; i < totalCells + 1; i++)
             {
-                string mn = row.Cell(i+3).GetString();
+                string mn = row.Cell(i + 3).GetString();
                 if (mn == "")
                     continue;
-                ScanModes.Add(mn, null);
+                ScanModes.Add(mn, new Dictionary<string, double>());
+                smIdx.Add(idx, mn);
+                idx++;
+            }
+
+            Dictionary<string, List<double>> pars = new Dictionary<string, List<double>>();
+            for (int r = 2; r <= totalRows; r++)
+            {
+                row = worksheet.Row(r);
+                if (row.Cells().Count() < totalCells)
+                    continue;
+                string pname = worksheet.Row(r).Cell(2).GetString();
+                if (pname == "")
+                    continue;
+                pars.Add(pname, new List<double>());
+                List<string> p = new List<string>();
+                for (int s = 0; s < smIdx.Count(); s++)
+                {
+                    string pval = row.Cell(s + 3).GetString();
+                    var match = Regex.Match(pval, @"-?\d+(\.\d+)?");
+                    pars[pname].Add(double.Parse(match.Value));
+                }
+            }
+
+            for (int s = 0; s < smIdx.Count(); s++)
+            {
+                string sname = smIdx[s];
+                foreach (KeyValuePair<string, List<double>> kv in pars)
+                {
+                    ((Dictionary<string, double>)ScanModes[sname]).Add(kv.Key, kv.Value[s]);
+                }
             }
         }
         private void GetOtDelay(IXLWorksheet worksheet)
@@ -163,7 +188,6 @@ namespace OdemControl
                     string cellVal = worksheet.Row(r).Cell(i + 1).GetString();
                     ot[modeName].Add(int.Parse(cellVal));
                 }
-
             }
 
             int dnun = 0;
