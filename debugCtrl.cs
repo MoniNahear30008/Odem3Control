@@ -23,8 +23,8 @@ namespace OdemControl
         uint I2C_val = 0;
         Dictionary<string, uint> Vectors = new Dictionary<string, uint>()
         {
-            {"badGoodIndxs_High", 0xFF200028 },
-            {"badGoodIndxs_Low", 0xFF20002C },
+            {"badGoodIndxs_High", 0xFF20002C },
+            {"badGoodIndxs_Low", 0xFF200028 },
             {"128Bins_Final_1", 0xFF248000},
             {"128Bins_Final_2", 0xFF248200},
             {"blackmanHarris_DEC", 0xFF340000},
@@ -38,6 +38,7 @@ namespace OdemControl
         int BASE_FREQUENCY_HZ = 40000;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> ScanModes = new Dictionary<string, object>();
+        Dictionary<string, object> devConfig = new Dictionary<string, object>();
 
         private void SetDebugView()
         {
@@ -114,13 +115,65 @@ namespace OdemControl
         private void DownLoadFromSharePoint()
         {
         }
-        private void parseXlsx(string path)
+        private bool parseXlsx(string path)
         {
+            bool all = true;
             using (var workbook = new XLWorkbook(path+"\\odem_op.xlsx"))
             {
+                all &= workbook.Worksheets.Contains("OT Delay");
+                all &= workbook.Worksheets.Contains("Scan modes");
+                all &= workbook.Worksheets.Contains("Config");
+                if (!all)
+                    return true;
                 GetOtDelay(workbook.Worksheet("OT Delay"));
                 getSmPars(workbook.Worksheet("Scan modes"));
+//                getConfigPars(workbook.Worksheet("Config"));
+            }
+            return false;
+        }
+        private void getConfigPars(IXLWorksheet worksheet)
+        {
+            Dictionary<int, string> smIdx = new Dictionary<int, string>();
+            int totalRows = worksheet.Rows().Count();
+            var row = worksheet.Row(1);       // Row 1
+            int totalCells = row.Cells().Count();
+            int idx = 0;
+            for (int i = 0; i < totalCells + 1; i++)
+            {
+                string mn = row.Cell(i + 3).GetString();
+                if (mn == "")
+                    continue;
+                ScanModes.Add(mn, new Dictionary<string, double>());
+                smIdx.Add(idx, mn);
+                idx++;
+            }
 
+            Dictionary<string, List<double>> pars = new Dictionary<string, List<double>>();
+            for (int r = 2; r <= totalRows; r++)
+            {
+                row = worksheet.Row(r);
+                if (row.Cells().Count() < totalCells)
+                    continue;
+                string pname = worksheet.Row(r).Cell(2).GetString();
+                if (pname == "")
+                    continue;
+                pars.Add(pname, new List<double>());
+                List<string> p = new List<string>();
+                for (int s = 0; s < smIdx.Count(); s++)
+                {
+                    string pval = row.Cell(s + 3).GetString();
+                    var match = Regex.Match(pval, @"-?\d+(\.\d+)?");
+                    pars[pname].Add(double.Parse(match.Value));
+                }
+            }
+
+            for (int s = 0; s < smIdx.Count(); s++)
+            {
+                string sname = smIdx[s];
+                foreach (KeyValuePair<string, List<double>> kv in pars)
+                {
+                    ((Dictionary<string, double>)ScanModes[sname]).Add(kv.Key, kv.Value[s]);
+                }
             }
         }
         private void getSmPars(IXLWorksheet worksheet)
@@ -235,7 +288,6 @@ namespace OdemControl
         private void GenerateEncryptedFile()
         {
             DownLoadFromSharePoint();
-            
             OT_Delay.Clear();
             ScanModes.Clear();
 
@@ -255,14 +307,26 @@ namespace OdemControl
             {
                 dialog.Description = "Select a folder";
                 dialog.ShowNewFolderButton = true;
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
                     string path = dialog.SelectedPath;
                     folderName.Text = path;
-                    parseXlsx(path);
 
-                    string[] folders = Directory.GetDirectories(path);
-                    foreach (string folder in folders)
+                if (!File.Exists(path + "\\odem_op.xlsx"))
+                {
+                    MessageBox.Show(path + "\\odem_op.xlsx not found");
+                    return;
+                }
+                bool err = parseXlsx(path);
+                if (err)
+                {
+                    MessageBox.Show("Error while Parsing " + path + "\\odem_op.xlsx not found");
+                    return;
+                }
+
+                string[] folders = Directory.GetDirectories(path);
+                foreach (string folder in folders)
                     {
                         string dev = folder.Substring(folder.IndexOf("SN"));
                         string[] files = Directory.GetFiles(folder);
@@ -322,12 +386,11 @@ namespace OdemControl
                                 List<string> ot = new List<string>();
                                 foreach (KeyValuePair<string, int> o in devOTD)
                                     ot.Add(o.Key + "," + o.Value.ToString());
-                                // Add OT delay lines at end of general params file
+                                allFiles.AddRange(ot);
                             }
                         }
 
                     }
-                }
             }
 
             EncryptFile(allFiles);

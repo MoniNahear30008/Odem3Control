@@ -11,8 +11,8 @@
             {(int)confStates.SET_RANGE, 0xFF20007C},
             {(int)confStates.SET_SPUR, 0xFF200074},
             {(int)confStates.SET_RETRO_LEVEL, 0xFF200070},
-            {(int)confStates.SET_VECTOR_1, 0xFF200028},         // badGoodIndxs_High
-            {(int)confStates.SET_VECTOR_2, 0xFF20002C},         // badGoodIndxs_Low
+            {(int)confStates.SET_VECTOR_1, 0xFF20002C},         // badGoodIndxs_High
+            {(int)confStates.SET_VECTOR_2, 0xFF200028},         // badGoodIndxs_Low
             {(int)confStates.SET_VECTOR_3, 0xFF248000},         // 128Bins_Final
             {(int)confStates.SET_VECTOR_4, 0xFF248200},         // 128Bins_Final
             {(int)confStates.SET_VECTOR_5, 0xFF340000},         // blackmanHarris_DEC

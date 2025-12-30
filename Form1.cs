@@ -1085,6 +1085,8 @@ namespace OdemControl
                 return;
             }
 
+            string vec = vecList.SelectedItem.ToString();
+            VecDest = Vectors[vec];
             string Error = WriteRegWaitResp(VecDest, VecData);
             if (Error.Length > 0)
             {
