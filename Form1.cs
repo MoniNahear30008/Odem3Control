@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.00.00";
+        string version = "3.01.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;

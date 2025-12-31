@@ -504,6 +504,7 @@
                     case (int)confStates.RUN_OPTOTUNE_CALIBRATION:
                         LogMessage("Start Odem (~40Sec)");
                         deviceState.Text = "Start Odem (~40Sec)";
+                        this.Refresh();
                         Error = RunOpto(modeNum);
                         // Close and reopen client due to left over messages in buffer
                         await ConnectNow();
