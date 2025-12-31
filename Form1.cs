@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -16,6 +18,8 @@ namespace OdemControl
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
         public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
+        public Dictionary<string, object> AllConfFiles = new Dictionary<string, object>();
+        public Dictionary<string, object> AllConfParams = new Dictionary<string, object>();
         int confState = (int)confStates.IDLE;
         public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
         {
@@ -96,6 +100,8 @@ namespace OdemControl
             debugmodeEnabled = dbgMode;
             loggingEnabled |= dbgMode;
             dataLoggingEnabled |= dbgMode;
+            streamTo.Visible = false;
+            streamTo.Checked = false;
             if (loggingEnabled)
                 OpenLogFile();
 
@@ -139,15 +145,19 @@ namespace OdemControl
         }
         private bool SetVars()
         {
-            DevInFile.Clear();
-            AllDevicesFiles.Clear();
+            _MyipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList
+              .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
+              .ToString() ?? "No IPv4 found";
+
+            AllConfFiles.Clear();
+            AllConfParams.Clear();
             GetEncryptedFile("c:\\lidwave\\sensor_info.dat");
 
-            if (DevInFile.Count == 0)
+            if (AllConfFiles.Count == 0)
                 return true;
 
             deviceID.Clear();
-            foreach (string dev in DevInFile.Keys)
+            foreach (string dev in AllConfFiles.Keys)
             {
                 if (!deviceID.Contains(dev))
                     deviceID.Add(dev);
@@ -416,17 +426,17 @@ namespace OdemControl
         }
         private void UpdateConfFiles()
         {
-            if (DevInFile.ContainsKey(deviceID[appSetting.deviceNum]))
-            {
-                LogMessage("Device configuration files read from encrypted file");
+            //if (DevInFile.ContainsKey(deviceID[appSetting.deviceNum]))
+            //{
+                //LogMessage("Device configuration files read from encrypted file");
 
                 GetDeviceFiles(deviceID[appSetting.deviceNum]);
 
                 LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
                     + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
-            }
-            else
-                MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
+            //else
+            //    MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         }
         private void OpenLogFile()
@@ -842,7 +852,7 @@ namespace OdemControl
                 streaming.Visible = true;
                 sStart.Enabled = false;
                 sStop.Enabled = true;
-                deviceState.Text = "Steaming";
+                deviceState.Text = "Streaming";
                 deviceState.ForeColor = Color.Green;
                 scanMode.Enabled = false;
                 DisableConf(false);
@@ -920,7 +930,7 @@ namespace OdemControl
         {
             timer2.Stop();
 
-            if (DevInFile.Count == 0)
+            if (AllConfFiles.Count == 0)
             {
                 MessageBox.Show("Sensor inof file not found\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -996,6 +1006,9 @@ namespace OdemControl
                     break;
                 case "readUID":
                     readUID.BackColor = SystemColors.Control;
+                    break;
+                case "genEncypt":
+                    genEncypt.BackColor = SystemColors.Control;
                     break;
             }
         }
@@ -1085,9 +1098,18 @@ namespace OdemControl
                 return;
             }
 
+            string Error = "";
             string vec = vecList.SelectedItem.ToString();
-            VecDest = Vectors[vec];
-            string Error = WriteRegWaitResp(VecDest, VecData);
+            if (vec == "AWG")
+            {
+                Error = SPIWriteAWGWaitResp(VecData);
+
+            }
+            else
+            {
+                VecDest = Vectors[vec];
+                Error = WriteRegWaitResp(VecDest, VecData);
+            }
             if (Error.Length > 0)
             {
                 LogMessage("Configuring Error: " + Error);
@@ -1289,7 +1311,13 @@ namespace OdemControl
 
         private void genEncypt_Click(object sender, EventArgs e)
         {
-            GenerateEncryptedFile();
+            bool ready = GenerateEncryptedFile();
+            if (ready)
+                genEncypt.BackColor = Color.Lime;
+            else
+                genEncypt.BackColor = Color.Red;
+            pushed = "genEncypt";
+            timer3.Start();
         }
 
         private void getVersionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1310,8 +1338,8 @@ namespace OdemControl
 
         private void getEncyptedFile_Click(object sender, EventArgs e)
         {
-            DevInFile.Clear();
-            AllDevicesFiles.Clear();
+            //DevInFile.Clear();
+            //AllDevicesFiles.Clear();
             string fln = "c:\\lidwave\\sensor_info.dat";
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Dat Files (*.dat)|*.dat";
@@ -1322,7 +1350,7 @@ namespace OdemControl
                 fln = ofd.FileName;
             }
             GetEncryptedFile(fln);
-            File.WriteAllLines("c:\\lidwave\\test2.txt", AllDevicesFiles);
+            //File.WriteAllLines("c:\\lidwave\\test2.txt", AllDevicesFiles);
         }
 
         private void readUID_Click(object sender, EventArgs e)

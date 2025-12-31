@@ -85,7 +85,7 @@ namespace OdemControl
             this.Cursor = Cursors.Default;
             this.Enabled = true;
 
-            MessageBox.Show("ODEM upgraded:\n- Resart ODEM\n- Wait for 10 minute and try to connect\n- Read version", "Upgrade", MessageBoxButtons.OK);
+            MessageBox.Show("ODEM upgraded:\n- Resart ODEM\n- Wait for 5 minute and try to connect\n- Read version", "Upgrade", MessageBoxButtons.OK);
             this.Close();
         }
         private void upgrade_LoadFile()

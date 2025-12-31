@@ -16,6 +16,8 @@ namespace OdemControl
     public partial class Form1
     {
         private string _ipAddress = "192.168.2.24";
+        private string _LidarViewipAddress = "192.168.2.20";
+        private string _MyipAddress = "";
         private int _port = 24871;
         NetworkStream stream;
         TcpClient client;
@@ -893,7 +895,13 @@ namespace OdemControl
             var result = ssh.CreateCommand($"lsmod").Execute().Trim();
             if (!result.Contains("altera_msgdma_st"))
             {
-                string command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"192.168.2.20\" udp_dest_port=10003 transfer_size=704";
+                string ipAddress = _LidarViewipAddress;
+                if (streamTo.Checked)
+                    ipAddress = _MyipAddress;
+                string command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"" + 
+                    ipAddress + "\" udp_dest_port=10003 transfer_size=704";
+
+//                command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"192.168.2.20\" udp_dest_port=10003 transfer_size=704";
                 var reult = ssh.CreateCommand(command).Execute().Trim();  //cmd.Execute();
                 result = ssh.CreateCommand($"lsmod").Execute().Trim();  //cmd.Execute();
             }

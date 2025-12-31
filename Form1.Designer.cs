@@ -68,6 +68,7 @@
             splitContainer2 = new SplitContainer();
             ConnectedTo = new Label();
             oVer = new Label();
+            streamTo = new CheckBox();
             splitContainer3 = new SplitContainer();
             MonitorView = new RichTextBox();
             clr = new Button();
@@ -496,7 +497,7 @@
             // 
             // debugMode
             // 
-            debugMode.Location = new Point(15, 78);
+            debugMode.Location = new Point(15, 53);
             debugMode.Margin = new Padding(4, 3, 4, 3);
             debugMode.Name = "debugMode";
             debugMode.Size = new Size(108, 32);
@@ -596,6 +597,7 @@
             // 
             // splitContainer2.Panel2
             // 
+            splitContainer2.Panel2.Controls.Add(streamTo);
             splitContainer2.Panel2.Controls.Add(tempTable);
             splitContainer2.Panel2.Controls.Add(ReadInt);
             splitContainer2.Panel2.Controls.Add(debugMode);
@@ -624,6 +626,16 @@
             oVer.Name = "oVer";
             oVer.Size = new Size(0, 21);
             oVer.TabIndex = 16;
+            // 
+            // streamTo
+            // 
+            streamTo.AutoSize = true;
+            streamTo.Location = new Point(21, 91);
+            streamTo.Name = "streamTo";
+            streamTo.Size = new Size(131, 25);
+            streamTo.TabIndex = 15;
+            streamTo.Text = "Stream to here";
+            streamTo.UseVisualStyleBackColor = true;
             // 
             // splitContainer3
             // 
@@ -774,6 +786,7 @@
             getEncyptedFile.TabIndex = 24;
             getEncyptedFile.Text = "Import encypted file";
             getEncyptedFile.UseVisualStyleBackColor = true;
+            getEncyptedFile.Visible = false;
             getEncyptedFile.Click += getEncyptedFile_Click;
             // 
             // genEncypt
@@ -1590,5 +1603,6 @@
         private Label devSN;
         private Button setSN;
         private Label ConnectedTo;
+        private CheckBox streamTo;
     }
 }

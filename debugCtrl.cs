@@ -28,7 +28,8 @@ namespace OdemControl
             {"128Bins_Final_1", 0xFF248000},
             {"128Bins_Final_2", 0xFF248200},
             {"blackmanHarris_DEC", 0xFF340000},
-            {"2kWin", 0xFF346000}
+            {"2kWin", 0xFF346000},
+            {"AWG", 0}
         };
         uint VecDest = 0;
         List<uint> VecData = new List<uint>();
@@ -38,7 +39,7 @@ namespace OdemControl
         int BASE_FREQUENCY_HZ = 40000;
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> ScanModes = new Dictionary<string, object>();
-        Dictionary<string, object> devConfig = new Dictionary<string, object>();
+        Dictionary<string, object> devsConfig = new Dictionary<string, object>();
 
         private void SetDebugView()
         {
@@ -123,16 +124,82 @@ namespace OdemControl
                 all &= workbook.Worksheets.Contains("OT Delay");
                 all &= workbook.Worksheets.Contains("Scan modes");
                 all &= workbook.Worksheets.Contains("Config");
-                if (!all)
-                    return true;
-                GetOtDelay(workbook.Worksheet("OT Delay"));
-                getSmPars(workbook.Worksheet("Scan modes"));
-//                getConfigPars(workbook.Worksheet("Config"));
+                if (all)
+                {
+                    all &= !GetOtDelay(workbook.Worksheet("OT Delay"));
+                    all &= !getSmPars(workbook.Worksheet("Scan modes"));
+                    all &= !getConfigPars(workbook.Worksheet("Config"));
+                }
             }
-            return false;
+            return !all;
         }
-        private void getConfigPars(IXLWorksheet worksheet)
+        private bool getConfigPars(IXLWorksheet worksheet)
         {
+            List<string> Pars = new List<string>()
+            {
+                "Capture_Delay","Chirp_AWG_gain","LO","TxSOA1",
+                "TxSOA2","Tx3_0_9","Tx3_10_19","Tx3_20_29",
+                "Tx3_30_39","MainBoard","DriverBoard"
+            };
+
+            bool error = false;
+            Dictionary<int, string> devIdx = new Dictionary<int, string>();
+            int totalRows = worksheet.Rows().Count();
+            var row = worksheet.Row(1);       // Row 1
+            int totalCells = row.Cells().Count();
+            int idx = 0;
+            for (int i = 0; i < totalCells + 1; i++)
+            {
+                string dev = row.Cell(i + 3).GetString();
+                if (dev == "")
+                    continue;
+                devsConfig.Add(dev, new Dictionary<string, int>());
+                devIdx.Add(idx, dev);
+                idx++;
+            }
+
+            Dictionary<string, List<int>> pars = new Dictionary<string, List<int>>();
+            for (int r = 2; r <= totalRows; r++)
+            {
+                row = worksheet.Row(r);
+                if (row.Cells().Count() < totalCells)
+                    continue;
+                string pname = worksheet.Row(r).Cell(2).GetString().Trim();
+                if (pname == "")
+                    continue;
+                if (!Pars.Contains(pname))
+                    continue;
+                pars.Add(pname, new List<int>());
+                List<string> p = new List<string>();
+                for (int s = 0; s < devIdx.Count(); s++)
+                {
+                    string pval = row.Cell(s + 3).GetString().Trim();
+                    int ival = 0;
+                    bool validPar = true;
+                    if (pval.StartsWith("0x"))
+                        validPar = int.TryParse(pval.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out ival);
+                    else
+                        validPar = int.TryParse(pval, out ival);
+                    if (!validPar)
+                        return true;
+                    pars[pname].Add(ival);
+                }
+            }
+
+            for (int s = 0; s < devIdx.Count(); s++)
+            {
+                string sname = devIdx[s];
+                foreach (KeyValuePair<string, List<int>> kv in pars)
+                {
+                    ((Dictionary<string, int>)devsConfig[sname]).Add(kv.Key, kv.Value[s]);
+                }
+            }
+
+            return error;
+        }
+        private bool getSmPars(IXLWorksheet worksheet)
+        {
+            bool error = false;
             Dictionary<int, string> smIdx = new Dictionary<int, string>();
             int totalRows = worksheet.Rows().Count();
             var row = worksheet.Row(1);       // Row 1
@@ -175,54 +242,12 @@ namespace OdemControl
                     ((Dictionary<string, double>)ScanModes[sname]).Add(kv.Key, kv.Value[s]);
                 }
             }
-        }
-        private void getSmPars(IXLWorksheet worksheet)
-        {
-            Dictionary<int, string> smIdx = new Dictionary<int, string>();
-            int totalRows = worksheet.Rows().Count();
-            var row = worksheet.Row(1);       // Row 1
-            int totalCells = row.Cells().Count();
-            int idx = 0;
-            for (int i = 0; i < totalCells + 1; i++)
-            {
-                string mn = row.Cell(i + 3).GetString();
-                if (mn == "")
-                    continue;
-                ScanModes.Add(mn, new Dictionary<string, double>());
-                smIdx.Add(idx, mn);
-                idx++;
-            }
 
-            Dictionary<string, List<double>> pars = new Dictionary<string, List<double>>();
-            for (int r = 2; r <= totalRows; r++)
-            {
-                row = worksheet.Row(r);
-                if (row.Cells().Count() < totalCells)
-                    continue;
-                string pname = worksheet.Row(r).Cell(2).GetString();
-                if (pname == "")
-                    continue;
-                pars.Add(pname, new List<double>());
-                List<string> p = new List<string>();
-                for (int s = 0; s < smIdx.Count(); s++)
-                {
-                    string pval = row.Cell(s + 3).GetString();
-                    var match = Regex.Match(pval, @"-?\d+(\.\d+)?");
-                    pars[pname].Add(double.Parse(match.Value));
-                }
-            }
-
-            for (int s = 0; s < smIdx.Count(); s++)
-            {
-                string sname = smIdx[s];
-                foreach (KeyValuePair<string, List<double>> kv in pars)
-                {
-                    ((Dictionary<string, double>)ScanModes[sname]).Add(kv.Key, kv.Value[s]);
-                }
-            }
+            return error;
         }
-        private void GetOtDelay(IXLWorksheet worksheet)
+        private bool GetOtDelay(IXLWorksheet worksheet)
         {
+            bool error = false;
             int totalRows = worksheet.Rows().Count();
             var row = worksheet.Row(1);       // Row 1
             int totalCells = row.Cells().Count();
@@ -252,6 +277,7 @@ namespace OdemControl
                 OT_Delay[dname] = otmp;
                 dnun++;
             }
+            return error;
         }
         private void GetOtDelay(string path)
         {
@@ -285,7 +311,7 @@ namespace OdemControl
                 dnun++;
             }
         }
-        private void GenerateEncryptedFile()
+        private bool GenerateEncryptedFile()
         {
             DownLoadFromSharePoint();
             OT_Delay.Clear();
@@ -308,7 +334,7 @@ namespace OdemControl
                 dialog.Description = "Select a folder";
                 dialog.ShowNewFolderButton = true;
                 if (dialog.ShowDialog() != DialogResult.OK)
-                    return;
+                    return false;
 
                     string path = dialog.SelectedPath;
                     folderName.Text = path;
@@ -316,16 +342,16 @@ namespace OdemControl
                 if (!File.Exists(path + "\\odem_op.xlsx"))
                 {
                     MessageBox.Show(path + "\\odem_op.xlsx not found");
-                    return;
+                    return false;
                 }
                 bool err = parseXlsx(path);
                 if (err)
                 {
                     MessageBox.Show("Error while Parsing " + path + "\\odem_op.xlsx not found");
-                    return;
+                    return false;
                 }
 
-                string[] folders = Directory.GetDirectories(path);
+                string[] folders = Directory.GetDirectories(path + "\\DevicesData");
                 foreach (string folder in folders)
                     {
                         string dev = folder.Substring(folder.IndexOf("SN"));
@@ -371,7 +397,7 @@ namespace OdemControl
                         if (found < dict.Count)
                         {
                             MessageBox.Show("Not all required files found in folder for " + folder);
-                            return;
+                            return false;
                         }
 
                         allFiles.Add("New Device: " + dev);
@@ -379,21 +405,28 @@ namespace OdemControl
                         {
                             allFiles.Add("New file: " + f.Key);
                             List<string> filelines = System.IO.File.ReadAllLines(f.Value).ToList();
-                            allFiles.AddRange(filelines);
                             if (f.Key == "General_Params")
                             {
-                                Dictionary<string, int> devOTD = (Dictionary<string, int>)OT_Delay[dev];
                                 List<string> ot = new List<string>();
+                                Dictionary<string, int> devCfg = (Dictionary<string, int>)devsConfig[dev];
+                                foreach (KeyValuePair<string, int> o in devCfg)
+                                    ot.Add(o.Key + "," + o.Value.ToString());
+
+                                   Dictionary<string, int> devOTD = (Dictionary<string, int>)OT_Delay[dev];
                                 foreach (KeyValuePair<string, int> o in devOTD)
                                     ot.Add(o.Key + "," + o.Value.ToString());
-                                allFiles.AddRange(ot);
+                                 allFiles.AddRange(ot);
                             }
-                        }
-
+                            else
+                                allFiles.AddRange(filelines);
                     }
+
+                }
             }
 
+            allFiles.Add("EOF");
             EncryptFile(allFiles);
+            return true;
         }
         private void EncryptFile(List<string> data)
         {
@@ -419,10 +452,10 @@ namespace OdemControl
             }
             writer.Close();
         }
-        private void GetEncryptedFile(string fln)
+        private void GetEncryptedFile(string ifln)
         {
-            DevInFile.Clear();
-            AllDevicesFiles.Clear();
+//            DevInFile.Clear();
+//            AllDevicesFiles.Clear();
             var output = new List<string>();
             // 32-byte (256-bit) key
             byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
@@ -434,10 +467,16 @@ namespace OdemControl
             aes.IV = iv;
 
             string filePath = "c:\\lidwave\\sensor_info.dat";
+            if (ifln.Length > 0)
+                filePath = ifln;
             if (System.IO.File.Exists(filePath) == false)
                 return;
 
 
+            AllConfFiles.Clear();
+            string dev = "";
+            string fln = "";
+            bool isParams = false;
             foreach (string line in System.IO.File.ReadLines(filePath))
             {
                 byte[] encrypted = Convert.FromBase64String(line);
@@ -445,59 +484,93 @@ namespace OdemControl
                     .TransformFinalBlock(encrypted, 0, encrypted.Length);
 
                 string nl = Encoding.UTF8.GetString(decrypted);
-                AllDevicesFiles.Add(nl);
+                if (nl == "EOF")
+                    break;
+//                AllDevicesFiles.Add(nl);
                 if (nl.Contains("New Device: "))
                 {
-                    string dev = nl.Replace("New Device: ", "");
-                    DevInFile.Add(dev, AllDevicesFiles.Count);
+                    dev = nl.Replace("New Device: ", "");
+//                    DevInFile.Add(dev, AllDevicesFiles.Count);
+                    AllConfFiles.Add(dev, new Dictionary<string, List<uint>>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("AWG", new List<uint>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("badGoodIndxs_High", new List<uint>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("badGoodIndxs_Low", new List<uint>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("2kWin", new List<uint>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("128Bins_Final", new List<uint>());
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("blackmanHarris_DEC", new List<uint>());
+                    AllConfParams.Add(dev, new Dictionary<string, int>());
                 }
-            }
-        }
-        private void GetDeviceFiles(string dev)
-        {
-            int start = DevInFile[dev];
-            string currentFile = "";
-            bool isParams = false;
-            for (int i = start; i < AllDevicesFiles.Count; i++)
-            {
-                string l = AllDevicesFiles[i];
-                if (l.StartsWith("New Device: "))
-                    break;
-                else if (l.StartsWith("New file: "))
+                else if ((nl.Contains("New file: ")))
                 {
-                    currentFile = l.Replace("New file: ", "");
-                    isParams = currentFile == "General_Params";
+                    fln = nl.Replace("New file: ", "");
+                    isParams = fln == "General_Params";
                     if (!isParams)
-                    {
-                        if (confFiles.ContainsKey(currentFile))
-                            confFiles[currentFile].Clear();
-                    }
-                    continue;
+                        ((Dictionary<string, List<uint>>)AllConfFiles[dev]).ContainsKey(fln);
                 }
                 else if (isParams)
                 {
-                    string[] parts = l.Split(',');
-                    if (parts.Length != 2)
-                        continue;
+                    string[] parts = nl.Split(',');
                     string pname = parts[0].Trim();
                     int pval = 0;
                     if (parts[1].Contains("0x"))
                         pval = int.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
                     else
                         pval = int.Parse(parts[1]);
-                    if (deviceParameters.ContainsKey(pname))
-                        deviceParameters[pname] = (int)pval;
-                    else
-                    {
-                        MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
+                    ((Dictionary<string, int>)AllConfParams[dev]).Add(pname, pval);
                 }
                 else
-                    confFiles[currentFile].Add(uint.Parse(l));
-
+                    ((Dictionary<string, List<uint>>)AllConfFiles[dev])[fln].Add(uint.Parse(nl));
             }
+        }
+        private void GetDeviceFiles(string dev)
+        {
+            deviceParameters = (Dictionary<string, int>)AllConfParams[dev];
+            confFiles = (Dictionary<string, List<uint>>)AllConfFiles[dev];
+            //int start = DevInFile[dev];
+            //string currentFile = "";
+            //bool isParams = false;
+            //for (int i = start; i < AllDevicesFiles.Count; i++)
+            //{
+            //    string l = AllDevicesFiles[i];
+            //    if (l.StartsWith("New Device: "))
+            //        break;
+            //    else if (l.StartsWith("EOF"))
+            //        break;
+            //    else if (l.StartsWith("New file: "))
+            //    {
+            //        currentFile = l.Replace("New file: ", "");
+            //        isParams = currentFile == "General_Params";
+            //        if (!isParams)
+            //        {
+            //            if (confFiles.ContainsKey(currentFile))
+            //                confFiles[currentFile].Clear();
+            //        }
+            //        continue;
+            //    }
+            //    else if (isParams)
+            //    {
+            //        string[] parts = l.Split(',');
+            //        if (parts.Length != 2)
+            //            continue;
+            //        string pname = parts[0].Trim();
+            //        int pval = 0;
+            //        if (parts[1].Contains("0x"))
+            //            pval = int.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+            //        else
+            //            pval = int.Parse(parts[1]);
+            //        if (deviceParameters.ContainsKey(pname))
+            //            deviceParameters[pname] = (int)pval;
+            //        else
+            //        {
+            //            MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //            return;
+            //        }
+
+            //    }
+            //    else
+            //        confFiles[currentFile].Add(uint.Parse(l));
+
+            //}
         }
         private void GetFIles()
         {
