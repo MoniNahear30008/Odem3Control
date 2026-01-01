@@ -45,7 +45,7 @@ namespace OdemControl
         {
             customParams.Rows.Add("Capture Delay", "3200");
             customParams.Rows.Add("Sensitivity", "0x81010E3C");
-            customParams.Rows.Add("CFAR Multiplication", "0x00000404");
+            customParams.Rows.Add("CFAR Multiplication", "0x00000303");
             customParams.Rows.Add("Spurs & NN filter", "0x20023C78");
             customParams.Rows.Add("Retro level", "10000");
             customParams.Rows.Add("Chirp AWG gain", "0x7000");
@@ -416,6 +416,7 @@ namespace OdemControl
                                 foreach (KeyValuePair<string, int> o in devOTD)
                                     ot.Add(o.Key + "," + o.Value.ToString());
                                  allFiles.AddRange(ot);
+                                File.WriteAllLines(dict["General_Params"], ot);
                             }
                             else
                                 allFiles.AddRange(filelines);
@@ -474,6 +475,7 @@ namespace OdemControl
 
 
             AllConfFiles.Clear();
+            AllConfParams.Clear();
             string dev = "";
             string fln = "";
             bool isParams = false;

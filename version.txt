@@ -1,4 +1,8 @@
 ===========================================
+01/01/26: Version 3.01.10: 
+	- Fix configuration
+
+===========================================
 31/12/25: Version 3.01.00: 
 	- Sesnors' infromaition from odem_op.xlsx
 

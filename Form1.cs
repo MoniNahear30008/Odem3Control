@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.01.00";
+        string version = "3.01.10";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -381,14 +381,14 @@ namespace OdemControl
             {
                 deviceState.Text = "Device ready";
                 deviceState.ForeColor = Color.Green;
-                LogMessage("Configuring: Done");
+                LogMessage("Configuring: Done", true);
                 streamBox(true);
             }
             else
             {
                 deviceState.Text = "Device configuration error";
                 deviceState.ForeColor = Color.Red;
-                LogMessage("Configuring: Error");
+                LogMessage("Configuring: Error", true);
                 streamBox(false);
             }
             deviceConfigured = true;
@@ -458,7 +458,7 @@ namespace OdemControl
                 }
             }
         }
-        public void LogMessage(string message)
+        public void LogMessage(string message, bool flush = false)
         {
             if (showCom.Checked)
             {
@@ -473,7 +473,8 @@ namespace OdemControl
             {
                 if (message.StartsWith("Reg write") & (message.Length > 80))
                 {
-                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - Reg Write:");
+                    logFile.WriteLine("Reg Write:");
+                    //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - Reg Write:");
                     message = message.Substring(11);
                     while (message.Length > 96)
                     {
@@ -485,7 +486,13 @@ namespace OdemControl
 
                 }
                 else
-                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
+                {
+                    logFile.WriteLine(message);
+//                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
+                }
+
+                if (flush)
+                    logFile.Flush();
             }
         }
         private void ReadAllTemp()
@@ -1338,8 +1345,6 @@ namespace OdemControl
 
         private void getEncyptedFile_Click(object sender, EventArgs e)
         {
-            //DevInFile.Clear();
-            //AllDevicesFiles.Clear();
             string fln = "c:\\lidwave\\sensor_info.dat";
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Dat Files (*.dat)|*.dat";
@@ -1350,7 +1355,37 @@ namespace OdemControl
                 fln = ofd.FileName;
             }
             GetEncryptedFile(fln);
-            //File.WriteAllLines("c:\\lidwave\\test2.txt", AllDevicesFiles);
+
+            string path = "c:\\Lidwave\\ODEM\\OdemConfig\\FromEncrypted";
+
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+            Directory.CreateDirectory(path);
+
+            List<string> devs = AllConfFiles.Keys.ToList();
+            foreach (string dev in devs)
+            {
+                string dpath = path + "\\" + dev;
+                Directory.CreateDirectory(dpath);
+                Dictionary<string, List<uint>> df = (Dictionary<string, List<uint>>)AllConfFiles[dev];
+                foreach (KeyValuePair<string, List<uint>> kvp in df)
+                {
+                    string fname = dpath + "\\" + kvp.Key + ".txt";
+                    List<string> list = new List<string>();
+                    foreach (uint d in kvp.Value)
+                        list.Add(d.ToString());
+                    File.WriteAllLines(fname, list);    
+                }
+
+                Dictionary<string, int> dp = (Dictionary<string, int>)AllConfParams[dev];
+                List<string> pars = new List<string>();
+                foreach (KeyValuePair<string, int> kvp in dp)
+                {
+                    string fname = dpath + "\\General_Params.csv";
+                    pars.Add(kvp.Key + "," + kvp.Value.ToString());
+                }
+                File.WriteAllLines(dpath + "\\General_Params.csv", pars);
+            }
         }
 
         private void readUID_Click(object sender, EventArgs e)

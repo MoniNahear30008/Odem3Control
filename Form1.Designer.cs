@@ -786,7 +786,6 @@
             getEncyptedFile.TabIndex = 24;
             getEncyptedFile.Text = "Import encypted file";
             getEncyptedFile.UseVisualStyleBackColor = true;
-            getEncyptedFile.Visible = false;
             getEncyptedFile.Click += getEncyptedFile_Click;
             // 
             // genEncypt

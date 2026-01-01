@@ -1,6 +1,7 @@
 ﻿using Org.BouncyCastle.Asn1.CryptoPro;
 using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using Renci.SshNet;
+using Renci.SshNet.Compression;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
@@ -937,6 +938,7 @@ namespace OdemControl
                         return "Failed to read device configuation file";
                     }
 
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
                     client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
 
                     resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformX.csv";
@@ -945,6 +947,8 @@ namespace OdemControl
                     {
                         return "Failed to read device configuation file";
                     }
+
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
                     client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
 
                     resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformY.csv";
@@ -953,15 +957,19 @@ namespace OdemControl
                     {
                         return "Failed to read device configuation file";
                     }
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
                     client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
                 }
                 else
                 {
                     var stream = File.OpenRead(wfPath + "scan_parameters.json");
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_scan_parameters.json");
                     client.Upload(stream, "/var/lib/odem/patterns/10_scan_parameters.json");
                     stream = File.OpenRead(wfPath + "waveformX.csv");
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_waveformX.csv");
                     client.Upload(stream, "/var/lib/odem/patterns/10_waveformX.csv");
                     stream = File.OpenRead(wfPath + "waveformY.csv");
+                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_waveformY.csv");
                     client.Upload(stream, "/var/lib/odem/patterns/10_waveformY.csv");
                 }
                 client.Disconnect();
