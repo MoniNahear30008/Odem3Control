@@ -1142,7 +1142,7 @@
             // 
             // genJSON
             // 
-            genJSON.ForeColor = Color.Red;
+            genJSON.ForeColor = SystemColors.ControlText;
             genJSON.Location = new Point(498, 489);
             genJSON.Name = "genJSON";
             genJSON.Size = new Size(244, 29);

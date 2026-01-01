@@ -36,7 +36,7 @@
 //        Dictionary<string, int> DevInFile = new Dictionary<string, int>();
 //        List<string> AllDevicesFiles = new List<string>();
 
-        private async Task cofigdeviceAsync(string wfPath)
+        private async Task cofigdeviceAsync(string wfPath, string dev, string sm)
         {
             string Error = "";
             int modeNum = scanModes[modes[appSetting.scanModeNum]].modeNum;
@@ -46,7 +46,7 @@
                 switch (confState)
                 {
                     case (int)confStates.IDLE:
-                        LogMessage("Start device configuring");
+                        LogMessage("Start device configuring. ");
                         deviceState.Text = "Configuring device";
                         this.Refresh();
                         confState++;

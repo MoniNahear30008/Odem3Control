@@ -652,10 +652,8 @@ namespace OdemControl
                 DevieLost();
                 return "Device not reponding";
             }
-
             string res = WaitWriteRespose(4);
             return res;
-
         }
         private string RunOpto(int mode)
         {
@@ -702,22 +700,23 @@ namespace OdemControl
                                 if (loggingEnabled)
                                     LogMessage("Reg write response: " + s);
                                 return s;
-
                             }
                         }
-                        while (resp.Count > 17)
+
+                        while (resp.Count > 18)
                         {
-                            int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];
-                            if (resp.Count < (ml + 12))
+                            if (resp.Count < 20)
                                 continue;
                             if ((resp[0] == 2) && (resp[1] == 9))
                             {
                                 stepNum = (int)resp[11];
                                 NumSteps = (int)resp[15];
                                 int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
-                                string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
+                                if (resp.Count < (20 + sl))
+                                    continue;
+                                string msg = new string(Encoding.ASCII.GetChars(resp.ToArray()), 20, sl);
                                 LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
-                                resp.RemoveRange(0, ml + 12);
+                                resp.RemoveRange(0, 20 + sl);
 
                                 optoStat.Value = stepNum;
                                 this.Refresh();
@@ -728,7 +727,7 @@ namespace OdemControl
                             }
                             else
                             {
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml);
+                                string s = new string(Encoding.ASCII.GetChars(buffer), 0, buffer.Length);
                                 return s;
                             }
                         }

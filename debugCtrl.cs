@@ -142,6 +142,7 @@ namespace OdemControl
                 "Tx3_30_39","MainBoard","DriverBoard"
             };
 
+            devsConfig.Clear();
             bool error = false;
             Dictionary<int, string> devIdx = new Dictionary<int, string>();
             int totalRows = worksheet.Rows().Count();
@@ -608,7 +609,8 @@ namespace OdemControl
         private void LoadFromFile()
         {
             JsonReady = false;
-            genJSON.ForeColor = Color.Red;
+            if (customMode.Checked)
+                genJSON.ForeColor = Color.Red;
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Text Files (*.txt)|*.txt";
             ofd.Title = "Select a Text File";
@@ -790,31 +792,27 @@ namespace OdemControl
             json += "\r\n        }\r\n    }\r\n}";
             return json;
         }
-        private void GenJson()
+        private void GenJson(List<string> waveforms)
         {
-            genJSON.ForeColor = Color.Red;
+            if (customMode.Checked)
+                genJSON.ForeColor = Color.Red;
             JsonReady = false;
-            List<string> wfFiles = new List<string>();
-            foreach (DataGridViewRow row in cWaveForm.Rows)
-            {
-                string fln = row.Cells[1].Value.ToString();
-                if (System.IO.File.Exists(fln))
-                    wfFiles.Add(fln);
-            }
-            if (wfFiles.Count < 2)
+
+            if (waveforms.Count < 2)
             {
                 MessageBox.Show("Missing waveform file(s)");
                 return;
             }
-            int xCount = System.IO.File.ReadLines(wfFiles[0]).Count();
-            int yCount = System.IO.File.ReadLines(wfFiles[1]).Count();
+
+            int xCount = System.IO.File.ReadLines(waveforms[0]).Count();
+            int yCount = System.IO.File.ReadLines(waveforms[1]).Count();
             if (xCount != yCount)
             {
                 MessageBox.Show("waveform file line count not the same");
                 return;
             }
             string json = SetJSON(xCount);
-            string jfln = wfFiles[0].Replace("waveformX.csv", "scan_parameters.json");
+            string jfln = waveforms[0].Replace("waveformX.csv", "scan_parameters.json");
             System.IO.File.WriteAllText(jfln, json);
             JsonReady = true;
 
@@ -924,7 +922,10 @@ namespace OdemControl
             GeneralParameters["SOA"] = getVal(customParams.Rows[10].Cells[1].Value.ToString());
             GeneralParameters["OTD"] = getVal(customParams.Rows[6].Cells[1].Value.ToString());
             OTDelay.Value = GeneralParameters["OTD"];
-            ConfigNow("");
+            string sm = modes[appSetting.scanModeNum];
+            if (customMode.Checked)
+                sm = "Custom";
+            ConfigNow("", "Custom", sm);
         }
         private List<uint> ReadEEPROM(uint add, uint len)
         {

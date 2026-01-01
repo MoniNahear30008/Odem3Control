@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.01.10";
+        string version = "3.02.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -73,12 +73,12 @@ namespace OdemControl
                 Directory.CreateDirectory(path);
 
             // if first run after installation, move sensor_info.dat to c:\lidwave
-            string appFolder = AppDomain.CurrentDomain.BaseDirectory;
-            if (File.Exists("sensor_info.dat"))
-            {
-                File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat", overwrite: true);
-                File.Delete(appFolder + "sensor_info.dat");
-            }
+            //string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+            //if (File.Exists("sensor_info.dat"))
+            //{
+            //    File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat", overwrite: true);
+            //    File.Delete(appFolder + "sensor_info.dat");
+            //}
 
             this.Text = "ODEM Control by Lidwave. Version: " + version;
 
@@ -364,9 +364,11 @@ namespace OdemControl
             GeneralParameters["SOA"] = 2;
 
             GeneralParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
-            ConfigNow("");
+            string dev = deviceID[appSetting.deviceNum];
+            string sm = modes[appSetting.scanModeNum];
+            ConfigNow("", dev, sm);
         }
-        public async void ConfigNow(string wfPath)
+        public async void ConfigNow(string wfPath, string dev, string sm)
         {
             configuring = true;
             pingLost = 10;
@@ -376,7 +378,7 @@ namespace OdemControl
             deviceState.ForeColor = Color.Black;
             appSetting.Update(true);
             confState = (int)confStates.IDLE;
-            await cofigdeviceAsync(wfPath);
+            await cofigdeviceAsync(wfPath, dev, sm);
             if (confState == (int)confStates.DONE)
             {
                 deviceState.Text = "Device ready";
@@ -1216,6 +1218,11 @@ namespace OdemControl
         }
         private void customMode_CheckedChanged(object sender, EventArgs e)
         {
+            if (customMode.Checked)
+                genJSON.ForeColor = Color.Red;
+            else 
+                genJSON.ForeColor = SystemColors.ControlText;
+
             cModeParams.Enabled = customMode.Checked;
             cWaveForm.Enabled = customMode.Checked;
         }
@@ -1233,7 +1240,8 @@ namespace OdemControl
         }
         private void cModeParams_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            genJSON.ForeColor = Color.Red;
+            if (customMode.Checked)
+                genJSON.ForeColor = Color.Red;
             JsonReady = false;
         }
         private void customFiles_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -1253,8 +1261,21 @@ namespace OdemControl
         }
         private void genJSON_Click(object sender, EventArgs e)
         {
-            GenJson();
-            genJSON.ForeColor = Color.LimeGreen;
+            List<string> waveforms = new List<string>();
+            foreach (DataGridViewRow row in cWaveForm.Rows)
+            {
+                string fln = row.Cells[1].Value.ToString();
+                if (System.IO.File.Exists(fln))
+                {
+                    MessageBox.Show(fln + " not found");
+                    return;
+                }
+                waveforms.Add(fln);
+            }
+
+            GenJson(waveforms);
+            if (customMode.Checked)
+                genJSON.ForeColor = Color.LimeGreen;
         }
         private void selWF_Click(object sender, EventArgs e)
         {
@@ -1262,6 +1283,12 @@ namespace OdemControl
         }
         private void customConfig_Click(object sender, EventArgs e)
         {
+            if (customMode.Checked && !JsonReady)
+            {
+                genJSON.ForeColor = Color.Red;
+                MessageBox.Show("Need to generate JSON before configuring the device in custom  scan mode");
+                return;
+            }
             CustomCofig();
         }
 
