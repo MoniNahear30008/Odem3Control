@@ -317,6 +317,7 @@ namespace OdemControl
             DownLoadFromSharePoint();
             OT_Delay.Clear();
             ScanModes.Clear();
+            string path = "";
 
             List<string> allFiles = new List<string>();
             Dictionary<string, string> dict = new Dictionary<string, string>()
@@ -337,7 +338,7 @@ namespace OdemControl
                 if (dialog.ShowDialog() != DialogResult.OK)
                     return false;
 
-                    string path = dialog.SelectedPath;
+                    path = dialog.SelectedPath;
                     folderName.Text = path;
 
                 if (!File.Exists(path + "\\odem_op.xlsx"))
@@ -424,13 +425,12 @@ namespace OdemControl
                     }
 
                 }
+                allFiles.Add("EOF");
+                EncryptFile(allFiles, path);
             }
-
-            allFiles.Add("EOF");
-            EncryptFile(allFiles);
             return true;
         }
-        private void EncryptFile(List<string> data)
+        private void EncryptFile(List<string> data, string path)
         {
             // 32-byte (256-bit) key
             byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
@@ -453,6 +453,7 @@ namespace OdemControl
                 writer.WriteLine(Convert.ToBase64String(encrypted));
             }
             writer.Close();
+            File.Copy(filePath, path + "\\sensor_info.dat", true);
         }
         private void GetEncryptedFile(string ifln)
         {

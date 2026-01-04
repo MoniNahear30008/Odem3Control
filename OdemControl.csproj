@@ -61,7 +61,6 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="Microsoft.SharePointOnline.CSOM" Version="16.1.26712.12000" />
     <PackageReference Include="SSH.NET" Version="2025.1.0" />
   </ItemGroup>
 

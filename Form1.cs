@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.02.00";
+        string version = "3.03.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -941,7 +941,7 @@ namespace OdemControl
 
             if (AllConfFiles.Count == 0)
             {
-                MessageBox.Show("Sensor inof file not found\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Sensor_info.dat not found\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             splitContainer3.Panel2Collapsed = !dbgMode;
