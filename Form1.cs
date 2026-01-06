@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.03.00";
+        string version = "3.03.01";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -370,6 +370,7 @@ namespace OdemControl
         }
         public async void ConfigNow(string wfPath, string dev, string sm)
         {
+            deviceConfigured = false;
             configuring = true;
             pingLost = 10;
             this.Cursor = Cursors.WaitCursor;
@@ -385,6 +386,7 @@ namespace OdemControl
                 deviceState.ForeColor = Color.Green;
                 LogMessage("Configuring: Done", true);
                 streamBox(true);
+                deviceConfigured = true;
             }
             else
             {
@@ -393,7 +395,6 @@ namespace OdemControl
                 LogMessage("Configuring: Error", true);
                 streamBox(false);
             }
-            deviceConfigured = true;
             this.Cursor = Cursors.Default;
             this.Enabled = true;
             configuring = false;

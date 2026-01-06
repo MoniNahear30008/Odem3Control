@@ -91,6 +91,7 @@ namespace OdemControl
         }
         private async Task ConnectNow()
         {
+            isConnected = false;
             if (client != null)
                 client.Close();
             client = new TcpClient();

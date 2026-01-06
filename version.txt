@@ -1,3 +1,12 @@
+===========================================
+06/01/26: Version 3.03.01: 
+	- Exception at ping device fix 
+
+===========================================
+04/01/26: Version 3.03.00: 
+	- msi contain sensor_info.dat
+
+===========================================
 01/01/26: Version 3.02.00: 
 	- Need to manually copy the supplied sensor_info.dat to c:\lidwave folder
 	- Fix ODEM run OT progress messges
