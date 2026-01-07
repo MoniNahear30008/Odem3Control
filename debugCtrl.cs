@@ -327,8 +327,7 @@ namespace OdemControl
                 {"128Bins_Final", ""},
                 {"AWG", ""},
                 {"2kWin", ""},
-                {"blackmanHarris_DEC", ""},
-                {"General_Params","" }
+                {"blackmanHarris_DEC", ""}
             };
             int found = 0;
             using (var dialog = new FolderBrowserDialog())
@@ -355,75 +354,72 @@ namespace OdemControl
 
                 string[] folders = Directory.GetDirectories(path + "\\DevicesData");
                 foreach (string folder in folders)
+                {
+                    string dev = folder.Substring(folder.IndexOf("SN"));
+                    string[] files = Directory.GetFiles(folder);
+                    foreach (string file in files)
+                    { 
+                        if (file.EndsWith("AWG.txt"))
+                        {
+                            dict["AWG"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("badGoodIndxs_High.txt"))
+                        {
+                            dict["badGoodIndxs_High"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("badGoodIndxs_Low.txt"))
+                        {
+                            dict["badGoodIndxs_Low"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("128Bins_Final.txt"))
+                        {
+                            dict["128Bins_Final"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("blackmanHarris_DEC.txt"))
+                        {
+                            dict["blackmanHarris_DEC"] = file;
+                            found++;
+                        }
+                        else if (file.EndsWith("2kWin.txt"))
+                        {
+                            dict["2kWin"] = file;
+                            found++;
+                        }
+                        //else if (file.EndsWith("General_Params.csv"))
+                        //{
+                        //    dict["General_Params"] = file;
+                        //    found++;
+                        //}
+                    }
+                    if (found < dict.Count)
                     {
-                        string dev = folder.Substring(folder.IndexOf("SN"));
-                        string[] files = Directory.GetFiles(folder);
-                        foreach (string file in files)
-                        { 
-                            if (file.EndsWith("AWG.txt"))
-                            {
-                                dict["AWG"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("badGoodIndxs_High.txt"))
-                            {
-                                dict["badGoodIndxs_High"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("badGoodIndxs_Low.txt"))
-                            {
-                                dict["badGoodIndxs_Low"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("128Bins_Final.txt"))
-                            {
-                                dict["128Bins_Final"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("blackmanHarris_DEC.txt"))
-                            {
-                                dict["blackmanHarris_DEC"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("2kWin.txt"))
-                            {
-                                dict["2kWin"] = file;
-                                found++;
-                            }
-                            else if (file.EndsWith("General_Params.csv"))
-                            {
-                                dict["General_Params"] = file;
-                                found++;
-                            }
-                        }
-                        if (found < dict.Count)
-                        {
-                            MessageBox.Show("Not all required files found in folder for " + folder);
-                            return false;
-                        }
-
-                        allFiles.Add("New Device: " + dev);
-                        foreach (KeyValuePair<string, string> f in dict)
-                        {
-                            allFiles.Add("New file: " + f.Key);
-                            List<string> filelines = System.IO.File.ReadAllLines(f.Value).ToList();
-                            if (f.Key == "General_Params")
-                            {
-                                List<string> ot = new List<string>();
-                                Dictionary<string, int> devCfg = (Dictionary<string, int>)devsConfig[dev];
-                                foreach (KeyValuePair<string, int> o in devCfg)
-                                    ot.Add(o.Key + "," + o.Value.ToString());
-
-                                   Dictionary<string, int> devOTD = (Dictionary<string, int>)OT_Delay[dev];
-                                foreach (KeyValuePair<string, int> o in devOTD)
-                                    ot.Add(o.Key + "," + o.Value.ToString());
-                                 allFiles.AddRange(ot);
-                                File.WriteAllLines(dict["General_Params"], ot);
-                            }
-                            else
-                                allFiles.AddRange(filelines);
+                        MessageBox.Show("Not all required files found in folder for " + folder);
+                        return false;
                     }
 
+                    allFiles.Add("New Device: " + dev);
+                    foreach (KeyValuePair<string, string> f in dict)
+                    {
+                        allFiles.Add("New file: " + f.Key);
+                        List<string> filelines = System.IO.File.ReadAllLines(f.Value).ToList();
+                        allFiles.AddRange(filelines);
+                    }
+
+                    // Generate General_Params.csv file
+                    List<string> ot = new List<string>();
+                    Dictionary<string, int> devCfg = (Dictionary<string, int>)devsConfig[dev];
+                    foreach (KeyValuePair<string, int> o in devCfg)
+                        ot.Add(o.Key + "," + o.Value.ToString());
+
+                    Dictionary<string, int> devOTD = (Dictionary<string, int>)OT_Delay[dev];
+                    foreach (KeyValuePair<string, int> o in devOTD)
+                        ot.Add(o.Key + "," + o.Value.ToString());
+                    allFiles.AddRange(ot);
+                    File.WriteAllLines(folder + "\\General_Params.csv", ot);
                 }
                 allFiles.Add("EOF");
                 EncryptFile(allFiles, path);
