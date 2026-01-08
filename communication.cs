@@ -5,6 +5,7 @@ using Renci.SshNet.Compression;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
@@ -72,6 +73,12 @@ namespace OdemControl
 
                 if (isConnected)
                 {
+                    int speed = GetEthernetSpeed();
+                    if (speed < 1000)
+                    {
+                        MessageBox.Show("Ethernet connection speed is below 1Gbps.\nPlease check your network settings.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
                     devices.Enabled = false;
                     connect.Text = "Disconnect";
                     deviceState.Text = "Connected";
@@ -89,6 +96,16 @@ namespace OdemControl
                 }
             }
         }
+        private int GetEthernetSpeed()
+        {
+            var eth = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n =>n.NetworkInterfaceType == NetworkInterfaceType.Ethernet 
+            && n.OperationalStatus == OperationalStatus.Up);
+            
+            if (eth != null)
+                return (int)eth.Speed / 1000000;
+            else
+                return -1;
+        } 
         private async Task ConnectNow()
         {
             isConnected = false;

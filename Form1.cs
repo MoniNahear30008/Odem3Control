@@ -8,7 +8,7 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.03.01";
+        string version = "3.04.00";
 
         public bool forceDbgMode = false;
         bool noDevice = false;
@@ -899,6 +899,15 @@ namespace OdemControl
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (configuring || !isConnected) return;
+
+            Socket socket = client.Client;
+            bool disconnected = socket.Poll(0, SelectMode.SelectRead) && socket.Available == 0;
+            if (disconnected)
+            {
+                DevieLost();
+                MessageBox.Show("TCP connection lost", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             if (autoTemp.Checked)
             {

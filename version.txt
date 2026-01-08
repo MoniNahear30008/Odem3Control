@@ -1,4 +1,10 @@
 ===========================================
+08/01/26: Version 3.04.00: 
+	- Check ethernet connection speed to make sure it is 1Gbps or above 
+	- Check if TCP client connection is lost before pinging device
+	- Try to stop on going streaming before configuration
+
+===========================================
 06/01/26: Version 3.03.01: 
 	- Exception at ping device fix 
 

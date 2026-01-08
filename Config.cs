@@ -49,6 +49,8 @@
                         LogMessage("Start device configuring. ");
                         deviceState.Text = "Configuring device";
                         this.Refresh();
+                        // try to stop any ongoing streaming before configuring
+                        string err = StreamingCmd(false);
                         confState++;
                         break;
 
