@@ -7,6 +7,7 @@ namespace OdemControl
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
+        static string version = "3.04.00";
         [STAThread]
         static void Main(string[] args)
         {
@@ -16,7 +17,7 @@ namespace OdemControl
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            Application.Run(new Form1(version));
         }
 
         static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -38,10 +39,9 @@ namespace OdemControl
             MessageBox.Show("Unhandled excption occured: " + msg + "\n\nPlease send c:\\lidwave\\Exceptions.txt\nand decription of the action that caused it to support@lidwave.com");
             StreamWriter sw = new StreamWriter("c:\\lidwave\\Exceptions.txt", true, Encoding.ASCII);
 
-            string ver = Application.ProductVersion;
             string dateTimeString = DateTime.Now.ToString("yyyy_MM_dd-HH_mm");
 
-            sw.WriteLine("\n" + dateTimeString + " Version = " + ver + " ================================");
+            sw.WriteLine("\n" + dateTimeString + " Version = " + version + " ================================");
             sw.WriteLine(msg);
             sw.WriteLine(st);
             sw.Close();

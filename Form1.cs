@@ -8,8 +8,6 @@ namespace OdemControl
 {
     public partial class Form1 : Form
     {
-        string version = "3.04.00";
-
         public bool forceDbgMode = false;
         bool noDevice = false;
         public appSettings appSetting;
@@ -57,7 +55,7 @@ namespace OdemControl
         bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
-        public Form1()
+        public Form1(string version)
         {
             InitializeComponent();
 
