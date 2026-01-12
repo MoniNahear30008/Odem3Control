@@ -1,4 +1,9 @@
 ===========================================
+12/01/26: Version 3.04.10: 
+	- Updated sensor_info.dat 
+	- Fix verion in excption file
+
+===========================================
 08/01/26: Version 3.04.00: 
 	- Check ethernet connection speed to make sure it is 1Gbps or above 
 	- Check if TCP client connection is lost before pinging device

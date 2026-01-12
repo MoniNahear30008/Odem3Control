@@ -410,6 +410,7 @@ namespace OdemControl
                     }
 
                     // Generate General_Params.csv file
+                    allFiles.Add("New file: General_Params");
                     List<string> ot = new List<string>();
                     Dictionary<string, int> devCfg = (Dictionary<string, int>)devsConfig[dev];
                     foreach (KeyValuePair<string, int> o in devCfg)
