@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace OdemControl
 {
@@ -354,6 +355,22 @@ namespace OdemControl
             {
                 GeneralParameters["CFAR"] = 0x00000303;
                 GeneralParameters["Spurs"] = 0x70033C78;
+            }
+
+            string devSN = deviceID[appSetting.deviceNum];
+            if (devSN == "SN0056")
+            {
+                GeneralParameters["Sensitivity"] = (int)sensitivitySN0056[appSetting.sensitivity];
+                if (appSetting.sensitivity == 1)
+                {
+                    GeneralParameters["CFAR"] = 0x00000701;
+                    GeneralParameters["Spurs"] = 0x00003CF0;
+                }
+                else
+                {
+                    GeneralParameters["CFAR"] = 0x00000703;
+                    GeneralParameters["Spurs"] = 0x70033C78;
+                }
             }
 
             GeneralParameters["Retro"] = 10000;

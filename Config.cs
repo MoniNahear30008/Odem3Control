@@ -3,6 +3,7 @@
     public partial class Form1
     {
         public List<uint> sensitivity = new List<uint>() { 0x81010E3C, 0x81010F3c };
+        public List<uint> sensitivitySN0056 = new List<uint>() { 0x81010E3C, 0x81010F3c };
         public Dictionary<int, uint> WriteRegs = new Dictionary<int, uint>()
         {
             {(int)confStates.SEND_CAPTURE_DELAY, 0xFF200024 },

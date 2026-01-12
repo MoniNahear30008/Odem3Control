@@ -1,4 +1,11 @@
 ===========================================
+12/01/26: Version 3.04.11: 
+	- Unique parameters for SN0056 
+		- DSP Control Write
+		- CFAR Multiplication
+		- Spurs & NN filter
+
+===========================================
 12/01/26: Version 3.04.10: 
 	- Updated sensor_info.dat 
 	- Fix verion in excption file
