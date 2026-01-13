@@ -345,32 +345,46 @@ namespace OdemControl
                 MessageBox.Show("Device not connected");
                 return;
             }
-            GeneralParameters["Sensitivity"] = (int)sensitivity[appSetting.sensitivity];
-            if (appSetting.sensitivity == 1)
-            {
-                GeneralParameters["CFAR"] = 0x00000101;
-                GeneralParameters["Spurs"] = 0x00003C78;
-            }
-            else
-            {
-                GeneralParameters["CFAR"] = 0x00000303;
-                GeneralParameters["Spurs"] = 0x70033C78;
-            }
-
             string devSN = deviceID[appSetting.deviceNum];
-            if (devSN == "SN0056")
+            if (sensitivityPars.Count == 0)
             {
-                GeneralParameters["Sensitivity"] = (int)sensitivitySN0056[appSetting.sensitivity];
+                GeneralParameters["Sensitivity"] = (int)sensitivity[appSetting.sensitivity];
                 if (appSetting.sensitivity == 1)
                 {
-                    GeneralParameters["CFAR"] = 0x00000701;
-                    GeneralParameters["Spurs"] = 0x00003CF0;
+                    GeneralParameters["CFAR"] = 0x00000101;
+                    GeneralParameters["Spurs"] = 0x00003C78;
                 }
                 else
                 {
-                    GeneralParameters["CFAR"] = 0x00000703;
+                    GeneralParameters["CFAR"] = 0x00000303;
                     GeneralParameters["Spurs"] = 0x70033C78;
                 }
+                if (devSN == "SN0056")
+                {
+                    GeneralParameters["Sensitivity"] = (int)sensitivitySN0056[appSetting.sensitivity];
+                    if (appSetting.sensitivity == 1)
+                    {
+                        GeneralParameters["CFAR"] = 0x00000701;
+                        GeneralParameters["Spurs"] = 0x00003CF0;
+                    }
+                    else
+                    {
+                        GeneralParameters["CFAR"] = 0x00000703;
+                        GeneralParameters["Spurs"] = 0x70033C78;
+                    }
+                }
+            }
+            else if (sensitivityPars.ContainsKey(devSN))
+            {
+                GeneralParameters["Sensitivity"] = (int)sensitivityPars[devSN].Sensitivity[appSetting.sensitivity];
+                GeneralParameters["CFAR"] = (int)sensitivityPars[devSN].CFAR[appSetting.sensitivity];
+                GeneralParameters["Spurs"] = (int)sensitivityPars[devSN].Spurs[appSetting.sensitivity];
+            }
+            else
+            {
+                GeneralParameters["Sensitivity"] = (int)sensitivityPars["Default"].Sensitivity[appSetting.sensitivity];
+                GeneralParameters["CFAR"] = (int)sensitivityPars["Default"].CFAR[appSetting.sensitivity];
+                GeneralParameters["Spurs"] = (int)sensitivityPars["Default"].Spurs[appSetting.sensitivity];
             }
 
             GeneralParameters["Retro"] = 10000;
@@ -1370,6 +1384,7 @@ namespace OdemControl
 
         private void genEncypt_Click(object sender, EventArgs e)
         {
+            genEncypt.BackColor = Color.Orange;
             bool ready = GenerateEncryptedFile();
             if (ready)
                 genEncypt.BackColor = Color.Lime;

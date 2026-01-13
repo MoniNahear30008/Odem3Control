@@ -34,8 +34,7 @@
             {"Tx3_20_29", new I2CConfig(7, 0x48, 0x14, 0x19, 0x5050)},
             {"Tx3_30_39", new I2CConfig(7, 0x48, 0x14, 0x1C, 0x5050)}
         };
-//        Dictionary<string, int> DevInFile = new Dictionary<string, int>();
-//        List<string> AllDevicesFiles = new List<string>();
+        Dictionary<string, sensitiviy_params> sensitivityPars = new Dictionary<string, sensitiviy_params>();
 
         private async Task cofigdeviceAsync(string wfPath, string dev, string sm)
         {
@@ -615,6 +614,18 @@
             option = iopt;
             reg = ireg;
             val = ival;
+        }
+    }
+    public class sensitiviy_params
+    {
+        public uint[] Sensitivity = new uint[2];
+        public uint[] CFAR = new uint[2];
+        public uint[] Spurs = new uint[2];
+        public sensitiviy_params()
+        {
+            Sensitivity[0] = Sensitivity[1] = 0;
+            CFAR[0] = CFAR[1] = 0;
+            Spurs[0] = Spurs[1] = 0;
         }
     }
 }

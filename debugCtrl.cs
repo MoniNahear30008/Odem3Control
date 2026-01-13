@@ -40,7 +40,6 @@ namespace OdemControl
         Dictionary<string, object> OT_Delay = new Dictionary<string, object>();
         Dictionary<string, object> ScanModes = new Dictionary<string, object>();
         Dictionary<string, object> devsConfig = new Dictionary<string, object>();
-
         private void SetDebugView()
         {
             customParams.Rows.Add("Capture Delay", "3200");
@@ -123,15 +122,71 @@ namespace OdemControl
             {
                 all &= workbook.Worksheets.Contains("OT Delay");
                 all &= workbook.Worksheets.Contains("Scan modes");
-                all &= workbook.Worksheets.Contains("Config");
+                all &= workbook.Worksheets.Contains("Config"); 
+                all &= workbook.Worksheets.Contains("Sensitivity");
                 if (all)
                 {
                     all &= !GetOtDelay(workbook.Worksheet("OT Delay"));
                     all &= !getSmPars(workbook.Worksheet("Scan modes"));
                     all &= !getConfigPars(workbook.Worksheet("Config"));
+                    all &= !getSensitivity(workbook.Worksheet("Sensitivity"));
                 }
             }
             return !all;
+        }
+        private bool getSensitivity(IXLWorksheet worksheet)
+        {
+            sensitivityPars.Clear();
+            bool error = false;
+            Dictionary<int, string> smIdx = new Dictionary<int, string>();
+            int totalRows = worksheet.Rows().Count();
+            var row = worksheet.Row(1);       // Row 1
+            // get devices
+            List<string> devs = new List<string>();
+            for (int i = 0; i < row.Cells().Count(); i++)
+            {
+                string mn = row.Cell(i + 1).GetString().Trim();
+                if (mn == "")
+                    continue;
+                devs.Add(mn);
+                sensitivityPars.Add(mn, new sensitiviy_params());
+            }
+
+            int idx = 0;
+            for (int i = 3; i < 6; i++)
+            {
+                row = worksheet.Row(i);
+                List<uint> p = new List<uint>();
+                for (int c = 2; c < 6; c++)
+                {
+                    string ps = row.Cell(c).GetString().Trim();
+                    if (ps.StartsWith("0x"))
+                        p.Add(uint.Parse(ps.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber));
+                    else
+                        p.Add(uint.Parse(ps));
+                }
+                int pidx = 0;
+                for (int d = 0; d < devs.Count; d++)
+                {
+                    string dn = devs[d];
+                    switch (i)
+                    {
+                        case 3:
+                            sensitivityPars[dn].Sensitivity[0] = p[pidx++];
+                            sensitivityPars[dn].Sensitivity[1] = p[pidx++];
+                            break;
+                        case 4:
+                            sensitivityPars[dn].CFAR[0] = p[pidx++];
+                            sensitivityPars[dn].CFAR[1] = p[pidx++];
+                            break;
+                        case 5:
+                            sensitivityPars[dn].Spurs[0] = p[pidx++];
+                            sensitivityPars[dn].Spurs[1] = p[pidx++];
+                            break;
+                    }
+                }
+            }
+            return error;
         }
         private bool getConfigPars(IXLWorksheet worksheet)
         {
@@ -389,11 +444,6 @@ namespace OdemControl
                             dict["2kWin"] = file;
                             found++;
                         }
-                        //else if (file.EndsWith("General_Params.csv"))
-                        //{
-                        //    dict["General_Params"] = file;
-                        //    found++;
-                        //}
                     }
                     if (found < dict.Count)
                     {
@@ -422,6 +472,21 @@ namespace OdemControl
                     allFiles.AddRange(ot);
                     File.WriteAllLines(folder + "\\General_Params.csv", ot);
                 }
+
+                // Generate General_Params.csv file
+                List<string> sen = new List<string>();
+                sen.Add("Sensitivity_Params");
+                foreach (KeyValuePair<string, sensitiviy_params> sn in sensitivityPars)
+                {
+                    sen.Add("Device," + sn.Key);
+                    sen.Add("Sensitivity," + sn.Value.Sensitivity[0].ToString() + "," + sn.Value.Sensitivity[1].ToString());
+                    sen.Add("CFAR," + sn.Value.CFAR[0].ToString() + "," + sn.Value.CFAR[1].ToString());
+                    sen.Add("Spurs," + sn.Value.Spurs[0].ToString() + "," + sn.Value.Spurs[1].ToString());
+                }
+                sen.Add("Sensitivity_end");
+                allFiles.AddRange(sen);
+                File.WriteAllLines(path + "\\Sensitivity_Params.txt", sen);
+
                 allFiles.Add("EOF");
                 EncryptFile(allFiles, path);
             }
@@ -454,8 +519,6 @@ namespace OdemControl
         }
         private void GetEncryptedFile(string ifln)
         {
-//            DevInFile.Clear();
-//            AllDevicesFiles.Clear();
             var output = new List<string>();
             // 32-byte (256-bit) key
             byte[] key = Convert.FromBase64String("w4Zs9kVjX4R9P8vYx8a2+JQ+H4R0kBzLhJ6xK0uFJX4=");
@@ -475,9 +538,13 @@ namespace OdemControl
 
             AllConfFiles.Clear();
             AllConfParams.Clear();
+            sensitivityPars.Clear();
             string dev = "";
             string fln = "";
             bool isParams = false;
+            bool isSensitivity = false;
+            int snIdx = 0;
+            string snDev = "";
             foreach (string line in System.IO.File.ReadLines(filePath))
             {
                 byte[] encrypted = Convert.FromBase64String(line);
@@ -487,11 +554,46 @@ namespace OdemControl
                 string nl = Encoding.UTF8.GetString(decrypted);
                 if (nl == "EOF")
                     break;
-//                AllDevicesFiles.Add(nl);
-                if (nl.Contains("New Device: "))
+                if (nl.Contains("Sensitivity_end"))
                 {
+                    isSensitivity = false;
+                }
+                else if (nl.Contains("Sensitivity_Params"))
+                {
+                    isSensitivity = true;
+                    snIdx = 0;
+                }
+                else if (isSensitivity)
+                {
+                    List<string> parts = nl.Split(',').ToList();
+                    if (snIdx == 0)
+                    {
+                        snDev = parts[1].Trim();
+                        sensitivityPars.Add(snDev, new sensitiviy_params());
+                    }
+                    else if (snIdx == 1)
+                    {
+                        sensitivityPars[snDev].Sensitivity[0] = uint.Parse(parts[1].Trim());
+                        sensitivityPars[snDev].Sensitivity[1] = uint.Parse(parts[2].Trim());
+                    }
+                    else if (snIdx == 2)
+                    {
+                        sensitivityPars[snDev].CFAR[0] = uint.Parse(parts[1].Trim());
+                        sensitivityPars[snDev].CFAR[1] = uint.Parse(parts[2].Trim());
+                    }
+                    else if (snIdx == 3)
+                    {
+                        sensitivityPars[snDev].Spurs[0] = uint.Parse(parts[1].Trim());
+                        sensitivityPars[snDev].Spurs[1] = uint.Parse(parts[2].Trim());
+                    }
+                    snIdx++;
+                    snIdx &= 3;
+                }
+                else if (nl.Contains("New Device: "))
+                {
+                    isSensitivity = false;
+                    isParams = false;
                     dev = nl.Replace("New Device: ", "");
-//                    DevInFile.Add(dev, AllDevicesFiles.Count);
                     AllConfFiles.Add(dev, new Dictionary<string, List<uint>>());
                     ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("AWG", new List<uint>());
                     ((Dictionary<string, List<uint>>)AllConfFiles[dev]).Add("badGoodIndxs_High", new List<uint>());
@@ -527,51 +629,6 @@ namespace OdemControl
         {
             deviceParameters = (Dictionary<string, int>)AllConfParams[dev];
             confFiles = (Dictionary<string, List<uint>>)AllConfFiles[dev];
-            //int start = DevInFile[dev];
-            //string currentFile = "";
-            //bool isParams = false;
-            //for (int i = start; i < AllDevicesFiles.Count; i++)
-            //{
-            //    string l = AllDevicesFiles[i];
-            //    if (l.StartsWith("New Device: "))
-            //        break;
-            //    else if (l.StartsWith("EOF"))
-            //        break;
-            //    else if (l.StartsWith("New file: "))
-            //    {
-            //        currentFile = l.Replace("New file: ", "");
-            //        isParams = currentFile == "General_Params";
-            //        if (!isParams)
-            //        {
-            //            if (confFiles.ContainsKey(currentFile))
-            //                confFiles[currentFile].Clear();
-            //        }
-            //        continue;
-            //    }
-            //    else if (isParams)
-            //    {
-            //        string[] parts = l.Split(',');
-            //        if (parts.Length != 2)
-            //            continue;
-            //        string pname = parts[0].Trim();
-            //        int pval = 0;
-            //        if (parts[1].Contains("0x"))
-            //            pval = int.Parse(parts[1].Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
-            //        else
-            //            pval = int.Parse(parts[1]);
-            //        if (deviceParameters.ContainsKey(pname))
-            //            deviceParameters[pname] = (int)pval;
-            //        else
-            //        {
-            //            MessageBox.Show("Unknown parameter in general parameters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //            return;
-            //        }
-
-            //    }
-            //    else
-            //        confFiles[currentFile].Add(uint.Parse(l));
-
-            //}
         }
         private void GetFIles()
         {

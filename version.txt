@@ -1,9 +1,6 @@
 ===========================================
-12/01/26: Version 3.04.11: 
-	- Unique parameters for SN0056 
-		- DSP Control Write
-		- CFAR Multiplication
-		- Spurs & NN filter
+xx/01/26: Version 3.05.00: 
+	- DSP Control Write, CFAR Multiplication and Spurs & NN filter per device from odem_op.xlxs Snsitivity sheet
 
 ===========================================
 12/01/26: Version 3.04.10: 
