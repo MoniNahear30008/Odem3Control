@@ -30,7 +30,7 @@ namespace OdemControl
         private void DevieLost()
         {
             oVer.Text = "";
-            deviceConfigured = false;
+            isConfigured = false;
             LogMessage("Disconnecting from device...");
             isConnected = false;
             if (client != null)
@@ -40,7 +40,6 @@ namespace OdemControl
             connect.Text = "Connect";
             deviceState.Text = "DisConnected";
             deviceState.ForeColor = Color.Red;
-            streamBox(false);
             mainBoxEnable(false);
             devices.Enabled = true;
             foreach (DataGridViewRow row in tempTable.Rows)

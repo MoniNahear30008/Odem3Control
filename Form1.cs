@@ -12,7 +12,6 @@ namespace OdemControl
         public bool forceDbgMode = false;
         bool noDevice = false;
         public appSettings appSetting;
-        public bool isConnected = false;
         public List<string> deviceID = new List<string>();
         public Dictionary<string, scanMode> scanModes = new Dictionary<string, scanMode>();
         public List<string> modes = new List<string>();
@@ -53,9 +52,13 @@ namespace OdemControl
         bool configuring = false;
         int pingLost = 0;
         bool dbgMode = false;
-        bool deviceConfigured = false;
         string iniDev = "";
         int connectCnt = 0;
+        Cursor previousCursor = Cursors.Default;
+        public bool isConnected = false;
+        public bool isConfigured = false;
+        public bool isStreaming = false;
+
         public Form1(string version)
         {
             InitializeComponent();
@@ -70,14 +73,6 @@ namespace OdemControl
             string path = @"C:\Lidwave";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-
-            // if first run after installation, move sensor_info.dat to c:\lidwave
-            //string appFolder = AppDomain.CurrentDomain.BaseDirectory;
-            //if (File.Exists("sensor_info.dat"))
-            //{
-            //    File.Copy(appFolder + "sensor_info.dat", "c:\\lidwave\\sensor_info.dat", overwrite: true);
-            //    File.Delete(appFolder + "sensor_info.dat");
-            //}
 
             this.Text = "ODEM Control by Lidwave. Version: " + version;
 
@@ -298,7 +293,7 @@ namespace OdemControl
         }
         private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
         {
-            if (deviceConfigured)
+            if (isConfigured)
             {
                 MessageBox.Show("Please restart device and reconnect before changing scan mode");
                 DevieLost();
@@ -313,18 +308,13 @@ namespace OdemControl
         private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             updateScanMode(scanMode.SelectedIndex);
-            streamBox(false);
-            if (deviceConfigured)
+            isStreaming = false;
+            if (isConfigured)
             {
                 MessageBox.Show("Please restart device and reconnect before changing scan mode");
                 DevieLost();
                 return;
             }
-        }
-        private void streamBox(bool enable)
-        {
-            sStart.Enabled = enable;
-            sStop.Enabled = enable;
         }
         private void updateScanMode(int mode)
         {
@@ -399,7 +389,7 @@ namespace OdemControl
         }
         public async void ConfigNow(string wfPath, string dev, string sm)
         {
-            deviceConfigured = false;
+            isConfigured = false;
             configuring = true;
             pingLost = 10;
             this.Cursor = Cursors.WaitCursor;
@@ -414,15 +404,13 @@ namespace OdemControl
                 deviceState.Text = "Device ready";
                 deviceState.ForeColor = Color.Green;
                 LogMessage("Configuring: Done", true);
-                streamBox(true);
-                deviceConfigured = true;
+                isConfigured = true;
             }
             else
             {
                 deviceState.Text = "Device configuration error";
                 deviceState.ForeColor = Color.Red;
                 LogMessage("Configuring: Error", true);
-                streamBox(false);
             }
             this.Cursor = Cursors.Default;
             this.Enabled = true;
@@ -447,7 +435,7 @@ namespace OdemControl
         }
         private void devices_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (deviceConfigured)
+            if (isConfigured)
             {
                 MessageBox.Show("Please restart device and reconnect before changing device");
                 DevieLost();
@@ -460,12 +448,12 @@ namespace OdemControl
         {
             //if (DevInFile.ContainsKey(deviceID[appSetting.deviceNum]))
             //{
-                //LogMessage("Device configuration files read from encrypted file");
+            //LogMessage("Device configuration files read from encrypted file");
 
-                GetDeviceFiles(deviceID[appSetting.deviceNum]);
+            GetDeviceFiles(deviceID[appSetting.deviceNum]);
 
-                LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
-                    + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
+            LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
+                + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
             //}
             //else
             //    MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -520,7 +508,7 @@ namespace OdemControl
                 else
                 {
                     logFile.WriteLine(message);
-//                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
+                    //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
                 }
 
                 if (flush)
@@ -863,6 +851,8 @@ namespace OdemControl
         }
         private void sStart_Click(object sender, EventArgs e)
         {
+            if (!isConnected || !isConfigured || isStreaming) return;
+
             streaming.Visible = false;
             if (coldLaser.Visible)
             {
@@ -877,6 +867,7 @@ namespace OdemControl
                     return;
                 }
             }
+            isStreaming = false;
             stream.ReadTimeout = 50000;
             string Error = StreamingCmd(true);
             stream.ReadTimeout = 10000;
@@ -888,6 +879,7 @@ namespace OdemControl
             }
             else
             {
+                isStreaming = true;
                 streaming.Visible = true;
                 sStart.Enabled = false;
                 sStop.Enabled = true;
@@ -907,6 +899,9 @@ namespace OdemControl
         }
         private void sStop_Click(object sender, EventArgs e)
         {
+            if (!isConnected || !isConfigured) return;
+            if (!isStreaming) return;
+
             string Error = StreamingCmd(false);
             if (Error.Length > 0)
             {
@@ -1259,7 +1254,7 @@ namespace OdemControl
         {
             if (customMode.Checked)
                 genJSON.ForeColor = Color.Red;
-            else 
+            else
                 genJSON.ForeColor = SystemColors.ControlText;
 
             cModeParams.Enabled = customMode.Checked;
@@ -1369,7 +1364,7 @@ namespace OdemControl
                 return;
             }
 
-            if (deviceConfigured)
+            if (isConfigured)
             {
                 MessageBox.Show("ODEM in running\nRestart ODEM and just connect");
                 return;
@@ -1441,7 +1436,7 @@ namespace OdemControl
                     List<string> list = new List<string>();
                     foreach (uint d in kvp.Value)
                         list.Add(d.ToString());
-                    File.WriteAllLines(fname, list);    
+                    File.WriteAllLines(fname, list);
                 }
 
                 Dictionary<string, int> dp = (Dictionary<string, int>)AllConfParams[dev];
@@ -1454,7 +1449,6 @@ namespace OdemControl
                 File.WriteAllLines(dpath + "\\General_Params.csv", pars);
             }
         }
-
         private void readUID_Click(object sender, EventArgs e)
         {
             devUID.Text = "UID: ";
@@ -1510,6 +1504,40 @@ namespace OdemControl
 
             pushed = "setSN";
             timer3.Start();
+        }
+        private void splitContainer1_Panel2_MouseEnter(object sender, EventArgs e)
+        {
+            previousCursor = this.Cursor;
+            if (!sStart.Enabled && !sStop.Enabled)
+                this.Cursor = Cursors.No;
+        }
+        private void splitContainer1_Panel2_MouseLeave(object sender, EventArgs e)
+        {
+            this.Cursor = previousCursor;
+        }
+
+        private void sStart_MouseEnter(object sender, EventArgs e)
+        {
+            previousCursor = this.Cursor;
+            if (!isConnected || !isConfigured || isStreaming)
+                this.Cursor = Cursors.No;
+        }
+
+        private void sStart_MouseLeave(object sender, EventArgs e)
+        {
+            this.Cursor = previousCursor;
+        }
+
+        private void sStop_MouseEnter(object sender, EventArgs e)
+        {
+            previousCursor = this.Cursor;
+            if (!isConnected || !isConfigured || isStreaming)
+                this.Cursor = Cursors.No;
+        }
+
+        private void sStop_MouseLeave(object sender, EventArgs e)
+        {
+            this.Cursor = previousCursor;
         }
     }
 
@@ -1580,7 +1608,6 @@ namespace OdemControl
         public int fRate { get; set; }
         public string folder { get; set; }
         public int modeNum { get; set; }
-
         public scanMode()
         {
             mirror = 1;

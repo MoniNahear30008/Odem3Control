@@ -111,6 +111,8 @@
             OTDelay = new NumericUpDown();
             wrOTDelay = new Button();
             tabPage2 = new TabPage();
+            DriverBoadVer = new NumericUpDown();
+            label9 = new Label();
             label6 = new Label();
             impSM = new Button();
             genJSON = new Button();
@@ -170,6 +172,7 @@
             groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)OTDelay).BeginInit();
             tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DriverBoadVer).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cWaveForm).BeginInit();
             ((System.ComponentModel.ISupportInitialize)cModeParams).BeginInit();
             ((System.ComponentModel.ISupportInitialize)customFiles).BeginInit();
@@ -468,7 +471,6 @@
             // sStop
             // 
             sStop.BackColor = Color.Red;
-            sStop.Enabled = false;
             sStop.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             sStop.ForeColor = Color.White;
             sStop.Location = new Point(536, 11);
@@ -479,6 +481,8 @@
             sStop.Text = "Stop streaming";
             sStop.UseVisualStyleBackColor = false;
             sStop.Click += sStop_Click;
+            sStop.MouseEnter += sStop_MouseEnter;
+            sStop.MouseLeave += sStop_MouseLeave;
             // 
             // sStart
             // 
@@ -494,6 +498,8 @@
             sStart.Text = "Start streaming";
             sStart.UseVisualStyleBackColor = false;
             sStart.Click += sStart_Click;
+            sStart.MouseEnter += sStart_MouseEnter;
+            sStart.MouseLeave += sStart_MouseLeave;
             // 
             // debugMode
             // 
@@ -1097,6 +1103,8 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(DriverBoadVer);
+            tabPage2.Controls.Add(label9);
             tabPage2.Controls.Add(label6);
             tabPage2.Controls.Add(impSM);
             tabPage2.Controls.Add(genJSON);
@@ -1119,6 +1127,24 @@
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Custom device";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // DriverBoadVer
+            // 
+            DriverBoadVer.Location = new Point(401, 269);
+            DriverBoadVer.Maximum = new decimal(new int[] { 1, 0, 0, 0 });
+            DriverBoadVer.Name = "DriverBoadVer";
+            DriverBoadVer.Size = new Size(39, 25);
+            DriverBoadVer.TabIndex = 24;
+            DriverBoadVer.TextAlign = HorizontalAlignment.Center;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(265, 273);
+            label9.Name = "label9";
+            label9.Size = new Size(129, 17);
+            label9.TabIndex = 23;
+            label9.Text = "Driver board version";
             // 
             // label6
             // 
@@ -1246,9 +1272,9 @@
             label7.BorderStyle = BorderStyle.FixedSingle;
             label7.Location = new Point(265, 84);
             label7.Name = "label7";
-            label7.Size = new Size(151, 218);
+            label7.Size = new Size(212, 180);
             label7.TabIndex = 16;
-            label7.Text = resources.GetString("label7.Text");
+            label7.Text = "- It is recommnded to save all required file in same folder.\r\nAWG.txt\r\nbadGoodIndxs_High.txt\r\nbadGoodIndxs_Low.txt\r\nblackmanHarris_DEC.txt\r\n2kWin.txt\r\n128Bins_Final.txt\r\nwaveformX.csv\r\nwaveformY.csv";
             // 
             // customConfig
             // 
@@ -1478,6 +1504,7 @@
             ((System.ComponentModel.ISupportInitialize)OTDelay).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)DriverBoadVer).EndInit();
             ((System.ComponentModel.ISupportInitialize)cWaveForm).EndInit();
             ((System.ComponentModel.ISupportInitialize)cModeParams).EndInit();
             ((System.ComponentModel.ISupportInitialize)customFiles).EndInit();
@@ -1603,5 +1630,7 @@
         private Button setSN;
         private Label ConnectedTo;
         private CheckBox streamTo;
+        private Label label9;
+        private NumericUpDown DriverBoadVer;
     }
 }
