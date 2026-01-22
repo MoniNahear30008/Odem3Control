@@ -446,18 +446,10 @@ namespace OdemControl
         }
         private void UpdateConfFiles()
         {
-            //if (DevInFile.ContainsKey(deviceID[appSetting.deviceNum]))
-            //{
-            //LogMessage("Device configuration files read from encrypted file");
-
             GetDeviceFiles(deviceID[appSetting.deviceNum]);
 
             LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
                 + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
-            //}
-            //else
-            //    MessageBox.Show("Device configuration files not found in sensor_info.dat\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
         }
         private void OpenLogFile()
         {
@@ -1240,7 +1232,7 @@ namespace OdemControl
         }
         private void getFromFolder_Click(object sender, EventArgs e)
         {
-            GetFIles();
+            SelectFilesPath();
         }
         private void saveSetting_Click(object sender, EventArgs e)
         {
@@ -1539,8 +1531,67 @@ namespace OdemControl
         {
             this.Cursor = previousCursor;
         }
-    }
 
+        private void impDev_Click(object sender, EventArgs e)
+        {
+            string dev = deviceID[appSetting.deviceNum];
+            Dictionary<string, int> tempParameters = (Dictionary<string, int>)AllConfParams[dev];
+
+            if (sensitivityPars.ContainsKey(dev))
+            {
+                tempParameters["Sensitivity"] = (int)sensitivityPars[dev].Sensitivity[appSetting.sensitivity];
+                tempParameters["CFAR"] = (int)sensitivityPars[dev].CFAR[appSetting.sensitivity];
+                tempParameters["Spurs"] = (int)sensitivityPars[dev].Spurs[appSetting.sensitivity];
+            }
+            else
+            {
+                tempParameters["Sensitivity"] = (int)sensitivityPars["Default"].Sensitivity[appSetting.sensitivity];
+                tempParameters["CFAR"] = (int)sensitivityPars["Default"].CFAR[appSetting.sensitivity];
+                tempParameters["Spurs"] = (int)sensitivityPars["Default"].Spurs[appSetting.sensitivity];
+            }
+
+            tempParameters["Retro"] = 10000;
+            tempParameters["PM1"] = 0;
+            tempParameters["PM2"] = 0;
+            tempParameters["SOA"] = 2;
+            tempParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
+
+            customParams.Rows[0].Cells[1].Value = tempParameters["Capture_Delay"].ToString();
+            customParams.Rows[1].Cells[1].Value = "0x" + tempParameters["Sensitivity"].ToString("X08");
+            customParams.Rows[2].Cells[1].Value = "0x" + tempParameters["CFAR"].ToString("X08");
+            customParams.Rows[3].Cells[1].Value = "0x" + tempParameters["Spurs"].ToString("X08");
+            customParams.Rows[4].Cells[1].Value = tempParameters["Retro"].ToString();
+            customParams.Rows[5].Cells[1].Value = tempParameters["Chirp_AWG_gain"].ToString();
+            customParams.Rows[6].Cells[1].Value = tempParameters["OTD"].ToString();
+
+            customParams.Rows[8].Cells[1].Value = tempParameters["PM1"].ToString();
+            customParams.Rows[9].Cells[1].Value = tempParameters["PM2"].ToString();
+            customParams.Rows[10].Cells[1].Value = tempParameters["SOA"].ToString();
+            customParams.Rows[11].Cells[1].Value = "0x" + tempParameters["LO"].ToString("X04");
+            customParams.Rows[12].Cells[1].Value = "0x" + tempParameters["TxSOA1"].ToString("X04");
+            customParams.Rows[13].Cells[1].Value = "0x" + tempParameters["TxSOA2"].ToString("X04");
+            customParams.Rows[14].Cells[1].Value = "0x" + tempParameters["Tx3_0_9"].ToString("X04");
+            customParams.Rows[15].Cells[1].Value = "0x" + tempParameters["Tx3_10_19"].ToString("X04");
+            customParams.Rows[16].Cells[1].Value = "0x" + tempParameters["Tx3_20_29"].ToString("X04");
+            customParams.Rows[17].Cells[1].Value = "0x" + tempParameters["Tx3_30_39"].ToString("X04");
+
+            Dictionary<string, List<uint>>  tempFiles = (Dictionary<string, List<uint>>)AllConfFiles[dev];
+            if (!Directory.Exists("c:\\Lidwave\\CustomDevice"))
+                Directory.CreateDirectory("c:\\Lidwave\\CustomDevice");
+            foreach (string file in Directory.GetFiles("c:\\Lidwave\\CustomDevice"))
+                File.Delete(file);
+            
+            foreach (KeyValuePair<string, List<uint>> kvp in tempFiles)
+            {
+                string fname = "c:\\Lidwave\\CustomDevice\\" + kvp.Key + ".txt";
+                List<string> list = new List<string>();
+                foreach (uint d in kvp.Value)
+                    list.Add(d.ToString());
+                File.WriteAllLines(fname, list);
+            }
+            GetFiles("c:\\Lidwave\\CustomDevice\\");
+        }
+    }
     public class appSettings
     {
         public int deviceNum;

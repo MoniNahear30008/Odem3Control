@@ -1,6 +1,7 @@
 ===========================================
-xx/xx/26: Version 3.05.01: 
+22/01/26: Version 3.06.00: 
 	- Fix parsing of odem_op.xlsx Snsitivity sheet
+	- Custom device: Get parameters and files of the selected device
 
 ===========================================
 21/01/26: Version 3.05.00: 

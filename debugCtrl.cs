@@ -631,35 +631,33 @@ namespace OdemControl
             deviceParameters = (Dictionary<string, int>)AllConfParams[dev];
             confFiles = (Dictionary<string, List<uint>>)AllConfFiles[dev];
         }
-        private void GetFIles()
+        private void SelectFilesPath()
         {
-            using (var dialog = new FolderBrowserDialog())
+            var dialog = new FolderBrowserDialog();
+            dialog.Description = "Select a folder";
+            dialog.ShowNewFolderButton = true;
+            if (dialog.ShowDialog() == DialogResult.OK)
+                GetFiles(dialog.SelectedPath);
+        }
+        private void GetFiles(string path)
+        {
+            folderName.Text = path;
+            string[] files = Directory.GetFiles(path);
+
+            foreach (string file in files)
             {
-                dialog.Description = "Select a folder";
-                dialog.ShowNewFolderButton = true;
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    string path = dialog.SelectedPath;
-                    folderName.Text = path;
-                    string[] files = Directory.GetFiles(path);
-
-                    foreach (string file in files)
-                    {
-                        if (file.EndsWith("AWG.txt"))
-                            customFiles.Rows[0].Cells[1].Value = file;
-                        else if (file.EndsWith("badGoodIndxs_High.txt"))
-                            customFiles.Rows[1].Cells[1].Value = file;
-                        else if (file.EndsWith("badGoodIndxs_Low.txt"))
-                            customFiles.Rows[2].Cells[1].Value = file;
-                        else if (file.EndsWith("128Bins_Final.txt"))
-                            customFiles.Rows[3].Cells[1].Value = file;
-                        else if (file.EndsWith("blackmanHarris_DEC.txt"))
-                            customFiles.Rows[4].Cells[1].Value = file;
-                        else if (file.EndsWith("2kWin.txt"))
-                            customFiles.Rows[5].Cells[1].Value = file;
-                    }
-                }
+                if (file.EndsWith("AWG.txt"))
+                    customFiles.Rows[0].Cells[1].Value = file;
+                else if (file.EndsWith("badGoodIndxs_High.txt"))
+                    customFiles.Rows[1].Cells[1].Value = file;
+                else if (file.EndsWith("badGoodIndxs_Low.txt"))
+                    customFiles.Rows[2].Cells[1].Value = file;
+                else if (file.EndsWith("128Bins_Final.txt"))
+                    customFiles.Rows[3].Cells[1].Value = file;
+                else if (file.EndsWith("blackmanHarris_DEC.txt"))
+                    customFiles.Rows[4].Cells[1].Value = file;
+                else if (file.EndsWith("2kWin.txt"))
+                    customFiles.Rows[5].Cells[1].Value = file;
             }
         }
         private void LoadFromFile()

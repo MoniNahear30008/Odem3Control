@@ -114,6 +114,7 @@
             DriverBoadVer = new NumericUpDown();
             label9 = new Label();
             label6 = new Label();
+            impDev = new Button();
             impSM = new Button();
             genJSON = new Button();
             selWF = new Button();
@@ -1106,6 +1107,7 @@
             tabPage2.Controls.Add(DriverBoadVer);
             tabPage2.Controls.Add(label9);
             tabPage2.Controls.Add(label6);
+            tabPage2.Controls.Add(impDev);
             tabPage2.Controls.Add(impSM);
             tabPage2.Controls.Add(genJSON);
             tabPage2.Controls.Add(selWF);
@@ -1155,6 +1157,16 @@
             label6.Size = new Size(241, 36);
             label6.TabIndex = 22;
             label6.Text = "Update the waveform files after setting \r\nscan mode from selected scan mode ";
+            // 
+            // impDev
+            // 
+            impDev.Location = new Point(6, 3);
+            impDev.Name = "impDev";
+            impDev.Size = new Size(219, 28);
+            impDev.TabIndex = 21;
+            impDev.Text = "Get parameters/files of selected device";
+            impDev.UseVisualStyleBackColor = true;
+            impDev.Click += impDev_Click;
             // 
             // impSM
             // 
@@ -1371,10 +1383,10 @@
             customParams.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             customParams.ColumnHeadersVisible = false;
             customParams.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8 });
-            customParams.Location = new Point(6, 6);
+            customParams.Location = new Point(6, 34);
             customParams.Name = "customParams";
             customParams.RowHeadersVisible = false;
-            customParams.Size = new Size(240, 329);
+            customParams.Size = new Size(240, 301);
             customParams.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn7
@@ -1632,5 +1644,6 @@
         private CheckBox streamTo;
         private Label label9;
         private NumericUpDown DriverBoadVer;
+        private Button impDev;
     }
 }
