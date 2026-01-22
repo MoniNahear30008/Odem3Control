@@ -7,7 +7,7 @@ namespace OdemControl
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
-        static string version = "3.05.00";
+        static string version = "3.05.01";
         [STAThread]
         static void Main(string[] args)
         {

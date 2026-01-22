@@ -153,11 +153,12 @@ namespace OdemControl
             }
 
             int idx = 0;
+            int lastc = 2 * devs.Count + 2;
             for (int i = 3; i < 6; i++)
             {
                 row = worksheet.Row(i);
                 List<uint> p = new List<uint>();
-                for (int c = 2; c < 6; c++)
+                for (int c = 2; c < lastc; c++)
                 {
                     string ps = row.Cell(c).GetString().Trim();
                     if (ps.StartsWith("0x"))
