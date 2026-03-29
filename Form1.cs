@@ -1,3 +1,4 @@
+using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -18,7 +19,6 @@ namespace OdemControl
         public Dictionary<string, List<uint>> confFiles = new Dictionary<string, List<uint>>();
         public Dictionary<string, object> AllConfFiles = new Dictionary<string, object>();
         public Dictionary<string, object> AllConfParams = new Dictionary<string, object>();
-        int confState = (int)confStates.IDLE;
         public Dictionary<string, int> deviceParameters = new Dictionary<string, int>()
         {
             {"Capture_Delay" ,3600},
@@ -44,37 +44,26 @@ namespace OdemControl
             {"SOA",0 },
             {"OTD", 0 }
         };
-        bool loggingEnabled = false;
+        bool loggingEnabled = true;
         bool debugmodeEnabled = false;
         bool dataLoggingEnabled = false;
         private StreamWriter logFile;
-        int readTempCounter = 0;
-        bool configuring = false;
-        int pingLost = 0;
-        bool dbgMode = false;
-        string iniDev = "";
-        int connectCnt = 0;
         Cursor previousCursor = Cursors.Default;
         public bool isConnected = false;
-        public bool isConfigured = false;
-        public bool isStreaming = false;
+        string pushed = "";
+        List<uint> awgData = new List<uint>();
+        uint awgSize = 0;
 
         public Form1(string version)
         {
             InitializeComponent();
-
-            splitContainer3.Panel2Collapsed = true;
-            splitContainer4.Panel2Collapsed = true;
-            this.Width = 750;
-            IPAddredd.Text = _ipAddress;
-            IPPort.Text = _port.ToString();
 
 
             string path = @"C:\Lidwave";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            this.Text = "ODEM Control by Lidwave. Version: " + version;
+            this.Text = "ODEM3 Control";
 
             tempTable.Rows.Add("Optical chip", "");
             tempTable.Rows.Add("Scanner", "");
@@ -82,340 +71,15 @@ namespace OdemControl
             tempTable.Rows.Add("Laser", "");
             tempTable.ClearSelection();
 
+            foreach (string p in ConfParams)
+                parList.Items.Add(p);
+            parList.SelectedIndex = 0;
+
             appSetting = new appSettings();
 
-            // Generate exection
-            //int y = 0;
-            //int x = 1 / y;
-
-            Getini();
-            dbgMode |= forceDbgMode;
-            debugMode.Visible = dbgMode;
-            debugmodeEnabled = dbgMode;
-            loggingEnabled |= dbgMode;
-            dataLoggingEnabled |= dbgMode;
-            streamTo.Visible = false;
-            streamTo.Checked = false;
-            if (loggingEnabled)
-                OpenLogFile();
-
-            ConnectedTo.Visible = !dbgMode;
-            devices.Visible = dbgMode;
-
-            noDevice = SetVars();
-
             this.Refresh();
-            timer2.Start();
         }
-        private void Getini()
-        {
-            if (!File.Exists("C:\\Lidwave\\Odem.ini"))
-                File.Create("C:\\Lidwave\\Odem.ini");
 
-            long size = new FileInfo("C:\\Lidwave\\Odem.ini").Length;
-            if (size == 0)
-                return;
-
-            string[] lines = File.ReadAllLines("C:\\Lidwave\\Odem.ini");
-            if (lines.Length == 0)
-                return;
-            foreach (string l in lines)
-            {
-                if (l == "-forcedbg")
-                    forceDbgMode = true;
-                else if (l == "-dbg")
-                    dbgMode = true;
-                else if (l == "-le")
-                {
-                    dataLoggingEnabled = true;
-                    loggingEnabled = true;
-                }
-                else if (l == "-l")
-                    loggingEnabled = true;
-                else if (l.StartsWith("SN"))
-                    iniDev = l;
-            }
-
-        }
-        private bool SetVars()
-        {
-            _MyipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList
-              .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork)?
-              .ToString() ?? "No IPv4 found";
-
-            AllConfFiles.Clear();
-            AllConfParams.Clear();
-            GetEncryptedFile("c:\\lidwave\\sensor_info.dat");
-
-            if (AllConfFiles.Count == 0)
-                return true;
-
-            deviceID.Clear();
-            foreach (string dev in AllConfFiles.Keys)
-            {
-                if (!deviceID.Contains(dev))
-                    deviceID.Add(dev);
-            }
-
-            deviceID.Sort();
-
-            if (dbgMode)
-            {
-                foreach (string devName in deviceID)
-                    devices.Items.Add(devName);
-            }
-
-            // configuration files dictionaries
-            confFiles.Add("badGoodIndxs_High", new List<uint>());
-            confFiles.Add("badGoodIndxs_Low", new List<uint>());
-            confFiles.Add("2kWin", new List<uint>());
-            confFiles.Add("128Bins_Final", new List<uint>());
-            confFiles.Add("blackmanHarris_DEC", new List<uint>());
-            confFiles.Add("AWG", new List<uint>());
-
-            // Set scan mode parameters table
-            ModeParams.Rows.Clear();
-            ModeParams.Rows.Add("Horizontal FOV", ".. °");
-            ModeParams.Rows.Add("Vertical FOV", ".. °");
-            ModeParams.Rows.Add("Horizontal Res.", ".. °");
-            ModeParams.Rows.Add("Vertical Res.", ".. °");
-            ModeParams.Rows.Add("Lines per frame", ".. °");
-            ModeParams.Rows.Add("frame rate", ".. FPS");
-
-            // Get scan modes from csv file
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.Optotune.modes_params.csv");
-            if (stream == null)
-            {
-                MessageBox.Show("Failed to read scan modes paramaters file.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            StreamReader reader = new StreamReader(stream);
-            string allmodes = reader.ReadToEnd();
-            List<string> allmodesList = allmodes.Split("\r\n").ToList();
-            modes = allmodesList[0].Split(",").ToList();
-            modes.RemoveRange(0, 2);
-            int mn = 1;
-            foreach (string m in modes)
-            {
-                scanModes.Add(m, new scanMode());
-                scanModes[m].modeNum = mn;
-                scanModes[m].folder = "Mode" + mn.ToString();
-                mn++;
-            }
-            List<string> modes1 = scanModes.Keys.ToList();
-            for (int l = 1; l < allmodesList.Count; l++)
-            {
-                if (allmodesList[l].Contains(",,")) continue;
-                if (allmodesList[l].Contains("Mirror"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].mirror = int.Parse(nl[np++]);
-
-                }
-                else if (allmodesList[l].Contains("points"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].nPoints = int.Parse(nl[np++]);
-
-                }
-                else if (allmodesList[l].Contains("Horizontal FOV"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].hFOV = int.Parse(nl[np++].Split(" ")[0]);
-
-                }
-                else if (allmodesList[l].Contains("Horizontal res"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].hRes = double.Parse(nl[np++].Split(" ")[0]);
-                }
-                else if (allmodesList[l].Contains("Vertical FOV"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].vFOV = int.Parse(nl[np++].Split(" ")[0]);
-
-                }
-                else if (allmodesList[l].Contains("Vertical res"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].vRes = double.Parse(nl[np++].Split(" ")[0]);
-                }
-                else if (allmodesList[l].Contains("Lines per frame"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].lines = int.Parse(nl[np++].Split(" ")[0]);
-
-                }
-                else if (allmodesList[l].Contains("Frame rate"))
-                {
-                    List<string> nl = allmodesList[l].Split(',').ToList();
-                    int np = 2;
-                    foreach (string m in modes1)
-                        scanModes[m].fRate = int.Parse(nl[np++].Split(" ")[0]);
-
-                }
-            }
-
-            foreach (string m in scanModes.Keys)
-            {
-                scanMode.Items.Add(m);
-                deviceParameters.Add(m, 0);
-            }
-            scanMode.SelectedIndex = Math.Min(appSetting.scanModeNum, modes.Count() - 1);
-
-
-            if (appSetting.sensitivity == 0)
-                SensitivityNormal.Checked = true;
-            else
-                sensitivityHigh.Checked = true;
-
-            if (dbgMode)
-            {
-                if (deviceID.Count == 1)
-                    appSetting.deviceNum = 0;
-                devices.SelectedIndex = Math.Min(appSetting.deviceNum, deviceID.Count() - 1);
-            }
-            return false;
-        }
-        private void SensitivityNormal_CheckedChanged(object sender, EventArgs e)
-        {
-            if (isConfigured)
-            {
-                MessageBox.Show("Please restart device and reconnect before changing scan mode");
-                DevieLost();
-                return;
-            }
-
-            if (SensitivityNormal.Checked)
-                appSetting.sensitivity = 0;
-            else
-                appSetting.sensitivity = 1;
-        }
-        private void scanMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            updateScanMode(scanMode.SelectedIndex);
-            isStreaming = false;
-            if (isConfigured)
-            {
-                MessageBox.Show("Please restart device and reconnect before changing scan mode");
-                DevieLost();
-                return;
-            }
-        }
-        private void updateScanMode(int mode)
-        {
-            appSetting.scanModeNum = mode;
-            string modeName = modes[mode];
-            ModeParams.Rows[0].Cells[1].Value = scanModes[modeName].hFOV.ToString() + " °";
-            ModeParams.Rows[1].Cells[1].Value = scanModes[modeName].vFOV.ToString() + " °";
-            ModeParams.Rows[2].Cells[1].Value = scanModes[modeName].hRes.ToString() + " °";
-            ModeParams.Rows[3].Cells[1].Value = scanModes[modeName].vRes.ToString() + " °";
-            ModeParams.Rows[4].Cells[1].Value = scanModes[modeName].lines.ToString();
-            ModeParams.Rows[5].Cells[1].Value = scanModes[modeName].fRate.ToString() + " FPS";
-            ModeParams.ClearSelection();
-        }
-        private void confDev_Click(object sender, EventArgs e)
-        {
-            if (!isConnected)
-            {
-                MessageBox.Show("Device not connected");
-                return;
-            }
-            string devSN = deviceID[appSetting.deviceNum];
-            if (sensitivityPars.Count == 0)
-            {
-                GeneralParameters["Sensitivity"] = (int)sensitivity[appSetting.sensitivity];
-                if (appSetting.sensitivity == 1)
-                {
-                    GeneralParameters["CFAR"] = 0x00000101;
-                    GeneralParameters["Spurs"] = 0x00003C78;
-                }
-                else
-                {
-                    GeneralParameters["CFAR"] = 0x00000303;
-                    GeneralParameters["Spurs"] = 0x70033C78;
-                }
-                if (devSN == "SN0056")
-                {
-                    GeneralParameters["Sensitivity"] = (int)sensitivitySN0056[appSetting.sensitivity];
-                    if (appSetting.sensitivity == 1)
-                    {
-                        GeneralParameters["CFAR"] = 0x00000701;
-                        GeneralParameters["Spurs"] = 0x00003CF0;
-                    }
-                    else
-                    {
-                        GeneralParameters["CFAR"] = 0x00000703;
-                        GeneralParameters["Spurs"] = 0x70033C78;
-                    }
-                }
-            }
-            else if (sensitivityPars.ContainsKey(devSN))
-            {
-                GeneralParameters["Sensitivity"] = (int)sensitivityPars[devSN].Sensitivity[appSetting.sensitivity];
-                GeneralParameters["CFAR"] = (int)sensitivityPars[devSN].CFAR[appSetting.sensitivity];
-                GeneralParameters["Spurs"] = (int)sensitivityPars[devSN].Spurs[appSetting.sensitivity];
-            }
-            else
-            {
-                GeneralParameters["Sensitivity"] = (int)sensitivityPars["Default"].Sensitivity[appSetting.sensitivity];
-                GeneralParameters["CFAR"] = (int)sensitivityPars["Default"].CFAR[appSetting.sensitivity];
-                GeneralParameters["Spurs"] = (int)sensitivityPars["Default"].Spurs[appSetting.sensitivity];
-            }
-
-            GeneralParameters["Retro"] = 10000;
-            GeneralParameters["PM1"] = 0;
-            GeneralParameters["PM2"] = 0;
-            GeneralParameters["SOA"] = 2;
-
-            GeneralParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
-            string dev = deviceID[appSetting.deviceNum];
-            string sm = modes[appSetting.scanModeNum];
-            ConfigNow("", dev, sm);
-        }
-        public async void ConfigNow(string wfPath, string dev, string sm)
-        {
-            isConfigured = false;
-            configuring = true;
-            pingLost = 10;
-            this.Cursor = Cursors.WaitCursor;
-            this.Enabled = false;
-            deviceState.Text = "";
-            deviceState.ForeColor = Color.Black;
-            appSetting.Update(true);
-            confState = (int)confStates.IDLE;
-            await cofigdeviceAsync(wfPath, dev, sm);
-            if (confState == (int)confStates.DONE)
-            {
-                deviceState.Text = "Device ready";
-                deviceState.ForeColor = Color.Green;
-                LogMessage("Configuring: Done", true);
-                isConfigured = true;
-            }
-            else
-            {
-                deviceState.Text = "Device configuration error";
-                deviceState.ForeColor = Color.Red;
-                LogMessage("Configuring: Error", true);
-            }
-            this.Cursor = Cursors.Default;
-            this.Enabled = true;
-            configuring = false;
-        }
         public static byte[] GetBytesBigEndian(uint value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
@@ -423,91 +87,56 @@ namespace OdemControl
                 Array.Reverse(bytes);
             return bytes;
         }
-        private void debugMode_Click(object sender, EventArgs e)
-        {
-            StartDbg();
-        }
-        private void StartDbg()
-        {
-            splitContainer4.Panel2Collapsed = false;
-            this.Width = 1500;
-            debugMode.Visible = false;
-        }
-        private void devices_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (isConfigured)
-            {
-                MessageBox.Show("Please restart device and reconnect before changing device");
-                DevieLost();
-                return;
-            }
-            appSetting.deviceNum = devices.SelectedIndex;
-            UpdateConfFiles();
-        }
-        private void UpdateConfFiles()
-        {
-            GetDeviceFiles(deviceID[appSetting.deviceNum]);
-
-            LogMessage("Update device " + deviceID[appSetting.deviceNum] + " Main Board version: " + deviceParameters["MainBoard"].ToString()
-                + "; Driver Board version: " + deviceParameters["DriverBoard"].ToString());
-        }
-        private void OpenLogFile()
-        {
-            if (loggingEnabled)
-            {
-                string path = @"C:\Lidwave";
-                string logFileName = path + "\\OdemLog_.txt";
-                try
-                {
-                    logFile = new StreamWriter(logFileName, false);
-                    logFile.WriteLine("App Start @" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                    logFile.AutoFlush = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to create log file: " + ex.Message, "Logging Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    loggingEnabled = false;
-                }
-            }
-        }
         public void LogMessage(string message, bool flush = false)
         {
-            if (showCom.Checked)
+            // Check if invoke is required
+            if (MonitorView.InvokeRequired)
             {
-                MonitorView.AppendText(message + Environment.NewLine);
-                if (AutoScroll.Checked)
+                MonitorView.Invoke(new Action(() =>
                 {
-                    MonitorView.SelectionStart = MonitorView.Text.Length;
-                    MonitorView.ScrollToCaret();
-                }
+                    Add2Monitor(message);
+                }));
             }
-            if (loggingEnabled && logFile != null)
+            else
             {
-                if (message.StartsWith("Reg write") & (message.Length > 80))
-                {
-                    logFile.WriteLine("Reg Write:");
-                    //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - Reg Write:");
-                    message = message.Substring(11);
-                    while (message.Length > 96)
-                    {
-                        logFile.WriteLine("                  " + message.Substring(0, 96));
-                        message = message.Substring(96);
-                    }
-                    if (message.Length > 0)
-                        logFile.WriteLine("                  " + message);
+                Add2Monitor(message);
+            }
+            //if (loggingEnabled && logFile != null)
+            //{
+            //    if (message.StartsWith("Reg write") & (message.Length > 80))
+            //    {
+            //        logFile.WriteLine("Reg Write:");
+            //        //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - Reg Write:");
+            //        message = message.Substring(11);
+            //        while (message.Length > 96)
+            //        {
+            //            logFile.WriteLine("                  " + message.Substring(0, 96));
+            //            message = message.Substring(96);
+            //        }
+            //        if (message.Length > 0)
+            //            logFile.WriteLine("                  " + message);
 
-                }
-                else
-                {
-                    logFile.WriteLine(message);
-                    //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
-                }
+            //    }
+            //    else
+            //    {
+            //        logFile.WriteLine(message);
+            //        //                    logFile.WriteLine(DateTime.Now.ToString("yyyyMMdd_HHmmss") + " - " + message);
+            //    }
 
-                if (flush)
-                    logFile.Flush();
+            //    if (flush)
+            //        logFile.Flush();
+            //}
+        }
+        private void Add2Monitor(string message)
+        {
+            MonitorView.Text += message + Environment.NewLine;
+            if (AutoScroll.Checked)
+            {
+                MonitorView.SelectionStart = MonitorView.TextLength;
+                MonitorView.ScrollToCaret();
             }
         }
-        private void ReadAllTemp()
+        private void ShowTemp()
         {
             if (!isConnected) return;
             //return;
@@ -628,15 +257,8 @@ namespace OdemControl
             if (tooHat || picHat)
             {
                 System.Media.SystemSounds.Beep.Play();
-                string Error = SPISOAControl(0);
-                if (Error.Length > 0)
-                    picHat = true;
-                if (picHat)
-                    MessageBox.Show("Please power off and restart the system" + Error, "Over temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else
-                    MessageBox.Show("System overheating\n Please power off, connect the top cooling unit, and try again" + Error, "Over temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please power off and restart the system", "Over temperature", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            coldLaser.Visible = lasercold;
         }
         private void checkT_Click(object sender, EventArgs e)
         {
@@ -645,10 +267,7 @@ namespace OdemControl
         private string ReadPICtemp(out double temp)
         {
             temp = 0;
-            List<uint> t;
-            string err = ReadI2C(0, 0x70, 4, 0x48, 0x14, 0xD8, 1, out t);
-            if (err != "")
-                return err;
+            List<uint> t = new List<uint> { 100};
             double vref = 2.45;
             double r1 = 5.6;
             double r2 = 2.0;
@@ -681,8 +300,7 @@ namespace OdemControl
         {
             temp = 0;
             string err = "";
-            List<uint> t;
-            err = ReadI2C(0, 0x70, 4, 0x48, 0x14, 0x88, 1, out t);
+            List<uint> t = new List<uint>() { 100};
             if (err == "")
             {
                 double r1 = 5.6;
@@ -739,857 +357,95 @@ namespace OdemControl
         private string readMBTemp(out double temp)
         {
             temp = 0;
-            string err = "";
-            List<uint> tmp;
-            List<uint> tmp2 = new List<uint>();
-            err = ReadI2C(0, 0x70, 1, 0x48, 0x14, 0, 1, out tmp);
-            if (err != "")
-                return err;
-            tmp2.Add(tmp[0]);
-            err = ReadI2C(0, 0x70, 1, 0x49, 0x14, 0, 1, out tmp);
-            if (err != "")
-                return err;
-            tmp2.Add(tmp[0]);
-            err = ReadI2C(0, 0x70, 1, 0x4A, 0x14, 0, 1, out tmp);
-            if (err != "")
-                return err;
-            tmp2.Add(tmp[0]);
-            err = ReadI2C(0, 0x70, 1, 0x4B, 0x14, 0, 1, out tmp);
-            if (err != "")
-                return err;
-            tmp2.Add(tmp[0]);
-            uint mtmp = tmp2.Max();
-            mtmp >>= 4;       // 12-bit value
-            if ((mtmp & 0x800) != 0) mtmp -= 4096;
-            temp = (double)mtmp * 0.0625;
+            //string err = "";
+            //List<uint> tmp;
+            //List<uint> tmp2 = new List<uint>();
+            //err = ReadI2C(0, 0x70, 1, 0x48, 0x14, 0, 1, out tmp);
+            //if (err != "")
+            //    return err;
+            //tmp2.Add(tmp[0]);
+            //err = ReadI2C(0, 0x70, 1, 0x49, 0x14, 0, 1, out tmp);
+            //if (err != "")
+            //    return err;
+            //tmp2.Add(tmp[0]);
+            //err = ReadI2C(0, 0x70, 1, 0x4A, 0x14, 0, 1, out tmp);
+            //if (err != "")
+            //    return err;
+            //tmp2.Add(tmp[0]);
+            //err = ReadI2C(0, 0x70, 1, 0x4B, 0x14, 0, 1, out tmp);
+            //if (err != "")
+            //    return err;
+            //tmp2.Add(tmp[0]);
+            //uint mtmp = tmp2.Max();
+            //mtmp >>= 4;       // 12-bit value
+            //if ((mtmp & 0x800) != 0) mtmp -= 4096;
+            //temp = (double)mtmp * 0.0625;
             return "";
         }
-        private async void connect_Click(object sender, EventArgs e)
+        private void connect_Click(object sender, EventArgs e)
         {
-            oVer.Text = "";
-            bool tryconnect = !isConnected;
-            this.Enabled = false;
-            this.Cursor = Cursors.WaitCursor;
-            await ConnectToDevice();
-            this.Cursor = Cursors.Default;
-            this.Enabled = true;
-            if (!isConnected && tryconnect)
+            timer1.Stop();
+            if (isConnected)
             {
-                connectCnt++;
-                if (connectCnt == 5)
-                {
-                    MessageBox.Show("Fail to connect.\n\nRestart the App and/or ODEM\nand try again");
-                }
+                LogMessage("Disconnecting from device...");
+                isConnected = false;
+                connect.Text = "Connect";
+                deviceState.Text = "DisConnected";
+                deviceState.ForeColor = Color.Red;
+                _port.Close();
             }
             else
             {
-                connectCnt = 0;
-                if (!dbgMode)
-                {
-                    bool noFile = false;
-                    bool noSN = false;
-                    List<uint> t = ReadEEPROM(0, 1);
-                    if (t == null)
-                        noFile = true;
-                    else if (t[0] == 0xFFFF)
-                        noSN = true;
-                    else
-                    {
-                        string rSN = "SN" + t[0].ToString("D4");
-                        if (deviceID.Contains(rSN))
-                        {
-                            deviceID.Clear();
-                            deviceID.Clear();
-                            deviceID.Add(rSN);
-                            deviceID.Add(rSN);
-                            devices.Items.Add(rSN);
-                            devices.Enabled = false;
-                            ConnectedTo.Text = rSN;
-                            appSetting.deviceNum = 0;
-                            UpdateConfFiles();
-                        }
-                    }
+                OpenComPort();
 
-                    if (noSN || noFile)
-                    {
-                        if (deviceID.Contains(iniDev))
-                        {
-                            deviceID.Clear();
-                            deviceID.Clear();
-                            deviceID.Add(iniDev);
-                            deviceID.Add(iniDev);
-                            devices.Items.Add(iniDev);
-                            devices.Enabled = false;
-                            ConnectedTo.Text = iniDev;
-                            appSetting.deviceNum = 0;
-                            UpdateConfFiles();
-                        }
-                        else if (noSN)
-                        {
-                            this.Enabled = false;
-                            MessageBox.Show("Wrong or missing device SN\n\nUpdate your device SN in \"C:\\Lidwave\\Odem.ini\"", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            this.Close();
-                        }
-                        else
-                        {
-                            this.Enabled = false;
-                            MessageBox.Show("MIssing or bad sensor_info.dat\n\nContact LidWave support", "Not recognize device", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            this.Close();
-                        }
+                PingDevice();
 
-                    }
-                }
-            }
-        }
-        private void sStart_Click(object sender, EventArgs e)
-        {
-            if (!isConnected || !isConfigured || isStreaming) return;
+                Thread.Sleep(100);
 
-            streaming.Visible = false;
-            if (coldLaser.Visible)
-            {
-                if (dbgMode)
-                {
-                    if (MessageBox.Show("Laser temperature too low. Start streaming anyways?", "Laser Temperature", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
-                        return;
-                }
-                else
-                {
-                    MessageBox.Show("Laser temperature too low.\nPlease wait until the laser warms up.", "Laser Temperature", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+                timer1.Start();
             }
-            isStreaming = false;
-            stream.ReadTimeout = 50000;
-            string Error = StreamingCmd(true);
-            stream.ReadTimeout = 10000;
-            if (Error.Length > 0)
-            {
-                LogMessage("Streaming command: " + Error);
-                string smsg = Error.Replace("\0", "") + "\nRestart ODEM and App";
-                MessageBox.Show(smsg, "Start Streaming Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                isStreaming = true;
-                streaming.Visible = true;
-                sStart.Enabled = false;
-                sStop.Enabled = true;
-                deviceState.Text = "Streaming";
-                deviceState.ForeColor = Color.Green;
-                scanMode.Enabled = false;
-                DisableConf(false);
-            }
-        }
-        private void DisableConf(bool enable)
-        {
-            scanMode.Enabled = enable;
-            SensitivityNormal.Enabled = enable;
-            sensitivityHigh.Enabled = enable;
-            confDev.Enabled = enable;
-            connect.Enabled = enable;
-        }
-        private void sStop_Click(object sender, EventArgs e)
-        {
-            if (!isConnected || !isConfigured) return;
-            if (!isStreaming) return;
-
-            string Error = StreamingCmd(false);
-            if (Error.Length > 0)
-            {
-                LogMessage("Streaming command: " + Error);
-                MessageBox.Show("Error Streaning command:\n" + Error, "Command Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                streaming.Visible = false;
-                sStart.Enabled = true;
-                sStop.Enabled = false;
-                deviceState.Text = "Steaming stopped";
-                deviceState.ForeColor = Color.Orange;
-                scanMode.Enabled = true;
-                DisableConf(true);
-            }
-
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (configuring || !isConnected) return;
-
-            Socket socket = client.Client;
-            bool disconnected = socket.Poll(0, SelectMode.SelectRead) && socket.Available == 0;
-            if (disconnected)
-            {
-                DevieLost();
-                MessageBox.Show("TCP connection lost", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (autoTemp.Checked)
-            {
-                readTempCounter -= 10;
-                ReadIntProg.Value = Math.Max(0, ReadIntProg.Value - 10);
-                if (readTempCounter <= 0)
-                {
-                    ReadIntProg.Value = (int)ReadInt.Value * 60;
-                    readTempCounter = 60 * (int)ReadInt.Value;
-                    ReadAllTemp();
-                }
-                else
-                    PingDevice();
-            }
-            else
-                PingDevice();
-
-        }
-        private void autoTemp_CheckedChanged(object sender, EventArgs e)
-        {
-            autoTempControl();
-        }
-        private void autoTempControl()
-        {
-            checkT.Visible = !autoTemp.Checked;
-            ReadInt.Visible = autoTemp.Checked;
-            ReadIntText.Visible = autoTemp.Checked;
-            ReadIntProg.Visible = autoTemp.Checked;
-            if (autoTemp.Checked)
-            {
-                ReadIntProg.Value = (int)ReadInt.Value * 60;
-                ReadIntProg.Maximum = (int)ReadInt.Value * 60;
-                timer1.Interval = 10000;
-                readTempCounter = 60 * (int)ReadInt.Value;
-                ReadAllTemp();
-            }
-        }
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-            timer2.Stop();
-
-            if (AllConfFiles.Count == 0)
-            {
-                MessageBox.Show("Sensor_info.dat not found\nPlease contact Lidwave support", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            splitContainer3.Panel2Collapsed = !dbgMode;
-            SetDebugView();
-        }
-
-        private void showCom_CheckedChanged(object sender, EventArgs e)
-        {
-            MonitorView.Clear();
-            if (showVer.Checked)
-            {
-                Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OdemControl.version.txt");
-                if (stream != null)
-                {
-                    StreamReader reader = new StreamReader(stream);
-                    string ver = reader.ReadToEnd();
-                    MonitorView.AppendText(ver);
-                }
-            }
+            timer1.Stop();
+            MessageBox.Show("Connection lost", "Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         private void clr_Click(object sender, EventArgs e)
         {
             MonitorView.Clear();
         }
-
-        private void pw_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                if (pw.Text == appSetting.dbgPW)
-                {
-                    groupBox5.Visible = false;
-                    tabControl1.Visible = true;
-                }
-                else
-                {
-                    pw.Text = "";
-                    MessageBox.Show("Incorrect Password");
-                }
-            }
-        }
-
-        private void timer3_Tick(object sender, EventArgs e)
-        {
-            timer3.Stop();
-            switch (pushed)
-            {
-                case "OTDelay":
-                    wrOTDelay.BackColor = SystemColors.Control;
-                    break;
-                case "resetDSP":
-                    resetDSP.BackColor = SystemColors.Control;
-                    break;
-                case "WriteReg":
-                    WriteReg.BackColor = SystemColors.Control;
-                    break;
-                case "WriteI2C":
-                    WriteI2C.BackColor = SystemColors.Control;
-                    break;
-                case "WrVec":
-                    WrVec.BackColor = SystemColors.Control;
-                    break;
-                case "stopOT":
-                    stopOT.BackColor = SystemColors.Control;
-                    break;
-                case "getVer":
-                    getVer.BackColor = SystemColors.Control;
-                    break;
-                case "setSN":
-                    setSN.BackColor = SystemColors.Control;
-                    break;
-                case "readUID":
-                    readUID.BackColor = SystemColors.Control;
-                    break;
-                case "genEncypt":
-                    genEncypt.BackColor = SystemColors.Control;
-                    break;
-            }
-        }
-        private void resetDSP_Click(object sender, EventArgs e)
-        {
-            string Error = WriteRegWaitResp(WriteRegs[(int)confStates.RESET_DSP], new List<uint> { 0x4100004 });
-            if (Error.Length > 0)
-            {
-                LogMessage("Configuring Error: " + Error);
-                resetDSP.BackColor = Color.Red;
-            }
-            else
-                resetDSP.BackColor = Color.Lime;
-            pushed = "resetDSP";
-            timer3.Start();
-        }
-        private void wrOTDelay_Click(object sender, EventArgs e)
-        {
-            if (!isConnected) return;
-
-            LogMessage("Configuring: Set OT Delay");
-            string mode = modes[appSetting.scanModeNum];
-            int nPoints = scanModes[mode].nPoints;
-            int otd = (int)OTDelay.Value;
-            uint iotd = (uint)Math.Abs(otd);
-            if (otd < 0)
-                iotd = (uint)(nPoints - iotd);
-            lastOTdelay = otd;
-            string Error = WriteRegWaitResp(WriteRegs[(int)confStates.SET_OT_DELAY], new List<uint> { iotd });
-            if (Error.Length > 0)
-            {
-                LogMessage("Configuring Error: " + Error);
-                wrOTDelay.BackColor = Color.Red;
-            }
-            else
-                wrOTDelay.BackColor = Color.Lime;
-            pushed = "OTDelay";
-            timer3.Start();
-        }
-        private void WriteReg_Click(object sender, EventArgs e)
-        {
-            if (!isConnected) return;
-            uint add = 0;
-            if (!uint.TryParse(regAdd.Text, System.Globalization.NumberStyles.HexNumber, null, out add))
-            {
-                regAdd.Text = "FF000000";
-                MessageBox.Show("Register address must be Hex number");
-                return;
-            }
-
-            uint val = 0;
-            if (regVal.Text.StartsWith("0x"))
-            {
-                if (!uint.TryParse(regVal.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out val))
-                {
-                    regVal.Text = "";
-                    MessageBox.Show("Invalid value number");
-                    return;
-                }
-            }
-            else
-            {
-                if (!uint.TryParse(regVal.Text, out val))
-                {
-                    regVal.Text = "";
-                    MessageBox.Show("Invalid value number");
-                    return;
-                }
-            }
-
-            string Error = WriteRegWaitResp(add, new List<uint>() { val });
-            if (Error.Length > 0)
-            {
-                LogMessage("Configuring Error: " + Error);
-                WriteReg.BackColor = Color.Red;
-            }
-            else
-                WriteReg.BackColor = Color.Lime;
-            pushed = "WriteReg";
-            timer3.Start();
-        }
         private void WrVec_Click(object sender, EventArgs e)
         {
-            if (VecData.Count == 0)
+            string val = parValue.Text;
+            uint iVal = 0;
+            bool valid = false;
+            if (val.StartsWith("0x"))
+                valid = uint.TryParse(val.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out iVal);
+            else
+                valid = uint.TryParse(val, out iVal);
+
+            if (!valid)
             {
-                MessageBox.Show("Vector not loaded");
+                MessageBox.Show("Invalid value: " + val, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                parValue.Text = "";
                 return;
             }
-
-            string Error = "";
-            string vec = vecList.SelectedItem.ToString();
-            if (vec == "AWG")
-            {
-                Error = SPIWriteAWGWaitResp(VecData);
-
-            }
-            else
-            {
-                VecDest = Vectors[vec];
-                Error = WriteRegWaitResp(VecDest, VecData);
-            }
-            if (Error.Length > 0)
-            {
-                LogMessage("Configuring Error: " + Error);
-                WrVec.BackColor = Color.Red;
-            }
-            else
-                WrVec.BackColor = Color.Lime;
-            pushed = "WrVec";
-            timer3.Start();
         }
-        private void VecFln_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void loadAwg_Click(object sender, EventArgs e)
         {
-            VecFln.Text = "Double click to select file";
-            VecData.Clear();
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Text Files (*.txt)|*.txt";
-            ofd.Title = "Select a Text File";
-
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                string path = ofd.FileName;
-                VecFln.Text = path;
-                // Read all lines
-                string[] lines = System.IO.File.ReadAllLines(path);
-                foreach (string l in lines)
-                    VecData.Add(uint.Parse(l));
-            }
-        }
-        private void WriteI2C_Click(object sender, EventArgs e)
-        {
-            uint val = 0;
-            if (I2Cval.Text.StartsWith("0x"))
-            {
-                if (!uint.TryParse(I2Cval.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber, null, out val))
-                {
-                    I2Cval.Text = "";
-                    MessageBox.Show("Invalid value number");
-                    return;
-                }
-            }
-            else
-            {
-                if (!uint.TryParse(I2Cval.Text, out val))
-                {
-                    I2Cval.Text = "";
-                    MessageBox.Show("Invalid value number");
-                    return;
-                }
-            }
-
-            if (val > 0xffff)
-            {
-                I2Cval.Text = "";
-                MessageBox.Show("Invalid value - must be 16 bits");
-                return;
-            }
-
-            string Error = WriteI2CWaitResp(I2C_ch, I2C_dev, 0x14, I2C_reg, new List<uint> { val });
-            if (Error.Length > 0)
-            {
-                LogMessage("Configuring Error: " + Error);
-                WriteI2C.BackColor = Color.Red;
-            }
-            else
-                WriteI2C.BackColor = Color.Lime;
-            pushed = "WriteI2C";
-            timer3.Start();
-
-        }
-        private void RegsNames_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string rn = RegsNames.SelectedItem as string;
-            regAdd.Text = WriteRegsAdd[rn].ToString("X08");
-        }
-        private void I2CsList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string rn = I2CsList.SelectedItem as string;
-            I2C_ch = I2CConf[rn].ch;
-            I2C_dev = I2CConf[rn].dev;
-            I2C_reg = I2CConf[rn].reg;
-            I2C_val = I2CConf[rn].val;
-            I2Cdest.Text = "Ch: " + I2C_ch.ToString() + " ;  Dev: 0x" + I2C_dev.ToString("X02") +
-                "; Reg: 0x" + I2C_reg.ToString("X02");
-            I2Cval.Text = "0x" + I2C_val.ToString("X04");
-        }
-        private void getFromFolder_Click(object sender, EventArgs e)
-        {
-            SelectFilesPath();
-        }
-        private void saveSetting_Click(object sender, EventArgs e)
-        {
-            SaveToFile();
-        }
-        private void loadSetting_Click(object sender, EventArgs e)
-        {
-            LoadFromFile();
-        }
-        private void customMode_CheckedChanged(object sender, EventArgs e)
-        {
-            if (customMode.Checked)
-                genJSON.ForeColor = Color.Red;
-            else
-                genJSON.ForeColor = SystemColors.ControlText;
-
-            cModeParams.Enabled = customMode.Checked;
-            cWaveForm.Enabled = customMode.Checked;
-        }
-        private void impSM_Click(object sender, EventArgs e)
-        {
-            string modeName = modes[appSetting.scanModeNum];
-            cModeParams.Rows[0].Cells[1].Value = scanModes[modeName].mirror.ToString();
-            cModeParams.Rows[1].Cells[1].Value = scanModes[modeName].nPoints.ToString();
-            cModeParams.Rows[3].Cells[1].Value = scanModes[modeName].hFOV.ToString();
-            cModeParams.Rows[4].Cells[1].Value = scanModes[modeName].vFOV.ToString();
-            cModeParams.Rows[5].Cells[1].Value = scanModes[modeName].hRes.ToString("0.00");
-            cModeParams.Rows[6].Cells[1].Value = scanModes[modeName].vRes.ToString("0.00");
-            cModeParams.Rows[7].Cells[1].Value = scanModes[modeName].lines.ToString();
-            cModeParams.Rows[8].Cells[1].Value = scanModes[modeName].fRate.ToString();
-        }
-        private void cModeParams_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-        {
-            if (customMode.Checked)
-                genJSON.ForeColor = Color.Red;
-            JsonReady = false;
-        }
-        private void customFiles_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex == 0) return;
-            int row = e.RowIndex;
-            string fln = rowFiles[row];
-
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Text Files (*" + fln + "|*" + fln;
-            ofd.Title = "Select a Text File";
-
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                customFiles.Rows[row].Cells[1].Value = ofd.FileName;
-            }
-        }
-        private void genJSON_Click(object sender, EventArgs e)
-        {
-            List<string> waveforms = new List<string>();
-            foreach (DataGridViewRow row in cWaveForm.Rows)
-            {
-                string fln = row.Cells[1].Value.ToString();
-                if (System.IO.File.Exists(fln))
-                {
-                    MessageBox.Show(fln + " not found");
-                    return;
-                }
-                waveforms.Add(fln);
-            }
-
-            GenJson(waveforms);
-            if (customMode.Checked)
-                genJSON.ForeColor = Color.LimeGreen;
-        }
-        private void selWF_Click(object sender, EventArgs e)
-        {
-            GetWfFiles();
-        }
-        private void customConfig_Click(object sender, EventArgs e)
-        {
-            if (customMode.Checked && !JsonReady)
-            {
-                genJSON.ForeColor = Color.Red;
-                MessageBox.Show("Need to generate JSON before configuring the device in custom  scan mode");
-                return;
-            }
-            CustomCofig();
+            awgData = Enumerable.Range(0, 4096).Select(i => (uint)(i)).ToList();
+            awgSize = (uint)awgData.Count;
+            awglen.Text = "AWG vector length = " + awgSize.ToString();
         }
 
-        private void stopOT_Click(object sender, EventArgs e)
+        private void sendAWG_Click(object sender, EventArgs e)
         {
-            string Error = SendStopCmd();
-            if (Error.Length > 0)
-                stopOT.BackColor = Color.Red;
-            else
-                stopOT.BackColor = Color.Lime;
-            pushed = "stopOT";
-            timer3.Start();
+            sendAWGtoDevice();
         }
 
-        private void getVer_Click(object sender, EventArgs e)
+        private void progAWG_Click(object sender, EventArgs e)
         {
-            fpgaVer.Text = "FPGA Version: ";
-            List<uint> ver = new List<uint>();
-            string err = ReadReg(0xFF200018, 1, out ver);
-            if (err.Length > 0)
-                getVer.BackColor = Color.Red;
-            else
-            {
-                getVer.BackColor = Color.Lime;
-                string f = "FPGA Version: 0x" + ver[3].ToString("X02") + " " + ver[0].ToString() + " Channels";
-                if (ver[2] == 1)
-                    f += " (Debug)";
-                fpgaVer.Text = f;
-            }
-            pushed = "getVer";
-            timer3.Start();
-        }
-
-        private void upgradeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!isConnected)
-            {
-                MessageBox.Show("Device not connected");
-                return;
-            }
-
-            if (isConfigured)
-            {
-                MessageBox.Show("ODEM in running\nRestart ODEM and just connect");
-                return;
-            }
-
-            upgrade ug = new upgrade(this);
-            ug.ShowDialog();
-            for (int i = 0; i < tempTable.Rows.Count; i++)
-                tempTable.Rows[i].Cells[1].Value = "";
-            DevieLost();
-        }
-
-        private void genEncypt_Click(object sender, EventArgs e)
-        {
-            genEncypt.BackColor = Color.Orange;
-            bool ready = GenerateEncryptedFile();
-            if (ready)
-                genEncypt.BackColor = Color.Lime;
-            else
-                genEncypt.BackColor = Color.Red;
-            pushed = "genEncypt";
-            timer3.Start();
-        }
-
-        private void getVersionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!isConnected)
-            {
-                oVer.Text = "";
-                return;
-            }
-
-            List<uint> ver = new List<uint>();
-            string err = ReadReg(0xFF200018, 1, out ver);
-            if (err.Length > 0)
-                MessageBox.Show("Error reading version: " + err, "Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            else
-                oVer.Text = "Version: 0x" + ver[3].ToString("X02");
-        }
-
-        private void getEncyptedFile_Click(object sender, EventArgs e)
-        {
-            string fln = "c:\\lidwave\\sensor_info.dat";
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Dat Files (*.dat)|*.dat";
-            ofd.Title = "Select a sensor info File";
-
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                fln = ofd.FileName;
-            }
-            GetEncryptedFile(fln);
-
-            string path = "c:\\Lidwave\\ODEM\\OdemConfig\\FromEncrypted";
-
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
-            Directory.CreateDirectory(path);
-
-            List<string> devs = AllConfFiles.Keys.ToList();
-            foreach (string dev in devs)
-            {
-                string dpath = path + "\\" + dev;
-                Directory.CreateDirectory(dpath);
-                Dictionary<string, List<uint>> df = (Dictionary<string, List<uint>>)AllConfFiles[dev];
-                foreach (KeyValuePair<string, List<uint>> kvp in df)
-                {
-                    string fname = dpath + "\\" + kvp.Key + ".txt";
-                    List<string> list = new List<string>();
-                    foreach (uint d in kvp.Value)
-                        list.Add(d.ToString());
-                    File.WriteAllLines(fname, list);
-                }
-
-                Dictionary<string, int> dp = (Dictionary<string, int>)AllConfParams[dev];
-                List<string> pars = new List<string>();
-                foreach (KeyValuePair<string, int> kvp in dp)
-                {
-                    string fname = dpath + "\\General_Params.csv";
-                    pars.Add(kvp.Key + "," + kvp.Value.ToString());
-                }
-                File.WriteAllLines(dpath + "\\General_Params.csv", pars);
-            }
-        }
-        private void readUID_Click(object sender, EventArgs e)
-        {
-            devUID.Text = "UID: ";
-            devSN.Text = "SN: ";
-            List<uint> t = ReadEEPROM(0x7F7A, 4);
-            if (t == null)
-            {
-                MessageBox.Show("Fail to read device UID");
-                readUID.BackColor = Color.Red;
-                pushed = "readUID";
-                timer3.Start();
-                return;
-            }
-            else
-            {
-                ulong id = (ulong)t[0] + ((ulong)t[1] << 16) + ((ulong)t[2] << 32);
-                devUID.Text = "EUI-48: " + id.ToString("X12");
-            }
-
-            t = ReadEEPROM(0, 1);
-            if (t == null)
-            {
-                MessageBox.Show("Fail to read device SN");
-                readUID.BackColor = Color.Red;
-                pushed = "readUID";
-                timer3.Start();
-                return;
-            }
-            else if (t[0] == 0xFFFF)
-            {
-                devSN.Text = "Device SN not programmed";
-            }
-            else
-            {
-                devSN.Text = "SN" + t[0].ToString("D4");
-            }
-
-            readUID.BackColor = Color.Lime;
-            pushed = "readUID";
-            timer3.Start();
-        }
-        private void setSN_Click(object sender, EventArgs e)
-        {
-            uint sn = uint.Parse(deviceID[appSetting.deviceNum].Replace("SN", ""));
-            string err = WriteEEPROM(1, 0x50, 0x24, 0, new List<uint>() { sn });
-            if (err.Length > 0)
-            {
-                MessageBox.Show("Error set SN: " + err, "Write Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                setSN.BackColor = Color.Red;
-            }
-            else
-                setSN.BackColor = Color.Lime;
-
-            pushed = "setSN";
-            timer3.Start();
-        }
-        private void splitContainer1_Panel2_MouseEnter(object sender, EventArgs e)
-        {
-            previousCursor = this.Cursor;
-            if (!sStart.Enabled && !sStop.Enabled)
-                this.Cursor = Cursors.No;
-        }
-        private void splitContainer1_Panel2_MouseLeave(object sender, EventArgs e)
-        {
-            this.Cursor = previousCursor;
-        }
-
-        private void sStart_MouseEnter(object sender, EventArgs e)
-        {
-            previousCursor = this.Cursor;
-            if (!isConnected || !isConfigured || isStreaming)
-                this.Cursor = Cursors.No;
-        }
-
-        private void sStart_MouseLeave(object sender, EventArgs e)
-        {
-            this.Cursor = previousCursor;
-        }
-
-        private void sStop_MouseEnter(object sender, EventArgs e)
-        {
-            previousCursor = this.Cursor;
-            if (!isConnected || !isConfigured || isStreaming)
-                this.Cursor = Cursors.No;
-        }
-
-        private void sStop_MouseLeave(object sender, EventArgs e)
-        {
-            this.Cursor = previousCursor;
-        }
-
-        private void impDev_Click(object sender, EventArgs e)
-        {
-            string dev = deviceID[appSetting.deviceNum];
-            Dictionary<string, int> tempParameters = (Dictionary<string, int>)AllConfParams[dev];
-
-            if (sensitivityPars.ContainsKey(dev))
-            {
-                tempParameters["Sensitivity"] = (int)sensitivityPars[dev].Sensitivity[appSetting.sensitivity];
-                tempParameters["CFAR"] = (int)sensitivityPars[dev].CFAR[appSetting.sensitivity];
-                tempParameters["Spurs"] = (int)sensitivityPars[dev].Spurs[appSetting.sensitivity];
-            }
-            else
-            {
-                tempParameters["Sensitivity"] = (int)sensitivityPars["Default"].Sensitivity[appSetting.sensitivity];
-                tempParameters["CFAR"] = (int)sensitivityPars["Default"].CFAR[appSetting.sensitivity];
-                tempParameters["Spurs"] = (int)sensitivityPars["Default"].Spurs[appSetting.sensitivity];
-            }
-
-            tempParameters["Retro"] = 10000;
-            tempParameters["PM1"] = 0;
-            tempParameters["PM2"] = 0;
-            tempParameters["SOA"] = 2;
-            tempParameters["OTD"] = deviceParameters[modes[appSetting.scanModeNum]];
-
-            customParams.Rows[0].Cells[1].Value = tempParameters["Capture_Delay"].ToString();
-            customParams.Rows[1].Cells[1].Value = "0x" + tempParameters["Sensitivity"].ToString("X08");
-            customParams.Rows[2].Cells[1].Value = "0x" + tempParameters["CFAR"].ToString("X08");
-            customParams.Rows[3].Cells[1].Value = "0x" + tempParameters["Spurs"].ToString("X08");
-            customParams.Rows[4].Cells[1].Value = tempParameters["Retro"].ToString();
-            customParams.Rows[5].Cells[1].Value = tempParameters["Chirp_AWG_gain"].ToString();
-            customParams.Rows[6].Cells[1].Value = tempParameters["OTD"].ToString();
-
-            customParams.Rows[8].Cells[1].Value = tempParameters["PM1"].ToString();
-            customParams.Rows[9].Cells[1].Value = tempParameters["PM2"].ToString();
-            customParams.Rows[10].Cells[1].Value = tempParameters["SOA"].ToString();
-            customParams.Rows[11].Cells[1].Value = "0x" + tempParameters["LO"].ToString("X04");
-            customParams.Rows[12].Cells[1].Value = "0x" + tempParameters["TxSOA1"].ToString("X04");
-            customParams.Rows[13].Cells[1].Value = "0x" + tempParameters["TxSOA2"].ToString("X04");
-            customParams.Rows[14].Cells[1].Value = "0x" + tempParameters["Tx3_0_9"].ToString("X04");
-            customParams.Rows[15].Cells[1].Value = "0x" + tempParameters["Tx3_10_19"].ToString("X04");
-            customParams.Rows[16].Cells[1].Value = "0x" + tempParameters["Tx3_20_29"].ToString("X04");
-            customParams.Rows[17].Cells[1].Value = "0x" + tempParameters["Tx3_30_39"].ToString("X04");
-
-            Dictionary<string, List<uint>>  tempFiles = (Dictionary<string, List<uint>>)AllConfFiles[dev];
-            if (!Directory.Exists("c:\\Lidwave\\CustomDevice"))
-                Directory.CreateDirectory("c:\\Lidwave\\CustomDevice");
-            foreach (string file in Directory.GetFiles("c:\\Lidwave\\CustomDevice"))
-                File.Delete(file);
-            
-            foreach (KeyValuePair<string, List<uint>> kvp in tempFiles)
-            {
-                string fname = "c:\\Lidwave\\CustomDevice\\" + kvp.Key + ".txt";
-                List<string> list = new List<string>();
-                foreach (uint d in kvp.Value)
-                    list.Add(d.ToString());
-                File.WriteAllLines(fname, list);
-            }
-            GetFiles("c:\\Lidwave\\CustomDevice\\");
+            confAWGcmd();
         }
     }
     public class appSettings

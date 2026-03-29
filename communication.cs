@@ -3,8 +3,10 @@ using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using Renci.SshNet;
 using Renci.SshNet.Compression;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Ports;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
@@ -17,1021 +19,214 @@ namespace OdemControl
 {
     public partial class Form1
     {
-        private string _ipAddress = "192.168.2.24";
-        private string _LidarViewipAddress = "192.168.2.20";
-        private string _MyipAddress = "";
-        private int _port = 24871;
-        NetworkStream stream;
-        TcpClient client;
-        public SshClient ssh;
-
         public event Action<string> OnMessageReceived;
+        private SerialPort _port;
+        private List<byte> _buffer = new List<byte>();
+        private int _frameLength;
+        private bool waitMsg = true;
+        private int rxMsgLen = 0;
+        private int awgPacketNum = 0;
+        uint nPackets = 0;
 
-        private void DevieLost()
-        {
-            oVer.Text = "";
-            isConfigured = false;
-            LogMessage("Disconnecting from device...");
-            isConnected = false;
-            if (client != null)
-                client.Close();
-            if (ssh != null)
-                ssh.Disconnect();
-            connect.Text = "Connect";
-            deviceState.Text = "DisConnected";
-            deviceState.ForeColor = Color.Red;
-            mainBoxEnable(false);
-            devices.Enabled = true;
-            foreach (DataGridViewRow row in tempTable.Rows)
-                row.Cells[1].Value = "";
+        // User callback for complete frames
+        public Action<byte[]> OnFrameReceived;
 
-        }
-        private void mainBoxEnable(bool enable)
+        public void setParam(int pID, uint pVal)
         {
-            scanMode.Enabled = enable;
-            ModeParams.Enabled = enable;
+            LogMessage("Set " + parList.SelectedText + " = " + pVal.ToString() + "(" + pVal.ToString("X08") + ")");
+            byte[] data = new byte[] { 0x55, 0x55, 0x00, 0x09, 0, 4, 0, 0, 0 };
+            data[6] = (byte)(pID & 0xFF);           
+            data[7] = (byte)((pVal >> 8) & 0xFF);
+            data[8] = (byte)(pVal & 0xFF);
+            waitMsg = true;
+            _port.Write(data, 0, 9);
         }
-        private async Task ConnectToDevice()
+        public void confAWGcmd()
+        {
+            LogMessage("Send config AWG");
+            byte[] data = new byte[] { 0x55, 0x55, 0x00, 0x08, 0, 3, 0, 0 };
+            data[6] = (byte)((awgSize >> 8) & 0xFF); // MSB
+            data[7] = (byte)(awgSize & 0xFF);        // LSB
+            waitMsg = true;
+            _port.Write(data, 0, 8);
+        }
+        public void sendAWGtoDevice()
+        {
+            nPackets = (uint)Math.Ceiling((double)awgSize / 64.0);
+            awgPacketNum = 0;
+            sendNextPacket(-1, 0);
+        }
+        public void sendNextPacket(int packet, uint err)
+        {
+            if (err != 0)
+            {
+                LogMessage("Error response received for AWG packet number " + packet.ToString() + ": error code " + err.ToString());
+                return;
+            }
+            if (packet != awgPacketNum - 1)
+            {
+                LogMessage("Unexpected AWG packet number received: " + packet.ToString() + " expected: " + (awgPacketNum-1).ToString());
+                return;
+            }
+
+            if (awgPacketNum >= nPackets)
+            {
+                LogMessage("All AWG data sent");
+                return;
+            }
+            LogMessage("Send AWG packet number " + awgPacketNum.ToString());
+            List<byte> data = new List<byte>() { 0x55, 0x55, 0x00, 0x88, 0, 2 };
+            data.Add((byte)((awgPacketNum >> 8) & 0xFF)); // MSB
+            data.Add((byte)(awgPacketNum & 0xFF));        // LSB
+            for (int i = 0; i < 64; i++)
+            {
+                data.Add((byte)((awgPacketNum * 64 + i) & 0xFF));        // LSB
+                data.Add((byte)(((awgPacketNum * 64 + i) >> 8) & 0xFF)); // MSB
+            }
+            waitMsg = true;
+            _port.Write(data.ToArray(), 0, data.Count);
+            awgPacketNum++;
+        }
+        private void HandleDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            int bytesToRead = _port.BytesToRead;
+            if (bytesToRead == 0) return;
+
+            byte[] temp = new byte[bytesToRead];
+            _port.Read(temp, 0, bytesToRead);
+
+            lock (_buffer) // ensure thread-safety
+            {
+                _buffer.AddRange(temp);
+
+                if (waitMsg)
+                {
+                    if (_buffer.Count > 3)
+                    {
+                        if ((_buffer[0] == 0x55) && (_buffer[1] == 0x55))
+                        {
+                            rxMsgLen = (int)((uint)_buffer[2] << 8) | _buffer[3];
+                            waitMsg = false;
+                        }
+                        else
+                        {
+                            _buffer.Clear();
+                        }
+                    }
+                }
+
+                if (!waitMsg && (_buffer.Count >= rxMsgLen))
+                {
+                    byte[] frame = _buffer.GetRange(0, rxMsgLen).ToArray();
+                    _buffer.RemoveRange(0, rxMsgLen);
+
+                    // Invoke callback safely
+                    OnFrameReceived?.Invoke(frame);
+                }
+            }
+        }
+        private void deviceMsgHandler(byte[] msg)
         {
             timer1.Stop();
-            if (isConnected)
-            {
-                LogMessage("Disconnecting from device...");
-                isConnected = false;
-                client.Close();
-                ssh.Disconnect();
-                connect.Text = "Connect";
-                deviceState.Text = "DisConnected";
-                deviceState.ForeColor = Color.Red;
-                mainBoxEnable(false);
-                devices.Enabled = true;
-            }
-            else
-            {
-                await ConnectNow();
+            uint msgCode = ((uint)msg[4] << 8) | msg[5];
+            string response = "";
 
-                if (isConnected)
-                {
-                    int speed = GetEthernetSpeed();
-                    if (speed < 1000)
-                    {
-                        MessageBox.Show("Ethernet connection speed is below 1Gbps.\nPlease check your network settings.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    devices.Enabled = false;
-                    connect.Text = "Disconnect";
+            switch (msgCode)
+            {
+                case 0x0000:    // Ping response
+                    LogMessage("Device ping response received");
                     deviceState.Text = "Connected";
                     deviceState.ForeColor = Color.Green;
-                    mainBoxEnable(true);
-                    autoTempControl();
-                    timer1.Start();
-                }
-                else
-                {
-                    MessageBox.Show("Failed to connect to the device.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    connect.Text = "Connect";
-                    deviceState.Text = "Disconnected";
-                    deviceState.ForeColor = Color.Red;
-                }
-            }
-        }
-        private int GetEthernetSpeed()
-        {
-            var eth = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n =>n.NetworkInterfaceType == NetworkInterfaceType.Ethernet 
-            && n.OperationalStatus == OperationalStatus.Up);
-            
-            if (eth != null)
-                return (int)eth.Speed / 1000000;
-            else
-                return -1;
-        } 
-        private async Task ConnectNow()
-        {
-            isConnected = false;
-            if (client != null)
-                client.Close();
-            client = new TcpClient();
-            Task connectTask = client.ConnectAsync(_ipAddress, _port);
-            if (await Task.WhenAny(connectTask, Task.Delay(1000)) == connectTask)
-            {
-                if (client.Connected)
-                {
-                    isConnected = true;
-                    stream = client?.GetStream();
-                    stream.ReadTimeout = 10000;
-                    ssh = new SshClient("192.168.2.24", "root", "");
-                    ssh.Connect();
-                }
-            }
-        }
-        private void SetKeepAlive(Socket socket, uint keepAliveTime, uint keepAliveInterval)
-        {
-            // Structure: 3 x 4-byte unsigned int
-            byte[] inOptionValues = new byte[12];
-            BitConverter.GetBytes((uint)1).CopyTo(inOptionValues, 0);               // enable
-            BitConverter.GetBytes(keepAliveTime).CopyTo(inOptionValues, 4);         // time in ms
-            BitConverter.GetBytes(keepAliveInterval).CopyTo(inOptionValues, 8);     // interval in ms
-
-            socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
-        }
-        private async Task ReceiveListener()
-        {
-            byte[] buffer = new byte[1024];
-
-            try
-            {
-                while (true)
-                {
-                    int bytes = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-                    if (bytes <= 0) break;  // disconnected
-
-                    string msg = Encoding.UTF8.GetString(buffer, 0, bytes);
-
-                    if (HandleMessage != null)
+                    if (connect.InvokeRequired)
                     {
-                        msg = HandleMessage(msg);
+                        connect.Invoke(new Action(() =>
+                        {
+                            connect.Text = "Disconnect";
+                        }));
+                    }
+                    else
+                    {
+                        connect.Text = "Disconnect";
                     }
 
-                    // Trigger event
-                    OnMessageReceived?.Invoke(msg);
-                }
+                    isConnected = true;
+                    break;
+
+                case 0x0001:    // Temperature response
+                    int tempA = (int)(((uint)msg[6] << 8) | msg[7]);
+                    int tempB = (int)(((uint)msg[8] << 8) | msg[9]);
+                    int tempC = (int)(((uint)msg[10] << 8) | msg[11]);
+                    int tempD = (int)(((uint)msg[12] << 8) | msg[13]);
+                    tempTable.Rows[0].Cells[1].Value = ((double)tempA / 100).ToString("0.00") + " °c";
+                    tempTable.Rows[1].Cells[1].Value = ((double)tempB / 100).ToString("0.00") + " °c";
+                    tempTable.Rows[2].Cells[1].Value = ((double)tempC / 100).ToString("0.00") + " °c";
+                    tempTable.Rows[3].Cells[1].Value = ((double)tempD / 100).ToString("0.00") + " °c";
+                    break;
+
+                case 0x0002:    // AWG packet response
+                    int packetNum = ((int)msg[7] << 8) | msg[8];
+                    LogMessage("AWG response for packet number " + packetNum.ToString());
+                    sendNextPacket(packetNum, (uint)msg[6]);
+                    break;
+
+                case 0x0003:    // AWG packet response
+                    response = "AWG configuration ";
+                    if (msg[6] == 0)
+                        response += "done";
+                    else
+                        response += "failed";
+                    LogMessage(response);
+                    break;
+
+                case 0x0004:    // Set parameter response
+                    response = "Set parameter ";
+                    if (msg[6] == 0)
+                        response += "done";
+                    else
+                        response += "failed";
+                    LogMessage(response);
+                    break;
+
+                default:
+                    LogMessage("Unknown message received: " + msgCode.ToString("X4"));
+                    break;
             }
-            catch
+
+        }
+        private void OpenComPort()
+        {
+            if (_port != null)
             {
-                // disconnected
+                try
+                {
+                    _port.Close();
+                }
+                catch { }
             }
-        }
-        private string HandleMessage(string msg)
-        {
-            // Handle incoming messages from the device
-            Console.WriteLine("Received message: " + msg);
-            return msg;
-        }
-        private bool SendCommand(byte[] TxBuf)
-        {
-            if (!isConnected) return false;
-            stream.Write(TxBuf);
-            return true;
+
+            string cp = comports.SelectedItem?.ToString();
+            _port = new SerialPort(cp, 115200, Parity.None, 8, StopBits.One);
+
+            // Assign callback
+            OnFrameReceived = frame =>
+            {
+                deviceMsgHandler(frame);
+            };
+            _port.DataReceived += HandleDataReceived;
+            _port.Open();
 
         }
         private void PingDevice()
         {
-//            return;
-            List<byte> data = new List<byte>();
-            data.Add(0x09);         // Write command
-            data.Add(0x00);         // Reserved
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
+            waitMsg = true;
+            _port.Write(new byte[] { 0x55, 0x55, 0x00, 0x06, 0, 0 }, 0, 6);
             LogMessage("Ping device");
-
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-            }
-
-            try
-            {
-                byte[] TxBuf = data.ToArray();
-                stream.Write(TxBuf);
-            }
-            catch
-            {
-                pingLost--;
-                if (pingLost == 0)
-                    DevieLost();
-            }
-
-            string res = WaitWriteRespose(9, false);
-            if (res != "")
-            {
-                pingLost--;
-                if (pingLost == 0)
-                    DevieLost();
-            }
-
-
         }
-        private byte[] SerWriteRegBuf(uint add, List<uint> vals)
+        private void ReadAllTemp()
         {
-            List<byte> data = new List<byte>();
-            data.Add(0x01);         // Write command
-            data.Add(0x00);         // Reserved
-            data.AddRange(GetBytesBigEndian(add));
-            data.AddRange(GetBytesBigEndian((uint)vals.Count));
-            foreach (uint v in vals)
-                data.AddRange(GetBytesBigEndian(v));
-            if (dataLoggingEnabled)
-            {
-                string tx = "01 00 ";
-                foreach (byte b in data.Skip(2))
-                    tx += b.ToString("X2") + " ";
-                LogMessage("Reg write: " + tx);
-            }
-            return data.ToArray();
-        }
-        public string WriteRegWaitResp(uint add, List<uint> vals)
-        {
-            byte[] TxBuf = SerWriteRegBuf(add, vals);
-            if (!isConnected) return "Device not connected";
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            string res = WaitWriteRespose(1);
-            return res;
-        }
-        public string ReadReg(uint add, uint len, out List<uint> vals)
-        {
-            vals = new List<uint>();
-            List<byte> data = new List<byte>();
-            data.Add(0x02);         // Read command
-            data.Add(0x00);         // Reserved
-            data.AddRange(GetBytesBigEndian(add));
-            data.AddRange(GetBytesBigEndian(len));
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "01 00 ";
-                foreach (byte b in data.Skip(2))
-                    tx += b.ToString("X2") + " ";
-                LogMessage("Reg read: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (!isConnected) return "Device not connected";
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            List<byte> resp = new List<byte>();
-            try
-            {
-                while (true)
-                {
-                    while (true)
-                    {
-                        this.Refresh();
-                        byte[] buffer = new byte[1024];
-                        int count = stream.Read(buffer, 0, buffer.Length);
-                        resp.AddRange(new List<byte>(buffer.Take(count)));
-                        // ACK/NACK respons
-                        if (resp.Count >= 8)
-                        {
-                            if ((resp[0] == 0) && (resp[1] == 2))
-                            {
-                                LogMessage("Command pass");
-                                vals.Add(resp[8]);
-                                vals.Add(resp[9]);
-                                vals.Add(resp[10]);
-                                vals.Add(resp[11]);
-                                return "";
-                            }
-                            else if (resp[0] == 1)
-                            {
-                                LogMessage("Command fail");
-                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                                if (loggingEnabled)
-                                    LogMessage("Reg write response: " + s);
-                                return s;
-
-                            }
-                        }
-                    }
-                }
-            }
-            catch (IOException)
-            {
-                    DevieLost();
-                return "Device not reponding";
-
-            }
-        }
-        public string WriteEEPROM(uint ch, uint dev, uint option, uint reg, List<uint> vals)
-        {
-            if (!isConnected) return "Device not connected";
-
-            byte[] regadd = GetBytesBigEndian(reg).ToArray();
-            List<byte> data = new List<byte>();
-            data.Add(0x07);         // command ID
-            data.Add(0x00);         // Bus
-            data.Add(0x70);         // Mux
-            data.Add((byte)ch);     // Mux channel
-            data.Add((byte)dev);    // Device
-            data.Add((byte)option); // I2C device register
-            data.AddRange(GetBytesBigEndian((uint)vals.Count));  // Number of values
-            switch (option & 0x30)
-            {
-                case 0x10:                  // 8 bits register address
-                    data.Add(regadd[3]);
-                    break;
-
-                case 0x20:                  // 16 bits register address
-                    data.Add(regadd[2]);
-                    data.Add(regadd[3]);
-                    break;
-
-                default:
-                    MessageBox.Show("Invalid I2C register address option");
-                    return "Invalid I2C register address option";
-            }
-            switch (option & 0xC)
-            {
-                case 0x0:                  // 8 bits value
-                    foreach (uint v in vals)
-                        data.Add((byte)v);
-                    break;
-
-                case 0x4:                  // 16 bits value
-                    foreach (uint v in vals)
-                    {
-                        data.Add((byte)(v >> 8));
-                        data.Add((byte)v);
-                    }
-                    break;
-
-                default:
-                    MessageBox.Show("Invalid I2C data size option");
-                    return "Invalid I2C data size option";
-            }
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            string res = WaitWriteRespose(7);
-            return res;
-        }
-        public string WriteI2CWaitResp(uint ch, uint dev, uint option, uint reg, List<uint> vals)
-        {
-            if (!isConnected) return "Device not connected";
-
-            byte[] regadd = GetBytesBigEndian(reg).ToArray();
-            List<byte> data = new List<byte>();
-            data.Add(0x07);         // command ID
-            data.Add(0x00);         // Bus
-            data.Add(0x70);         // Mux
-            data.Add((byte)ch);     // Mux channel
-            data.Add((byte)dev);    // Device
-            data.Add((byte)option); // I2C device register
-            data.AddRange(GetBytesBigEndian((uint)vals.Count));  // Number of values
-            switch (option & 0x30)
-            {
-                case 0x10:                  // 8 bits register address
-                    data.Add(regadd[3]);    
-                    break;
-
-                case 0x20:                  // 16 bits register address
-                    data.Add(regadd[2]);
-                    data.Add(regadd[3]);
-                    break;
-
-                default:
-                    MessageBox.Show("Invalid I2C register address option");
-                    return "Invalid I2C register address option";
-            }
-            switch (option & 0xC)
-            {
-                case 0x0:                  // 8 bits value
-                    foreach (uint v in vals)
-                        data.Add((byte)v);
-                    break;
-
-                case 0x4:                  // 16 bits value
-                    foreach (uint v in vals)
-                    {
-                        data.Add((byte)(v>> 8));
-                        data.Add((byte)v);
-                    }
-                    break;
-
-                default:
-                    MessageBox.Show("Invalid I2C data size option");
-                    return "Invalid I2C data size option";
-            }
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("I2C write: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            string res = WaitWriteRespose(7);
-            return res;
-        }
-        public string SPISOAControl(uint val)
-        {
-            if (!isConnected) return "Device not connected";
-            List<byte> data = new List<byte>();
-            data.Add(0x0A);         // command
-            data.Add(0x01);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            data.AddRange(GetBytesBigEndian((uint)16));
-            data.AddRange(GetBytesBigEndian(val));
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("SOA write: " + tx);
-            }
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            string res = WaitWriteRespose(10);
-            return res;
-        }
-        private string SPIWriteAWGWaitResp(List<uint> vals)
-        {
-            if (!isConnected) return "Device not connected";
-
-            List<byte> data = new List<byte>();
-            data.Add(0x0B);         // command
-            data.Add(0x00);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            data.AddRange(GetBytesBigEndian((uint)vals.Count()));   // length
-            foreach (uint val in vals)
-                data.AddRange(new List<byte>() { (byte)(val >> 8), (byte)(val & 0xff)});  // Number of values
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("AWG write: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            string res = WaitWriteRespose(11);
-            if (res != "")
-                return res;
-
-            data.Clear();
-            data.Add(0x0A);         // command
-            data.Add(0x02);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });
-            data.AddRange(GetBytesBigEndian((uint)vals.Count()));   // length
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("AWG gain write: " + tx);
-            }
-
-            TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            res = WaitWriteRespose(10);
-            return res;
-
-        }
-        private string SendStopCmd()
-        {
-            List<byte> data = new List<byte>();
-            data.Add(0x04);         // command
-            data.Add(0x03);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // length
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("SPI Write: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                LogMessage("Streamer write error");
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                LogMessage("Streamer write error");
-                DevieLost();
-                return"Device not reponding";
-            }
-
-            string res = WaitWriteRespose(4);
-            return res;
-        }
-        private string SendRunCmd(int mode)
-        {
-            List<byte> data = new List<byte>();
-            data.Add(0x04);         // command
-            data.Add(0x09);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
-            data.AddRange(new List<byte>() { 0, 0, 0, 2 });   // length
-            data.Add((byte)(0x30 + mode));
-            data.Add(0x00);
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("SPI Write: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            string res = WaitWriteRespose(4);
-            return res;
-        }
-        private string RunOpto(int mode)
-        {
-            if (!isConnected) return "Device not connected";
-            optoStat.Maximum = 7;
-            optoStat.Value = 1;
-            optoStat.Visible = true;
-            stream.ReadTimeout = 500000;
-            // Send command and wait progress
-            string res = SendRunCmd(mode);
-            stream.ReadTimeout = 10000;
-            optoStat.Visible = false;
-            return res;
-        }
-        private string WaitWriteRespose(int cmd, bool waitmsg = true)
-        { 
-            int stepNum = 0;
-            int NumSteps = 7;
-
-            List<byte> resp = new List<byte>();
-            try
-            {
-                while (true)
-                {
-                    while (true)
-                    {
-                        this.Refresh();
-                        byte[] buffer = new byte[1024];
-                        int count = stream.Read(buffer, 0, buffer.Length);
-                        resp.AddRange(new List<byte>(buffer.Take(count)));
-                        // ACK/NACK respons
-                        if (resp.Count >= 8)
-                        {
-                            if ((resp[0] == 0) && (resp[1] == cmd))
-                            {
-                                LogMessage("Command pass");
-                                return "";
-                            }
-                            else if (resp[0] == 1)
-                            {
-                                LogMessage("Command fail");
-                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                                if (loggingEnabled)
-                                    LogMessage("Reg write response: " + s);
-                                return s;
-                            }
-                        }
-
-                        while (resp.Count > 18)
-                        {
-                            if (resp.Count < 20)
-                                continue;
-                            if ((resp[0] == 2) && (resp[1] == 9))
-                            {
-                                stepNum = (int)resp[11];
-                                NumSteps = (int)resp[15];
-                                int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
-                                if (resp.Count < (20 + sl))
-                                    continue;
-                                string msg = new string(Encoding.ASCII.GetChars(resp.ToArray()), 20, sl);
-                                LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
-                                resp.RemoveRange(0, 20 + sl);
-
-                                optoStat.Value = stepNum;
-                                this.Refresh();
-                                if (stepNum == NumSteps)
-                                {
-                                    return "";
-                                }
-                            }
-                            else
-                            {
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 0, buffer.Length);
-                                return s;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (IOException)
-            {
-                if (waitmsg)
-                      DevieLost();
-                return "Device not reponding";
-    
-            }
-        }
-        private string ReadI2C(uint bus, uint mux, uint ch, uint dev, uint option, uint reg, uint len, out List<uint> vals, bool waitmsg = true)
-        {
-            vals = null;
-            if (!isConnected)
-                return "Device not connected";
- 
-            byte[] regadd = GetBytesBigEndian(reg).ToArray();
-            List<byte> data = new List<byte>();
-            data.Add(0x08);         // command ID
-            data.Add((byte)bus);         // Bus
-            data.Add((byte)mux);         // Mux
-            data.Add((byte)ch);     // Mux channel
-            data.Add((byte)dev);    // Device
-            data.Add((byte)option); // I2C device register
-            data.AddRange(GetBytesBigEndian(len));  // Number of values
-
-            switch (option & 0x30)
-            {
-                case 0x10:                  // 8 bits register address
-                    data.Add(regadd[3]);
-                    break;
-
-                case 0x20:                  // 16 bits register address
-                    data.Add(regadd[2]);
-                    data.Add(regadd[3]);
-                    break;
-
-                default:
-                    MessageBox.Show("Invalid I2C register address option");
-                    return "Invalid I2C register address option";
-            }
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("I2C read command: " + tx);
-            }
-
-            byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                stream.Write(TxBuf);
-            }
-            catch (IOException)
-            {
-                vals = null;
-                DevieLost();
-                return "Device not reponding";
-            }
-            
-            string res = WaitI2CReadRespose(8, option, out vals, waitmsg);
-            return res;
-        }
-        private string WaitI2CReadRespose(int cmd, uint option, out List<uint> vals, bool waitmsg = true)
-        {
-            vals = null;
-            int stepNum = 0;
-            int NumSteps = 7;
-
-            List<byte> resp = new List<byte>();
-            try
-            {
-                while (true)
-                {
-                    while (true)
-                    {
-                        this.Refresh();
-                        byte[] buffer = new byte[1024];
-                        int count = stream.Read(buffer, 0, buffer.Length);
-                        resp.AddRange(new List<byte>(buffer.Take(count)));
-                        // ACK/NACK respons
-                        if (resp.Count >= 10)
-                        {
-                            if ((resp[0] == 0) && (resp[1] == cmd))
-                            {
-                                vals = new List<uint>();
-                                int nvals = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                                int idx = 8;
-                                if ((option & 0xC) == 0)
-                                {
-                                    for (int n = 0; n < nvals; n++)
-                                        vals.Add((uint)buffer[idx + n]);
-                                }
-                                else
-                                {
-                                    for (int n = 0; n < nvals; n += 2)
-                                    {
-                                        vals.Add(((uint)buffer[idx + n] << 8) + (uint)buffer[idx + n + 1]);
-                                    }
-
-                                }
-                                return "";
-                            }
-                            else if (resp[0] == 1)
-                            {
-                                LogMessage("Command fail");
-                                int ml = ((int)buffer[4] << 24) + ((int)buffer[5] << 16) + ((int)buffer[6] << 8) + (int)buffer[7];
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml + 1);
-                                if (loggingEnabled)
-                                    LogMessage("Reg write response: " + s);
-                                return s;
-
-                            }
-                        }
-
-                        while (resp.Count > 17)
-                        {
-                            int ml = ((int)resp[4] << 24) + ((int)resp[5] << 16) + ((int)resp[6] << 8) + (int)resp[7];
-                            if (resp.Count < (ml + 12))
-                                continue;
-                            if ((resp[0] == 2) && (resp[1] == 9))
-                            {
-                                stepNum = (int)resp[11];
-                                NumSteps = (int)resp[15];
-                                int sl = ((int)resp[16] << 24) + ((int)resp[17] << 16) + ((int)resp[18] << 8) + (int)resp[19];
-                                string msg = new string(Encoding.ASCII.GetChars(buffer), 20, sl);
-                                LogMessage("Running: Step " + stepNum.ToString() + " / " + NumSteps.ToString() + " ==> " + msg);
-                                resp.RemoveRange(0, ml + 12);
-
-                                optoStat.Value = stepNum;
-                                this.Refresh();
-                                if (stepNum == NumSteps)
-                                {
-                                    return "";
-                                }
-                            }
-                            else
-                            {
-                                string s = new string(Encoding.ASCII.GetChars(buffer), 12, ml);
-                                return s;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (IOException)
-            {
-                if (waitmsg)
-                    DevieLost();
-                return "Device not reponding";
-            }
-        }
-        private string LoadHHSDriver()
-        {
-            var result = ssh.CreateCommand($"lsmod").Execute().Trim();
-            if (!result.Contains("altera_msgdma_st"))
-            {
-                string ipAddress = _LidarViewipAddress;
-                if (streamTo.Checked)
-                    ipAddress = _MyipAddress;
-                string command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"" + 
-                    ipAddress + "\" udp_dest_port=10003 transfer_size=704";
-
-//                command = $"insmod /lib/modules/$(uname -r)/extra/altera_msgdma_st.ko udp_forwarding=1 udp_dest_ip=\"192.168.2.20\" udp_dest_port=10003 transfer_size=704";
-                var reult = ssh.CreateCommand(command).Execute().Trim();  //cmd.Execute();
-                result = ssh.CreateCommand($"lsmod").Execute().Trim();  //cmd.Execute();
-            }
-            return "";
-        }
-        public void RemoteDirectoryExists()
-        {
-            string path = "/var/lib/odem/patterns";
-            string command = $"[ -d \"{path}\" ] && echo exists || echo missing";
-            var result = ssh.CreateCommand(command).Execute().Trim();
-            if (result != "exists")
-                ssh.CreateCommand($"mkdir -p \"{path}\"").Execute();
-        }
-        private string LoadFiles(string wfPath)
-        {
-            string modeName = modes[appSetting.scanModeNum];
-            int modeIndex = scanModes[modeName].modeNum;
-            var assembly = Assembly.GetExecutingAssembly();
-
-
-            RemoteDirectoryExists();
-
-            using (var client = new ScpClient("192.168.2.24", "root", ""))
-            {
-                client.Connect();
-
-                if (wfPath == "")
-                {
-                    string resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".scan_parameters.json";
-                    Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
-                    if (resourceStream == null)
-                    {
-                        return "Failed to read device configuation file";
-                    }
-
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
-                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_scan_parameters.json");
-
-                    resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformX.csv";
-                    resourceStream = assembly.GetManifestResourceStream(resourceName);
-                    if (resourceStream == null)
-                    {
-                        return "Failed to read device configuation file";
-                    }
-
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
-                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformX.csv");
-
-                    resourceName = "OdemControl.Optotune." + scanModes[modeName].folder + ".waveformY.csv";
-                    resourceStream = assembly.GetManifestResourceStream(resourceName);
-                    if (resourceStream == null)
-                    {
-                        return "Failed to read device configuation file";
-                    }
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
-                    client.Upload(resourceStream, "/var/lib/odem/patterns/" + modeIndex.ToString() + "_waveformY.csv");
-                }
-                else
-                {
-                    var stream = File.OpenRead(wfPath + "scan_parameters.json");
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_scan_parameters.json");
-                    client.Upload(stream, "/var/lib/odem/patterns/10_scan_parameters.json");
-                    stream = File.OpenRead(wfPath + "waveformX.csv");
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_waveformX.csv");
-                    client.Upload(stream, "/var/lib/odem/patterns/10_waveformX.csv");
-                    stream = File.OpenRead(wfPath + "waveformY.csv");
-                    LogMessage("Download file: " + "/var/lib/odem/patterns/10_waveformY.csv");
-                    client.Upload(stream, "/var/lib/odem/patterns/10_waveformY.csv");
-                }
-                client.Disconnect();
-            }
-
-            return "";
-        }
-        private string StreamingCmd(bool start)
-        {
-            if (!isConnected) return "Device not connected";
-
-            List<byte> data = new List<byte>();
-            data.Add(0x05);         // command
-            if (start)
-                data.Add(0x01);         // Sub command
-            else
-                data.Add(0x02);         // Sub command
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // Address
-            data.AddRange(new List<byte>() { 0, 0, 0, 0 });   // length
-
-            if (dataLoggingEnabled)
-            {
-                string tx = "";
-                foreach (byte b in data)
-                    tx += b.ToString("X2") + " ";
-                LogMessage("Straem command write: " + tx);
-            }
-
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-            try
-            {
-                byte[] TxBuf = data.ToArray();
-                stream.Write(TxBuf);
-            }
-            catch (Exception ex)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
-            string res = WaitWriteRespose(5);
-            return res;
+            waitMsg = true;
+            _port.Write(new byte[] { 0x55, 0x55, 0x00, 0x06, 0, 1 }, 0, 6);
+            LogMessage("Read temerature");
         }
         private string ReadRegFromOT(uint sys, uint reg, out double val)
         {
@@ -1053,18 +248,11 @@ namespace OdemControl
             }
 
             byte[] TxBuf = data.ToArray();
-            if (stream.CanWrite == false)
-            {
-                DevieLost();
-                return "Device not reponding";
-            }
-
             try
             {
-                stream.Write(TxBuf);
 
                 byte[] buffer = new byte[1024];
-                int count = stream.Read(buffer, 0, buffer.Length);
+                int count = 0;
                 if (dataLoggingEnabled)
                 {
                     string tx = "";
@@ -1086,7 +274,6 @@ namespace OdemControl
             }
             catch (IOException)
             {
-                DevieLost();
                 return "Device not reponding";
             }
 
