@@ -435,9 +435,19 @@ namespace OdemControl
         }
         private void loadAwg_Click(object sender, EventArgs e)
         {
-            awgData = Enumerable.Range(0, 4096).Select(i => (uint)(i)).ToList();
+            OpenFileDialog lf = new OpenFileDialog();
+            lf.Filter = "tv files (*.csv)|*.csv";
+
+            lf.Multiselect = false;
+            if (lf.ShowDialog() != DialogResult.OK)
+                return;
+
+            string fname = lf.FileName;
+            string awg = File.ReadAllText(lf.FileName);
+
+            awgData = awg.Split(',').Select(s => uint.Parse(s)).ToList();
             awgSize = (uint)awgData.Count;
-            awglen.Text = "AWG vector length = " + awgSize.ToString();
+            awglen.Text = "Vector length = " + awgSize.ToString();
         }
 
         private void sendAWG_Click(object sender, EventArgs e)
