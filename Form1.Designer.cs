@@ -35,6 +35,7 @@
             optoStat = new ToolStripProgressBar();
             connect = new Button();
             toolTip1 = new ToolTip(components);
+            paramTable = new DataGridView();
             checkT = new Button();
             tempTable = new DataGridView();
             Column3 = new DataGridViewTextBoxColumn();
@@ -48,23 +49,21 @@
             sendAWG = new Button();
             runAWG = new Button();
             progAWG = new Button();
-            paramTable = new DataGridView();
-            Column1 = new DataGridViewButtonColumn();
-            Column2 = new DataGridViewTextBoxColumn();
-            label1 = new Label();
             comports = new ComboBox();
             setAll = new Button();
             MonitorView = new RichTextBox();
             clr = new Button();
             AutoScroll = new CheckBox();
+            Column1 = new DataGridViewButtonColumn();
+            Column2 = new DataGridViewTextBoxColumn();
             statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)paramTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
             splitContainer3.Panel1.SuspendLayout();
             splitContainer3.Panel2.SuspendLayout();
             splitContainer3.SuspendLayout();
             groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)paramTable).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
@@ -103,6 +102,28 @@
             connect.Text = "Connect";
             connect.UseVisualStyleBackColor = true;
             connect.Click += connect_Click;
+            // 
+            // toolTip1
+            // 
+            toolTip1.AutoPopDelay = 2000;
+            toolTip1.InitialDelay = 500;
+            toolTip1.ReshowDelay = 100;
+            // 
+            // paramTable
+            // 
+            paramTable.AllowUserToAddRows = false;
+            paramTable.AllowUserToDeleteRows = false;
+            paramTable.AllowUserToResizeRows = false;
+            paramTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            paramTable.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2 });
+            paramTable.Location = new Point(16, 101);
+            paramTable.Name = "paramTable";
+            paramTable.RowHeadersVisible = false;
+            paramTable.ShowCellToolTips = false;
+            paramTable.Size = new Size(258, 290);
+            paramTable.TabIndex = 26;
+            toolTip1.SetToolTip(paramTable, "Start with 0x for hex value");
+            paramTable.CellClick += paramTable_CellClick;
             // 
             // checkT
             // 
@@ -155,7 +176,7 @@
             label3.Location = new Point(125, 19);
             label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new Size(78, 21);
+            label3.Size = new Size(66, 17);
             label3.TabIndex = 11;
             label3.Text = "COM Port";
             // 
@@ -178,7 +199,6 @@
             splitContainer3.Panel1.BackColor = Color.Transparent;
             splitContainer3.Panel1.Controls.Add(groupBox1);
             splitContainer3.Panel1.Controls.Add(paramTable);
-            splitContainer3.Panel1.Controls.Add(label1);
             splitContainer3.Panel1.Controls.Add(tempTable);
             splitContainer3.Panel1.Controls.Add(comports);
             splitContainer3.Panel1.Controls.Add(checkT);
@@ -202,7 +222,7 @@
             groupBox1.Controls.Add(sendAWG);
             groupBox1.Controls.Add(runAWG);
             groupBox1.Controls.Add(progAWG);
-            groupBox1.Location = new Point(309, 101);
+            groupBox1.Location = new Point(308, 73);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(294, 171);
             groupBox1.TabIndex = 27;
@@ -224,7 +244,7 @@
             awglen.AutoSize = true;
             awglen.Location = new Point(120, 34);
             awglen.Name = "awglen";
-            awglen.Size = new Size(19, 21);
+            awglen.Size = new Size(17, 17);
             awglen.TabIndex = 23;
             awglen.Text = "...";
             // 
@@ -258,49 +278,12 @@
             progAWG.UseVisualStyleBackColor = true;
             progAWG.Click += progAWG_Click;
             // 
-            // paramTable
-            // 
-            paramTable.AllowUserToAddRows = false;
-            paramTable.AllowUserToDeleteRows = false;
-            paramTable.AllowUserToResizeRows = false;
-            paramTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            paramTable.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2 });
-            paramTable.Location = new Point(16, 101);
-            paramTable.Name = "paramTable";
-            paramTable.RowHeadersVisible = false;
-            paramTable.Size = new Size(258, 290);
-            paramTable.TabIndex = 26;
-            paramTable.CellClick += paramTable_CellClick;
-            // 
-            // Column1
-            // 
-            Column1.FillWeight = 80F;
-            Column1.HeaderText = "Param";
-            Column1.Name = "Column1";
-            Column1.Width = 150;
-            // 
-            // Column2
-            // 
-            Column2.HeaderText = "Value";
-            Column2.Name = "Column2";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.Location = new Point(191, 64);
-            label1.Name = "label1";
-            label1.Size = new Size(83, 34);
-            label1.TabIndex = 25;
-            label1.Text = "Start with 0x \r\nfor hex value";
-            label1.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // comports
             // 
             comports.FormattingEnabled = true;
             comports.Location = new Point(210, 16);
             comports.Name = "comports";
-            comports.Size = new Size(103, 29);
+            comports.Size = new Size(103, 25);
             comports.TabIndex = 9;
             // 
             // setAll
@@ -349,6 +332,18 @@
             AutoScroll.Text = "Auto scroll";
             AutoScroll.UseVisualStyleBackColor = true;
             // 
+            // Column1
+            // 
+            Column1.FillWeight = 80F;
+            Column1.HeaderText = "Param";
+            Column1.Name = "Column1";
+            Column1.Width = 150;
+            // 
+            // Column2
+            // 
+            Column2.HeaderText = "Value";
+            Column2.Name = "Column2";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -357,7 +352,7 @@
             ClientSize = new Size(833, 611);
             Controls.Add(splitContainer3);
             Controls.Add(statusStrip1);
-            Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4, 3, 4, 3);
             MinimumSize = new Size(750, 650);
@@ -366,6 +361,7 @@
             Text = "ODEM Control by Lidwave";
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)paramTable).EndInit();
             ((System.ComponentModel.ISupportInitialize)tempTable).EndInit();
             splitContainer3.Panel1.ResumeLayout(false);
             splitContainer3.Panel1.PerformLayout();
@@ -375,7 +371,6 @@
             splitContainer3.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)paramTable).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -402,12 +397,11 @@
         private Label awglen;
         private Button sendAWG;
         private Button progAWG;
-        private Label label1;
         private DataGridView paramTable;
-        private DataGridViewButtonColumn Column1;
-        private DataGridViewTextBoxColumn Column2;
         private GroupBox groupBox1;
         private Button runAWG;
         private Button setAll;
+        private DataGridViewButtonColumn Column1;
+        private DataGridViewTextBoxColumn Column2;
     }
 }

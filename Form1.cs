@@ -1,3 +1,4 @@
+using Renci.SshNet.Messages;
 using System.Drawing.Design;
 using System.IO.Ports;
 using System.Net;
@@ -94,6 +95,7 @@ namespace OdemControl
                     comports.Items.Add(p);
                 comports.SelectedIndex = 0;
             }
+            setControlsEnabled(false);
             appSetting = new appSettings();
 
             this.Refresh();
@@ -412,6 +414,7 @@ namespace OdemControl
                 deviceState.Text = "DisConnected";
                 deviceState.ForeColor = Color.Red;
                 _port.Close();
+                setControlsEnabled(false);
             }
             else
             {
@@ -555,6 +558,30 @@ namespace OdemControl
                 return;
             }
             setParamInRow(rowNum);
+
+        }
+        private void setControlsEnabled(bool enabled)
+        {
+            if (loadAwg.InvokeRequired)
+            {
+                loadAwg.Invoke(new Action(() => {loadAwg.Enabled = enabled;}));
+                sendAWG.Invoke(new Action(() => { sendAWG.Enabled = enabled; }));
+                progAWG.Invoke(new Action(() => { progAWG.Enabled = enabled; }));
+                runAWG.Invoke(new Action(() => { runAWG.Enabled = enabled; }));
+                paramTable.Invoke(new Action(() => { progAWG.Enabled = enabled; }));
+                setAll.Invoke(new Action(() => { setAll.Enabled = enabled; }));
+                checkT.Invoke(new Action(() => { checkT.Enabled = enabled; }));
+            }
+            else
+            {
+                loadAwg.Enabled = enabled;
+                sendAWG.Enabled = enabled;
+                progAWG.Enabled = enabled;
+                runAWG.Enabled = enabled;
+                paramTable.Enabled = enabled;
+                setAll.Enabled = enabled;
+                checkT.Enabled = enabled;
+            }
 
         }
     }

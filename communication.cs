@@ -152,6 +152,8 @@ namespace OdemControl
                     }
 
                     isConnected = true;
+                    setControlsEnabled(true);
+
                     break;
 
                 case 0x0001:    // Temperature response
