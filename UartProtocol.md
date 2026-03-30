@@ -44,6 +44,7 @@ Unsolicited responses use the same response structure with Original Command ID r
 - **Command 2:** AWG Vector Transfer
 - **Command 3:** Config AWG
 - **Command 4:** Set paraemter value
+- **Command 5:** Run/Stop AWG
 
 ---
 
@@ -113,7 +114,15 @@ The following error codes may be returned in error responses:
   - Command ID: 4
   - **payload**:
     - Bytes 6: parameter ID
-    - Bytes 7-8: Parameter ID (big-endian)
+    - Bytes 7-10: Parameter ID (big-endian)
 - **Response payload:**
   - Response with no payload, indicating success or error in configuring the AWG with the previously transferred vector data.
+
+### Command 5: Run/Stop AWG
+- **Purpose:** Simple connectivity test to verify the TCP connection is alive.
+- **Format:**
+  - Command ID: 0
+  - Bytes 6: Run/Stop flag (0 for Stop, 1 for Run)
+- **Response payload:**
+  - There is no data payload following the header for a Ping response.
 

@@ -1,7 +1,9 @@
+using System.Drawing.Design;
 using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
@@ -53,6 +55,8 @@ namespace OdemControl
         string pushed = "";
         List<uint> awgData = new List<uint>();
         uint awgSize = 0;
+        int rowNum = 0;
+        bool doSetAll = false;
 
         public Form1(string version)
         {
@@ -71,10 +75,25 @@ namespace OdemControl
             tempTable.Rows.Add("Laser", "");
             tempTable.ClearSelection();
 
-            foreach (string p in ConfParams)
-                parList.Items.Add(p);
-            parList.SelectedIndex = 0;
+            foreach (KeyValuePair<string, string> p in ParamsList)
+            {
+                paramTable.Rows.Add(p.Key, p.Value);
+            }
 
+            List<string> ports = SerialPort.GetPortNames().ToList();
+            if (ports.Count == 0)
+            {
+                MessageBox.Show("No COM port found. Please connect the device and restart the application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                noDevice = true;
+                connect.Enabled = false;
+            }
+            else
+            {
+                ports.Sort();
+                foreach (string p in ports)
+                    comports.Items.Add(p);
+                comports.SelectedIndex = 0;
+            }
             appSetting = new appSettings();
 
             this.Refresh();
@@ -267,7 +286,7 @@ namespace OdemControl
         private string ReadPICtemp(out double temp)
         {
             temp = 0;
-            List<uint> t = new List<uint> { 100};
+            List<uint> t = new List<uint> { 100 };
             double vref = 2.45;
             double r1 = 5.6;
             double r2 = 2.0;
@@ -300,7 +319,7 @@ namespace OdemControl
         {
             temp = 0;
             string err = "";
-            List<uint> t = new List<uint>() { 100};
+            List<uint> t = new List<uint>() { 100 };
             if (err == "")
             {
                 double r1 = 5.6;
@@ -414,23 +433,6 @@ namespace OdemControl
         {
             MonitorView.Clear();
         }
-        private void WrVec_Click(object sender, EventArgs e)
-        {
-            string val = parValue.Text;
-            uint iVal = 0;
-            bool valid = false;
-            if (val.StartsWith("0x"))
-                valid = uint.TryParse(val.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out iVal);
-            else
-                valid = uint.TryParse(val, out iVal);
-
-            if (!valid)
-            {
-                MessageBox.Show("Invalid value: " + val, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                parValue.Text = "";
-                return;
-            }
-        }
         private void loadAwg_Click(object sender, EventArgs e)
         {
             awgData = Enumerable.Range(0, 4096).Select(i => (uint)(i)).ToList();
@@ -446,6 +448,104 @@ namespace OdemControl
         private void progAWG_Click(object sender, EventArgs e)
         {
             confAWGcmd();
+        }
+
+        private void paramTable_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 0)
+            {
+                setParamInRow(e.RowIndex);
+            }
+            else
+                paramTable.Rows[e.RowIndex].Cells[0].Style.BackColor = System.Drawing.SystemColors.Control;
+
+        }
+        private void setParamInRow(int row)
+        {
+            string val = paramTable.Rows[row].Cells[1].Value.ToString();
+            uint iVal = 0;
+            bool valid = false;
+            if (val.StartsWith("0x"))
+                valid = uint.TryParse(val.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out iVal);
+            else
+                valid = uint.TryParse(val, out iVal);
+
+            if (!valid)
+            {
+                MessageBox.Show("Invalid value: " + val, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                paramTable.Rows[row].Cells[1].Value = "";
+                return;
+            }
+            rowNum = row;
+            setParam(row, iVal, paramTable.Rows[row].Cells[0].Value.ToString());
+        }
+        private void paintPar(uint pass)
+        {
+            Color color = Color.Lime;
+            if (pass == 1)
+                color = Color.Red;
+
+            paramTable.Invoke(new Action(() =>
+            {
+                paramTable.Rows[rowNum].Cells[0].Style.BackColor = color;
+                paramTable.ClearSelection();
+                paramTable.CurrentCell = null;
+            }));
+            if (doSetAll)
+            {
+                Thread.Sleep(100);
+                setAllCtrl();
+            }
+        }
+        private void runAWG_Click(object sender, EventArgs e)
+        {
+            if (runAWG.Text == "Run AWG")
+            {
+                runAWG.Text = "Stop AWG";
+                AwgControl(true);
+            }
+            else
+            {
+                runAWG.Text = "Run AWG";
+                AwgControl(false);
+            }
+        }
+
+        private void setAll_Click(object sender, EventArgs e)
+        {
+            bool valid = false;
+            for (int i = 0; i < paramTable.Rows.Count; i++)
+            {
+                string val = paramTable.Rows[i].Cells[1].Value.ToString();
+                uint iVal = 0;
+               
+                if (val.StartsWith("0x"))
+                    valid = uint.TryParse(val.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out iVal);
+                else
+                    valid = uint.TryParse(val, out iVal);
+                if (!valid)
+                {
+                    MessageBox.Show("Invalid value in row " + (i+1).ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    paramTable.Rows[i].Cells[1].Value = "";
+                    break;
+                }
+            }
+            if (!valid)
+                return;
+
+            doSetAll = true;
+            setParamInRow(0);
+        }
+        private void setAllCtrl()
+        {
+            rowNum++;
+            if (rowNum >= paramTable.Rows.Count)
+            {
+                doSetAll = false;
+                return;
+            }
+            setParamInRow(rowNum);
+
         }
     }
     public class appSettings

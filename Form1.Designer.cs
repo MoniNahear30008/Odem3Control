@@ -42,24 +42,29 @@
             label3 = new Label();
             timer1 = new System.Windows.Forms.Timer(components);
             splitContainer3 = new SplitContainer();
-            WrVec = new Button();
-            parList = new ComboBox();
-            awglen = new Label();
-            progAWG = new Button();
-            sendAWG = new Button();
+            groupBox1 = new GroupBox();
             loadAwg = new Button();
+            awglen = new Label();
+            sendAWG = new Button();
+            runAWG = new Button();
+            progAWG = new Button();
+            paramTable = new DataGridView();
+            Column1 = new DataGridViewButtonColumn();
+            Column2 = new DataGridViewTextBoxColumn();
+            label1 = new Label();
             comports = new ComboBox();
+            setAll = new Button();
             MonitorView = new RichTextBox();
             clr = new Button();
             AutoScroll = new CheckBox();
-            parValue = new TextBox();
-            label1 = new Label();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)tempTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
             splitContainer3.Panel1.SuspendLayout();
             splitContainer3.Panel2.SuspendLayout();
             splitContainer3.SuspendLayout();
+            groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)paramTable).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
@@ -102,7 +107,7 @@
             // checkT
             // 
             checkT.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            checkT.Location = new Point(630, 43);
+            checkT.Location = new Point(632, 21);
             checkT.Margin = new Padding(4);
             checkT.Name = "checkT";
             checkT.Size = new Size(177, 34);
@@ -122,12 +127,12 @@
             tempTable.ColumnHeadersVisible = false;
             tempTable.Columns.AddRange(new DataGridViewColumn[] { Column3, Column4 });
             tempTable.Enabled = false;
-            tempTable.Location = new Point(630, 85);
+            tempTable.Location = new Point(632, 63);
             tempTable.Margin = new Padding(4);
             tempTable.Name = "tempTable";
             tempTable.ReadOnly = true;
             tempTable.RowHeadersVisible = false;
-            tempTable.Size = new Size(177, 127);
+            tempTable.Size = new Size(177, 119);
             tempTable.TabIndex = 9;
             // 
             // Column3
@@ -171,18 +176,14 @@
             // splitContainer3.Panel1
             // 
             splitContainer3.Panel1.BackColor = Color.Transparent;
+            splitContainer3.Panel1.Controls.Add(groupBox1);
+            splitContainer3.Panel1.Controls.Add(paramTable);
             splitContainer3.Panel1.Controls.Add(label1);
-            splitContainer3.Panel1.Controls.Add(parValue);
-            splitContainer3.Panel1.Controls.Add(WrVec);
-            splitContainer3.Panel1.Controls.Add(parList);
-            splitContainer3.Panel1.Controls.Add(awglen);
-            splitContainer3.Panel1.Controls.Add(progAWG);
-            splitContainer3.Panel1.Controls.Add(sendAWG);
-            splitContainer3.Panel1.Controls.Add(loadAwg);
             splitContainer3.Panel1.Controls.Add(tempTable);
             splitContainer3.Panel1.Controls.Add(comports);
             splitContainer3.Panel1.Controls.Add(checkT);
             splitContainer3.Panel1.Controls.Add(label3);
+            splitContainer3.Panel1.Controls.Add(setAll);
             splitContainer3.Panel1.Controls.Add(connect);
             // 
             // splitContainer3.Panel2
@@ -191,49 +192,45 @@
             splitContainer3.Panel2.Controls.Add(clr);
             splitContainer3.Panel2.Controls.Add(AutoScroll);
             splitContainer3.Size = new Size(833, 587);
-            splitContainer3.SplitterDistance = 448;
+            splitContainer3.SplitterDistance = 396;
             splitContainer3.TabIndex = 17;
             // 
-            // WrVec
+            // groupBox1
             // 
-            WrVec.Location = new Point(26, 165);
-            WrVec.Name = "WrVec";
-            WrVec.Size = new Size(131, 29);
-            WrVec.TabIndex = 14;
-            WrVec.Text = "Set parameter";
-            WrVec.UseVisualStyleBackColor = true;
-            WrVec.Click += WrVec_Click;
+            groupBox1.Controls.Add(loadAwg);
+            groupBox1.Controls.Add(awglen);
+            groupBox1.Controls.Add(sendAWG);
+            groupBox1.Controls.Add(runAWG);
+            groupBox1.Controls.Add(progAWG);
+            groupBox1.Location = new Point(309, 101);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(294, 171);
+            groupBox1.TabIndex = 27;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "AWG";
             // 
-            // parList
+            // loadAwg
             // 
-            parList.FormattingEnabled = true;
-            parList.Location = new Point(167, 165);
-            parList.Name = "parList";
-            parList.Size = new Size(171, 29);
-            parList.TabIndex = 15;
+            loadAwg.Location = new Point(10, 28);
+            loadAwg.Name = "loadAwg";
+            loadAwg.Size = new Size(94, 33);
+            loadAwg.TabIndex = 21;
+            loadAwg.Text = "Get AWG";
+            loadAwg.UseVisualStyleBackColor = true;
+            loadAwg.Click += loadAwg_Click;
             // 
             // awglen
             // 
             awglen.AutoSize = true;
-            awglen.Location = new Point(17, 109);
+            awglen.Location = new Point(120, 34);
             awglen.Name = "awglen";
             awglen.Size = new Size(19, 21);
             awglen.TabIndex = 23;
             awglen.Text = "...";
             // 
-            // progAWG
-            // 
-            progAWG.Location = new Point(329, 73);
-            progAWG.Name = "progAWG";
-            progAWG.Size = new Size(136, 33);
-            progAWG.TabIndex = 22;
-            progAWG.Text = "Config AWG";
-            progAWG.UseVisualStyleBackColor = true;
-            progAWG.Click += progAWG_Click;
-            // 
             // sendAWG
             // 
-            sendAWG.Location = new Point(167, 73);
+            sendAWG.Location = new Point(10, 77);
             sendAWG.Name = "sendAWG";
             sendAWG.Size = new Size(136, 33);
             sendAWG.TabIndex = 22;
@@ -241,15 +238,62 @@
             sendAWG.UseVisualStyleBackColor = true;
             sendAWG.Click += sendAWG_Click;
             // 
-            // loadAwg
+            // runAWG
             // 
-            loadAwg.Location = new Point(12, 73);
-            loadAwg.Name = "loadAwg";
-            loadAwg.Size = new Size(94, 33);
-            loadAwg.TabIndex = 21;
-            loadAwg.Text = "Get AWG";
-            loadAwg.UseVisualStyleBackColor = true;
-            loadAwg.Click += loadAwg_Click;
+            runAWG.Location = new Point(85, 125);
+            runAWG.Name = "runAWG";
+            runAWG.Size = new Size(114, 33);
+            runAWG.TabIndex = 22;
+            runAWG.Text = "Run AWG";
+            runAWG.UseVisualStyleBackColor = true;
+            runAWG.Click += runAWG_Click;
+            // 
+            // progAWG
+            // 
+            progAWG.Location = new Point(174, 76);
+            progAWG.Name = "progAWG";
+            progAWG.Size = new Size(114, 33);
+            progAWG.TabIndex = 22;
+            progAWG.Text = "Config AWG";
+            progAWG.UseVisualStyleBackColor = true;
+            progAWG.Click += progAWG_Click;
+            // 
+            // paramTable
+            // 
+            paramTable.AllowUserToAddRows = false;
+            paramTable.AllowUserToDeleteRows = false;
+            paramTable.AllowUserToResizeRows = false;
+            paramTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            paramTable.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2 });
+            paramTable.Location = new Point(16, 101);
+            paramTable.Name = "paramTable";
+            paramTable.RowHeadersVisible = false;
+            paramTable.Size = new Size(258, 290);
+            paramTable.TabIndex = 26;
+            paramTable.CellClick += paramTable_CellClick;
+            // 
+            // Column1
+            // 
+            Column1.FillWeight = 80F;
+            Column1.HeaderText = "Param";
+            Column1.Name = "Column1";
+            Column1.Width = 150;
+            // 
+            // Column2
+            // 
+            Column2.HeaderText = "Value";
+            Column2.Name = "Column2";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label1.Location = new Point(191, 64);
+            label1.Name = "label1";
+            label1.Size = new Size(83, 34);
+            label1.TabIndex = 25;
+            label1.Text = "Start with 0x \r\nfor hex value";
+            label1.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // comports
             // 
@@ -259,6 +303,17 @@
             comports.Size = new Size(103, 29);
             comports.TabIndex = 9;
             // 
+            // setAll
+            // 
+            setAll.Location = new Point(16, 63);
+            setAll.Margin = new Padding(4, 3, 4, 3);
+            setAll.Name = "setAll";
+            setAll.Size = new Size(105, 31);
+            setAll.TabIndex = 1;
+            setAll.Text = "Set all";
+            setAll.UseVisualStyleBackColor = true;
+            setAll.Click += setAll_Click;
+            // 
             // MonitorView
             // 
             MonitorView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -266,7 +321,7 @@
             MonitorView.Location = new Point(3, 33);
             MonitorView.Name = "MonitorView";
             MonitorView.ReadOnly = true;
-            MonitorView.Size = new Size(825, 96);
+            MonitorView.Size = new Size(825, 148);
             MonitorView.TabIndex = 8;
             MonitorView.Text = "";
             // 
@@ -294,22 +349,6 @@
             AutoScroll.Text = "Auto scroll";
             AutoScroll.UseVisualStyleBackColor = true;
             // 
-            // parValue
-            // 
-            parValue.Location = new Point(356, 165);
-            parValue.Name = "parValue";
-            parValue.Size = new Size(109, 29);
-            parValue.TabIndex = 24;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(356, 141);
-            label1.Name = "label1";
-            label1.Size = new Size(189, 21);
-            label1.TabIndex = 25;
-            label1.Text = "Start with 0x for hex value";
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -334,6 +373,9 @@
             splitContainer3.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
             splitContainer3.ResumeLayout(false);
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)paramTable).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -355,14 +397,17 @@
         private Button clr;
         private CheckBox AutoScroll;
         private RichTextBox MonitorView;
-        private ComboBox parList;
-        private Button WrVec;
         private ComboBox comports;
         private Button loadAwg;
         private Label awglen;
         private Button sendAWG;
         private Button progAWG;
-        private TextBox parValue;
         private Label label1;
+        private DataGridView paramTable;
+        private DataGridViewButtonColumn Column1;
+        private DataGridViewTextBoxColumn Column2;
+        private GroupBox groupBox1;
+        private Button runAWG;
+        private Button setAll;
     }
 }
